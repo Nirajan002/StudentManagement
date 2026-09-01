@@ -1,5 +1,5 @@
 import { useGetStudentsQuery } from "../api/api";
-import StudentTable from "../components/StudentTable";
+import ViewTable from "../components/ViewTable";
 import Navbar from "../components/NavBar";
 import { Button } from "@/components/ui/button";
 import { useSearchParams } from "react-router-dom";
@@ -14,6 +14,7 @@ export default function Result() {
     isLoading,
     isFetching,
     isError,
+    refetch,
   } = useGetStudentsQuery(page);
 
   if (isLoading) {
@@ -41,8 +42,9 @@ export default function Result() {
           Student Management
         </h1>
 
-        <StudentTable
+        <ViewTable
           students={students}
+          refetch={refetch}
           page={page}
         />
 

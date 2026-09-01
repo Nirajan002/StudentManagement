@@ -2,7 +2,7 @@ import React from "react";
 import { useSearchParams } from "react-router-dom";
 
 import { useGetStudentsQuery } from "../api/api";
-import AdminViewTable from "../components/AdminViewTable";
+import ViewTable from "../components/ViewTable";
 import Navbar from "../components/NavBar";
 import { Button } from "@/components/ui/button";
 
@@ -96,7 +96,7 @@ export default function AdminView() {
         </div>
 
         {/* Student Table */}
-        <AdminViewTable
+        <ViewTable
           students={students}
           refetch={refetch}
           page={page}
