@@ -44,7 +44,7 @@ interface StudentTableProps {
   page: number;
 }
 
-export default function ViewTable({
+export default function StudentTable({
   students,
   refetch,
   page,

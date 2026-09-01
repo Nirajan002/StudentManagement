@@ -1,5 +1,5 @@
 import { useGetStudentsQuery } from "../api/api";
-import ViewTable from "../components/ViewTable";
+import StudentTable from "../components/StudentTable";
 import Navbar from "../components/NavBar";
 import { Button } from "@/components/ui/button";
 import { useSearchParams } from "react-router-dom";
@@ -42,7 +42,7 @@ export default function Result() {
           Student Management
         </h1>
 
-        <ViewTable
+        <StudentTable
           students={students}
           refetch={refetch}
           page={page}
