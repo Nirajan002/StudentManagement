@@ -395,8 +395,7 @@ namespace backend.Controllers
         }
 
         [Authorize(Roles = "Admin")]
-        [HttpPut]
-        [Route("{ID:guid}")]
+        [HttpPut("student/{ID:guid}")]
         public async Task<IActionResult> UpdateStudent([FromRoute] Guid ID,UpdateStudent updateStudent)
         {
             var student = await dbContext.Students.FindAsync(ID);
@@ -518,7 +517,10 @@ namespace backend.Controllers
                 user.FullName,
                 user.Email,
                 user.Profile,
-                user.Role
+                user.Role,
+                user.Gender,
+                user.Number,
+                user.Address
             });
         }
 
@@ -547,6 +549,135 @@ namespace backend.Controllers
                 .ToList();
 
             return Ok(students);
+        }
+
+        [Authorize]
+        [HttpPut("profile/{ID:guid}")]
+        public async Task<IActionResult> UserProfileUpdate(
+     [FromRoute] Guid ID,
+     [FromForm] UserProfileUpdate userProfileUpdate)
+        {
+            var loggedInUserId = User.FindFirstValue(
+                ClaimTypes.NameIdentifier
+            );
+
+            if (string.IsNullOrEmpty(loggedInUserId))
+            {
+                return Unauthorized();
+            }
+
+            if (!Guid.TryParse(loggedInUserId, out var currentUserId))
+            {
+                return Unauthorized();
+            }
+
+            if (currentUserId != ID)
+            {
+                return Forbid();
+            }
+
+            var user = await dbContext.Users.FindAsync(ID);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            // ==========================================
+            // UPDATE NORMAL USER INFORMATION
+            // ==========================================
+
+            user.FullName = userProfileUpdate.FullName;
+            user.Email = userProfileUpdate.Email;
+            user.Gender = userProfileUpdate.Gender;
+            user.Number = userProfileUpdate.Number;
+            user.Address = userProfileUpdate.Address;
+
+            // ==========================================
+            // UPDATE PROFILE IMAGE
+            // ==========================================
+
+            if (userProfileUpdate.Profile != null &&
+                userProfileUpdate.Profile.Length > 0)
+            {
+                string uploadPath = Path.Combine(
+                    Directory.GetCurrentDirectory(),
+                    "wwwroot",
+                    "uploads"
+                );
+
+                // Create uploads folder if it doesn't exist
+                if (!Directory.Exists(uploadPath))
+                {
+                    Directory.CreateDirectory(uploadPath);
+                }
+
+                // ------------------------------------------
+                // DELETE OLD PROFILE IMAGE
+                // ------------------------------------------
+
+                if (!string.IsNullOrEmpty(user.Profile))
+                {
+                    string oldFilePath = Path.Combine(
+                        uploadPath,
+                        user.Profile
+                    );
+
+                    if (System.IO.File.Exists(oldFilePath))
+                    {
+                        System.IO.File.Delete(oldFilePath);
+                    }
+                }
+
+                // ------------------------------------------
+                // CREATE NEW FILE NAME
+                // ------------------------------------------
+
+                string fileName =
+                    Guid.NewGuid().ToString()
+                    + Path.GetExtension(
+                        userProfileUpdate.Profile.FileName
+                    );
+
+                string filePath = Path.Combine(
+                    uploadPath,
+                    fileName
+                );
+
+                // ------------------------------------------
+                // SAVE NEW IMAGE
+                // ------------------------------------------
+
+                using (var stream = new FileStream(
+                    filePath,
+                    FileMode.Create))
+                {
+                    await userProfileUpdate.Profile.CopyToAsync(stream);
+                }
+
+                // ------------------------------------------
+                // SAVE FILE NAME IN DATABASE
+                // ------------------------------------------
+
+                user.Profile = fileName;
+            }
+
+            // ==========================================
+            // SAVE EVERYTHING
+            // ==========================================
+
+            await dbContext.SaveChangesAsync();
+
+            return Ok(new
+            {
+                user.Id,
+                user.FullName,
+                user.Email,
+                user.Profile,
+                user.Number,
+                user.Gender,
+                user.Address
+            });
         }
     }
 }

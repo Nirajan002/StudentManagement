@@ -8,6 +8,12 @@
 
         public string Email { get; set; }
 
+        public string Number { get; set; } = null;
+
+        public string Address { get; set; } = null;
+
+        public string Gender { get; set; } = null;
+
         public string Password { get; set; }
 
         public string? Profile { get; set; }

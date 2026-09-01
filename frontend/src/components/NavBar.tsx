@@ -1,20 +1,29 @@
 import { useState } from "react";
+
 import { useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
+
 import { Input } from "@/components/ui/input";
 
 import {
   useSearchStudentsQuery,
   useLogoutMutation,
+  useGetCurrentUserQuery,
 } from "../api/api";
 
 export default function Navbar() {
   const navigate = useNavigate();
 
-  // =========================
-  // LOGIN STATUS
-  // =========================
+  // *=========================*
+  // *CURRENT USER*
+  // *=========================*
+
+  const { data: currentUser } = useGetCurrentUserQuery();
+
+  // *=========================*
+  // *LOGIN STATUS*
+  // *=========================*
 
   const [fullName, setFullName] = useState(
     localStorage.getItem("fullName")
@@ -26,15 +35,15 @@ export default function Navbar() {
 
   const isLoggedIn = !!fullName;
 
-  // =========================
-  // PROFILE DROPDOWN
-  // =========================
+  // *=========================*
+  // *PROFILE DROPDOWN*
+  // *=========================*
 
   const [profileOpen, setProfileOpen] = useState(false);
 
-  // =========================
-  // SEARCH
-  // =========================
+  // *=========================*
+  // *SEARCH*
+  // *=========================*
 
   const [search, setSearch] = useState("");
 
@@ -51,9 +60,9 @@ export default function Navbar() {
     }
   );
 
-  // =========================
-  // LOGOUT
-  // =========================
+  // *=========================*
+  // *LOGOUT*
+  // *=========================*
 
   const [logoutUser] = useLogoutMutation();
 
@@ -75,9 +84,9 @@ export default function Navbar() {
     }
   };
 
-  // =========================
-  // LOGO / HOME
-  // =========================
+  // *=========================*
+  // *LOGO / HOME*
+  // *=========================*
 
   const handleHomeClick = () => {
     if (!isLoggedIn) {
@@ -92,18 +101,18 @@ export default function Navbar() {
     }
   };
 
-  // =========================
-  // VIEW PROFILE
-  // =========================
+  // *=========================*
+  // *VIEW PROFILE*
+  // *=========================*
 
   const handleViewProfile = () => {
     setProfileOpen(false);
     navigate("/ViewYourProfile");
   };
 
-  // =========================
-  // STUDENT CLICK
-  // =========================
+  // *=========================*
+  // *STUDENT CLICK*
+  // *=========================*
 
   const handleStudentClick = (id: string) => {
     setSearch("");
@@ -118,33 +127,16 @@ export default function Navbar() {
           ========================= */}
 
       <div className="flex flex-1 items-center">
-
         <div
           onClick={handleHomeClick}
           className="cursor-pointer"
         >
-
-          {/* ==========================================
-              STATIC LOGO
-              
-              PUT YOUR LOGO HERE
-
-              Example:
-              <img
-                src="/logo.png"
-                alt="Logo"
-                className="h-10 w-auto object-contain"
-              />
-              ========================================== */}
-
           <img
             src="/YOUR-LOGO.png"
             alt="Logo"
             className="h-10 w-auto object-contain"
           />
-
         </div>
-
       </div>
 
       {/* =========================
@@ -169,11 +161,13 @@ export default function Navbar() {
                 Searching...
               </p>
             ) : students.length > 0 ? (
-              students.map((student: any) => (
 
+              students.map((student: any) => (
                 <div
                   key={student.id}
-                  onClick={() => handleStudentClick(student.id)}
+                  onClick={() =>
+                    handleStudentClick(student.id)
+                  }
                   className="flex cursor-pointer items-center gap-3 px-4 py-2 hover:bg-muted"
                 >
 
@@ -196,12 +190,14 @@ export default function Navbar() {
                   </span>
 
                 </div>
-
               ))
+
             ) : (
+
               <p className="px-4 py-3 text-sm text-muted-foreground">
                 No students found
               </p>
+
             )}
 
           </div>
@@ -224,14 +220,32 @@ export default function Navbar() {
                 ========================= */}
 
             <button
-              onClick={() => setProfileOpen(!profileOpen)}
+              onClick={() =>
+                setProfileOpen(!profileOpen)
+              }
               className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-muted"
             >
 
               {/* Profile Circle */}
 
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-sm font-medium">
-                {fullName?.charAt(0).toUpperCase()}
+              <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-muted text-sm font-medium">
+
+                {currentUser?.profile ? (
+
+                  <img
+                    src={`https://localhost:7014/uploads/${currentUser.profile}`}
+                    alt={fullName || "Profile"}
+                    className="h-full w-full object-cover"
+                  />
+
+                ) : (
+
+                  fullName
+                    ?.charAt(0)
+                    .toUpperCase()
+
+                )}
+
               </div>
 
               {/* Name */}

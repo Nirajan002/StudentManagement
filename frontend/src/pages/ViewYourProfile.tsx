@@ -22,11 +22,14 @@ export default function Profile() {
   // =========================
   // LOADING
   // =========================
-
   if (isLoading) {
     return (
-      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
-        <p className="text-muted-foreground">Loading profile...</p>
+      <div>
+        <NavBar />
+
+        <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
+          <p className="text-muted-foreground">Loading profile...</p>
+        </div>
       </div>
     );
   }
@@ -34,23 +37,26 @@ export default function Profile() {
   // =========================
   // ERROR
   // =========================
-
   if (isError || !user) {
     return (
-      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Unable to load profile</CardTitle>
+      <div>
+        <NavBar />
 
-            <CardDescription>
-              We couldn't retrieve your profile information.
-            </CardDescription>
-          </CardHeader>
+        <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle>Unable to load profile</CardTitle>
 
-          <CardContent>
-            <Button onClick={() => navigate("/Login")}>Go to Login</Button>
-          </CardContent>
-        </Card>
+              <CardDescription>
+                We couldn't retrieve your profile information.
+              </CardDescription>
+            </CardHeader>
+
+            <CardContent>
+              <Button onClick={() => navigate("/Login")}>Go to Login</Button>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
@@ -63,16 +69,13 @@ export default function Profile() {
         <div className="mx-auto max-w-3xl">
           {/* =========================
               PROFILE CARD
-              ========================= */}
-
+          ========================= */}
           <Card className="overflow-hidden">
             {/* =========================
                 PROFILE HEADER
-                ========================= */}
-
+            ========================= */}
             <CardHeader className="flex flex-col items-center gap-4 border-b bg-background py-8">
               {/* PROFILE IMAGE */}
-
               {user.profile ? (
                 <img
                   src={`https://localhost:7014/uploads/${user.profile}`}
@@ -86,7 +89,6 @@ export default function Profile() {
               )}
 
               {/* NAME + EMAIL */}
-
               <div className="text-center">
                 <CardTitle className="text-2xl">{user.fullName}</CardTitle>
 
@@ -94,7 +96,6 @@ export default function Profile() {
               </div>
 
               {/* ROLE */}
-
               <span className="rounded-full bg-muted px-3 py-1 text-sm font-medium">
                 {user.role}
               </span>
@@ -102,8 +103,7 @@ export default function Profile() {
 
             {/* =========================
                 USER INFORMATION
-                ========================= */}
-
+            ========================= */}
             <CardContent className="p-6">
               <h2 className="mb-6 text-lg font-semibold">
                 Personal Information
@@ -111,36 +111,64 @@ export default function Profile() {
 
               <div className="space-y-5">
                 {/* FULL NAME */}
-
                 <div className="border-b pb-4">
                   <p className="text-sm text-muted-foreground">Full Name</p>
 
-                  <p className="mt-1 font-medium">{user.fullName}</p>
+                  <p className="mt-1 font-medium">
+                    {user.fullName || "Not provided"}
+                  </p>
                 </div>
 
                 {/* EMAIL */}
-
                 <div className="border-b pb-4">
                   <p className="text-sm text-muted-foreground">Email</p>
 
-                  <p className="mt-1 font-medium">{user.email}</p>
+                  <p className="mt-1 font-medium">
+                    {user.email || "Not provided"}
+                  </p>
+                </div>
+
+                {/* GENDER */}
+                <div className="border-b pb-4">
+                  <p className="text-sm text-muted-foreground">Gender</p>
+
+                  <p className="mt-1 font-medium">
+                    {user.gender || "Not provided"}
+                  </p>
+                </div>
+
+                {/* PHONE NUMBER */}
+                <div className="border-b pb-4">
+                  <p className="text-sm text-muted-foreground">Phone Number</p>
+
+                  <p className="mt-1 font-medium">
+                    {user.number || "Not provided"}
+                  </p>
+                </div>
+
+                {/* ADDRESS */}
+                <div className="border-b pb-4">
+                  <p className="text-sm text-muted-foreground">Address</p>
+
+                  <p className="mt-1 font-medium">
+                    {user.address || "Not provided"}
+                  </p>
                 </div>
               </div>
 
               {/* =========================
-                    ACTION BUTTONS
-                    ========================= */}
-
+                  ACTION BUTTONS
+              ========================= */}
               <div className="mt-8 flex items-center justify-between">
                 {/* BACK - LEFT */}
-
                 <Button variant="outline" onClick={() => navigate(-1)}>
                   ← Back
                 </Button>
 
                 {/* EDIT - RIGHT */}
-
-                <Button onClick={() => navigate("/EditProfile")}>
+                <Button
+                  onClick={() => navigate(`/UpdateUserProfile/${user.id}`)}
+                >
                   Edit Profile
                 </Button>
               </div>

@@ -6,6 +6,7 @@ import Result from "./pages/Result";
 import StudentDetail from "./pages/StudentDetail";
 import EditStudent from "./pages/EditStudent";
 import ViewYourProfile from "./pages/ViewYourProfile";
+import UpdateUserProfile from "./pages/UpdateUserProfile";
 
 import AdminRoute from "./components/AdminRoute";
 import AdminView from "./pages/AdminView";
@@ -66,6 +67,11 @@ function App() {
       <Route
         path="ViewYourProfile"
         element={<ViewYourProfile />}
+      />
+
+      <Route
+        path="UpdateUserProfile/:id"
+        element={<UpdateUserProfile />}
       />
 
       {/* Unknown route */}

@@ -83,7 +83,7 @@ export const api = createApi({
 
     updateStudent: builder.mutation({
       query: ({ id, data }) => ({
-        url: `/${id}`,
+        url: `/student/${id}`,
         method: "PUT",
         body: data,
       }),
@@ -97,6 +97,15 @@ export const api = createApi({
       }),
       invalidatesTags: ["Student"],
     }),
+
+    updateUserProfile: builder.mutation({
+      query: ({ id, formData }) => ({
+        url: `/profile/${id}`,
+        method: "PUT",
+        body: formData,
+      }),
+      invalidatesTags: ["User"],
+    }),
   }),
 });
 
@@ -106,6 +115,7 @@ export const {
   useLogoutMutation,
   useRefreshTokenMutation,
   useGetCurrentUserQuery,
+  useUpdateUserProfileMutation,
 
   useAddStudentMutation,
   useGetStudentsQuery,
