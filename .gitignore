@@ -1,0 +1,117 @@
+##############################
+# General / OS
+##############################
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.log
+*.tmp
+*.bak
+*.swp
+
+##############################
+# Editor / IDE
+##############################
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.rsuser
+
+##############################
+# ---------- Backend (ASP.NET Core) ----------
+##############################
+
+# Build results
+backend/**/bin/
+backend/**/obj/
+backend/**/out/
+
+# Visual Studio files
+backend/**/.vs/
+*.vspscc
+*.vssscc
+.builds
+*.pidb
+*.svclog
+*.scc
+
+# Rider
+backend/**/.idea/
+
+# NuGet
+backend/**/packages/
+*.nupkg
+*.snupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+*.nuget.props
+*.nuget.targets
+
+# ASP.NET Core specific
+backend/**/appsettings.Development.json
+backend/**/appsettings.Local.json
+backend/**/*.pfx
+backend/**/*.user
+backend/**/wwwroot/uploads/*
+!backend/**/wwwroot/uploads/.gitkeep
+
+# Test results
+backend/**/[Tt]est[Rr]esult*/
+backend/**/coverage/
+*.trx
+*.coverage
+*.coveragexml
+
+# Secrets
+backend/**/secrets.json
+**/appsettings.*.local.json
+
+##############################
+# ---------- Frontend (React + Vite + TS) ----------
+##############################
+
+# Dependencies
+frontend/node_modules/
+frontend/.pnp
+frontend/.pnp.js
+
+# Build output
+frontend/dist/
+frontend/dist-ssr/
+frontend/build/
+
+# Env files
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+
+# Vite
+frontend/*.local
+
+# Testing / coverage
+frontend/coverage/
+
+# TypeScript build info
+frontend/*.tsbuildinfo
+frontend/node_modules/.tmp/
+
+# Logs
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+
+# Editor
+frontend/.vscode/*
+!frontend/.vscode/extensions.json
+
+##############################
+# Misc
+##############################
+*.zip
+*.rar
+*.7z
