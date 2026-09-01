@@ -5,6 +5,7 @@ import Register from "./pages/Register";
 import Result from "./pages/Result";
 import StudentDetail from "./pages/StudentDetail";
 import EditStudent from "./pages/EditStudent";
+import ViewYourProfile from "./pages/ViewYourProfile";
 
 import AdminRoute from "./components/AdminRoute";
 import AdminView from "./pages/AdminView";
@@ -60,6 +61,11 @@ function App() {
             <EditStudent />
           </AdminRoute>
         }
+      />
+
+      <Route
+        path="ViewYourProfile"
+        element={<ViewYourProfile />}
       />
 
       {/* Unknown route */}

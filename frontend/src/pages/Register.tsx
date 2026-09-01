@@ -1,12 +1,12 @@
 import { FormProvider, useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import Navbar from "../components/NavBar";
 
+import Navbar from "../components/NavBar";
 import InputField from "../components/form/InputField";
 import FileField from "../components/form/FileField";
-import { Button } from "@/components/ui/button";
 
+import { Button } from "@/components/ui/button";
 import { useRegisterMutation } from "../api/api";
 
 interface RegisterForm {
@@ -31,11 +31,14 @@ export default function Register() {
   const [registerUser, { isLoading }] = useRegisterMutation();
 
   const onSubmit = async (data: RegisterForm) => {
+    // Clear previous server error on email
+    methods.clearErrors("email");
+
     try {
       const formData = new FormData();
 
-      formData.append("FullName", data.fullName);
-      formData.append("Email", data.email);
+      formData.append("FullName", data.fullName.trim());
+      formData.append("Email", data.email.trim());
       formData.append("Password", data.password);
 
       if (data.profile && data.profile.length > 0) {
@@ -48,8 +51,26 @@ export default function Register() {
 
       navigate("/Login");
     } catch (error: any) {
+      console.log("Registration error:", error);
+
+      // ================================
+      // EMAIL ALREADY EXISTS
+      // ================================
+      if (error?.status === 409) {
+        methods.setError("email", {
+          type: "server",
+          message: "An account with this email already exists.",
+        });
+
+        return;
+      }
+
+      // ================================
+      // OTHER SERVER ERRORS
+      // ================================
       toast.error(
-        error?.data?.message || "Registration failed. Please try again.",
+        error?.data?.message ||
+          "Registration failed. Please try again."
       );
     }
   };
@@ -57,11 +78,15 @@ export default function Register() {
   return (
     <div>
       <Navbar />
+
       <div className="flex min-h-screen items-center justify-center bg-muted/40 px-4 py-8">
         <div className="w-full max-w-md rounded-xl border bg-background p-6 shadow-sm">
+
           {/* Header */}
           <div className="mb-6 text-center">
-            <h1 className="text-2xl font-bold">Create an Account</h1>
+            <h1 className="text-2xl font-bold">
+              Create an Account
+            </h1>
 
             <p className="mt-2 text-sm text-muted-foreground">
               Register to continue
@@ -73,6 +98,7 @@ export default function Register() {
               onSubmit={methods.handleSubmit(onSubmit)}
               className="space-y-5"
             >
+
               {/* Profile */}
               <FileField
                 name="profile"
@@ -87,6 +113,12 @@ export default function Register() {
                 placeholder="Enter your full name"
                 rules={{
                   required: "Full name is required",
+
+                  minLength: {
+                    value: 5,
+                    message:
+                      "Full name must be at least 5 characters",
+                  },
                 }}
               />
 
@@ -98,6 +130,7 @@ export default function Register() {
                 placeholder="Enter your email"
                 rules={{
                   required: "Email is required",
+
                   pattern: {
                     value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
                     message: "Enter a valid email address",
@@ -113,16 +146,24 @@ export default function Register() {
                 placeholder="Enter your password"
                 rules={{
                   required: "Password is required",
+
                   minLength: {
                     value: 6,
-                    message: "Password must be at least 6 characters",
+                    message:
+                      "Password must be at least 6 characters",
                   },
                 }}
               />
 
               {/* Register Button */}
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Creating Account..." : "Register"}
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={isLoading}
+              >
+                {isLoading
+                  ? "Creating Account..."
+                  : "Register"}
               </Button>
             </form>
           </FormProvider>

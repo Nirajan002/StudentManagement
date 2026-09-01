@@ -347,7 +347,7 @@ export default function StudentDetail() {
                   type="button"
                   variant="outline"
                   onClick={() =>
-                    navigate(`/Result?page=${page}`)
+                    navigate(-1)
                   }
                 >
                   Back
