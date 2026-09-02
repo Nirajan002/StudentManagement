@@ -2,7 +2,9 @@ import { useNavigate } from "react-router-dom";
 
 import { toast } from "react-hot-toast";
 
-import { useDeleteStudentMutation } from "../api/api";
+import {
+  useDeleteUserMutation,
+} from "../api/api";
 
 import {
   Table,
@@ -27,31 +29,27 @@ import {
 
 import { Button } from "@/components/ui/button";
 
-interface Student {
+interface User {
   id: string;
   fullName: string;
   email: string;
-  gender: string;
-  number: string;
-  addresh: string;
+  role: string;
   profile?: string | null;
-  education: string;
 }
 
-interface StudentTableProps {
-  students: Student[];
+interface UserTableProps {
+  users: User[];
   refetch: () => void | Promise<any>;
-  page: number;
 }
 
-export default function StudentTable({
-  students,
+export default function UserTable({
+  users,
   refetch,
-  page,
-}: StudentTableProps) {
+}: UserTableProps) {
   const navigate = useNavigate();
 
-  const [deleteStudent, { isLoading: isDeleting }] = useDeleteStudentMutation();
+  const [deleteUser, { isLoading: isDeleting }] =
+    useDeleteUserMutation();
 
   // =========================
   // CHECK USER ROLE
@@ -62,20 +60,20 @@ export default function StudentTable({
   const isAdmin = role?.toLowerCase() === "admin";
 
   // =========================
-  // DELETE STUDENT
+  // DELETE USER
   // =========================
 
   const handleDelete = async (id: string) => {
     try {
-      await deleteStudent(id).unwrap();
+      await deleteUser(id).unwrap();
 
       await refetch();
 
-      toast.success("Student deleted successfully!");
+      toast.success("User deleted successfully!");
     } catch (error) {
-      console.error("Delete student error:", error);
+      console.error("Delete user error:", error);
 
-      toast.error("Failed to delete student");
+      toast.error("Failed to delete user");
     }
   };
 
@@ -83,89 +81,114 @@ export default function StudentTable({
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Student</TableHead>
+          <TableHead>User</TableHead>
           <TableHead>Email</TableHead>
-          <TableHead>Gender</TableHead>
+          <TableHead>Role</TableHead>
           <TableHead>Actions</TableHead>
         </TableRow>
       </TableHeader>
 
       <TableBody>
-        {students?.length > 0 ? (
-          students.map((student) => (
-            <TableRow key={student.id}>
-              {/* Student */}
+        {users?.length > 0 ? (
+          users.map((user) => (
+            <TableRow key={user.id}>
+
+              {/* USER */}
               <TableCell>
                 <div className="flex items-center gap-3">
-                  {student.profile ? (
+                  {user.profile ? (
                     <img
-                      src={`https://localhost:7014/uploads/${student.profile}`}
-                      alt={student.fullName}
+                      src={`https://localhost:7014/uploads/${user.profile}`}
+                      alt={user.fullName}
                       className="h-10 w-10 rounded-full border object-cover"
                     />
                   ) : (
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-sm font-medium">
-                      {student.fullName?.charAt(0).toUpperCase()}
+                      {user.fullName
+                        ?.charAt(0)
+                        .toUpperCase()}
                     </div>
                   )}
 
-                  <span className="font-medium">{student.fullName}</span>
+                  <span className="font-medium">
+                    {user.fullName}
+                  </span>
                 </div>
               </TableCell>
 
-              {/* Email */}
-              <TableCell>{student.email}</TableCell>
+              {/* EMAIL */}
+              <TableCell>
+                {user.email}
+              </TableCell>
 
-              {/* Gender */}
-              <TableCell>{student.gender}</TableCell>
+              {/* ROLE */}
+              <TableCell>
+                {user.role}
+              </TableCell>
 
-              {/* Actions */}
+              {/* ACTIONS */}
               <TableCell>
                 <div className="flex gap-2">
-                  {/* View More - Everyone can see */}
+
+                  {/* VIEW MORE */}
                   <Button
                     variant="outline"
                     onClick={() =>
-                      navigate(`/Student/${student.id}?page=${page}`)
+                      navigate(`/User/${user.id}`)
                     }
                   >
                     View More
                   </Button>
 
-                  {/* Edit - ADMIN ONLY */}
+                  {/* EDIT - ADMIN ONLY */}
                   {isAdmin && (
                     <Button
                       variant="secondary"
-                      onClick={() => navigate(`/EditStudent/${student.id}`)}
+                      onClick={() =>
+                        navigate(`/EditUser/${user.id}`)
+                      }
                     >
                       Edit
                     </Button>
                   )}
 
-                  {/* Delete - ADMIN ONLY */}
+                  {/* DELETE - ADMIN ONLY */}
                   {isAdmin && (
                     <AlertDialog>
-                      <AlertDialogTrigger className="inline-flex h-9 items-center justify-center rounded-md bg-destructive/80 px-4 py-2 text-sm font-medium text-destructive-foreground shadow-xs transition-colors hover:bg-destructive focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
-                        {isDeleting ? "Deleting..." : "Delete"}
+                      <AlertDialogTrigger
+                        className="inline-flex h-9 items-center justify-center rounded-md bg-destructive/80 px-4 py-2 text-sm font-medium text-destructive-foreground shadow-xs transition-colors hover:bg-destructive focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+                      >
+                        {isDeleting
+                          ? "Deleting..."
+                          : "Delete"}
                       </AlertDialogTrigger>
 
                       <AlertDialogContent>
                         <AlertDialogHeader>
-                          <AlertDialogTitle>Delete Student?</AlertDialogTitle>
+                          <AlertDialogTitle>
+                            Delete User?
+                          </AlertDialogTitle>
 
                           <AlertDialogDescription>
                             Are you sure you want to delete{" "}
-                            <strong>{student.fullName}</strong>? This action
-                            cannot be undone and will permanently remove the
-                            student's data.
+                            <strong>
+                              {user.fullName}
+                            </strong>
+                            ? This action cannot be undone
+                            and will permanently remove the
+                            user's data.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
 
                         <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogCancel>
+                            Cancel
+                          </AlertDialogCancel>
 
                           <AlertDialogAction
-                            onClick={() => handleDelete(student.id)}
+                            onClick={() =>
+                              handleDelete(user.id)
+                            }
                             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                           >
                             Delete
@@ -174,14 +197,18 @@ export default function StudentTable({
                       </AlertDialogContent>
                     </AlertDialog>
                   )}
+
                 </div>
               </TableCell>
             </TableRow>
           ))
         ) : (
           <TableRow>
-            <TableCell colSpan={6} className="h-24 text-center">
-              No students found.
+            <TableCell
+              colSpan={4}
+              className="h-24 text-center"
+            >
+              No users found.
             </TableCell>
           </TableRow>
         )}

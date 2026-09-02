@@ -1,8 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  useFormContext,
-  type RegisterOptions,
-} from "react-hook-form";
+import { useFormContext, type RegisterOptions } from "react-hook-form";
 
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -28,7 +25,7 @@ export default function FileField({
   } = useFormContext();
 
   const [preview, setPreview] = useState<string | null>(
-    defaultPreview || "/default-profile.jpg"
+    defaultPreview || "/default-profile.jpg",
   );
 
   useEffect(() => {
@@ -37,15 +34,9 @@ export default function FileField({
     }
   }, [defaultPreview]);
 
-  const {
-    ref,
-    onChange,
-    ...rest
-  } = register(name, rules);
+  const { ref, onChange, ...rest } = register(name, rules);
 
-  const handleChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
 
     onChange(event);
@@ -60,11 +51,8 @@ export default function FileField({
 
   return (
     <div className="space-y-3">
-
       {/* Label */}
-      <Label className="block text-center">
-        {label}
-      </Label>
+      <Label className="block text-center">{label}</Label>
 
       {/* Profile Preview */}
       <div className="flex justify-center">
@@ -94,14 +82,8 @@ export default function FileField({
 
       {/* Choose / Change Button */}
       <div className="flex justify-center">
-        <Button
-          type="button"
-          variant="outline"
-        >
-          <label
-            htmlFor={name}
-            className="cursor-pointer"
-          >
+        <Button type="button" variant="outline">
+          <label htmlFor={name} className="cursor-pointer">
             {preview ? "Change Profile" : "Choose Profile"}
           </label>
         </Button>

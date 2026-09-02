@@ -5,9 +5,7 @@ interface AdminRouteProps {
   children: ReactNode;
 }
 
-export default function AdminRoute({
-  children,
-}: AdminRouteProps) {
+export default function AdminRoute({ children }: AdminRouteProps) {
   const role = localStorage.getItem("role");
 
   if (role !== "Admin") {

@@ -3,7 +3,10 @@ import { useForm, FormProvider } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 
-import { useGetCurrentUserQuery, useUpdateUserProfileMutation } from "../api/api";
+import {
+  useGetCurrentUserQuery,
+  useUpdateUserProfileMutation,
+} from "../api/api";
 
 import Navbar from "../components/NavBar";
 import InputField from "../components/form/InputField";
@@ -37,11 +40,7 @@ export default function UpdateUserProfile() {
   // GET CURRENT USER
   // =========================================================
 
-  const {
-    data: user,
-    isLoading,
-    isError,
-  } = useGetCurrentUserQuery();
+  const { data: user, isLoading, isError } = useGetCurrentUserQuery();
 
   // =========================================================
   // UPDATE USER
@@ -153,10 +152,7 @@ export default function UpdateUserProfile() {
       console.error("PROFILE UPDATE ERROR:", error);
       console.error("SERVER RESPONSE:", error?.data);
 
-      toast.error(
-        error?.data?.message ||
-          "Failed to update profile"
-      );
+      toast.error(error?.data?.message || "Failed to update profile");
     }
   };
 
@@ -170,9 +166,7 @@ export default function UpdateUserProfile() {
         <Navbar />
 
         <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
-          <p className="text-muted-foreground">
-            Loading profile...
-          </p>
+          <p className="text-muted-foreground">Loading profile...</p>
         </div>
       </div>
     );
@@ -190,17 +184,11 @@ export default function UpdateUserProfile() {
         <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center p-6">
           <Card className="w-full max-w-md">
             <CardHeader>
-              <CardTitle>
-                Unable to load profile
-              </CardTitle>
+              <CardTitle>Unable to load profile</CardTitle>
             </CardHeader>
 
             <CardContent>
-              <Button
-                onClick={() => navigate("/Login")}
-              >
-                Go to Login
-              </Button>
+              <Button onClick={() => navigate("/Login")}>Go to Login</Button>
             </CardContent>
           </Card>
         </div>
@@ -218,9 +206,7 @@ export default function UpdateUserProfile() {
 
       <div className="min-h-[calc(100vh-4rem)] bg-muted/40 p-6">
         <div className="mx-auto max-w-2xl">
-
           <Card className="p-6">
-
             {/* =================================================
                 HEADER
             ================================================= */}
@@ -236,14 +222,11 @@ export default function UpdateUserProfile() {
             ================================================= */}
 
             <CardContent className="px-0">
-
               <FormProvider {...methods}>
-
                 <form
                   onSubmit={methods.handleSubmit(onSubmit)}
                   className="space-y-6"
                 >
-
                   {/* =================================================
                       PROFILE
                   ================================================= */}
@@ -263,30 +246,20 @@ export default function UpdateUserProfile() {
                       FULL NAME
                   ================================================= */}
 
-                  <InputField
-                    name="fullName"
-                    label="Full Name"
-                    type="text"
-                  />
+                  <InputField name="fullName" label="Full Name" type="text" />
 
                   {/* =================================================
                       EMAIL
                   ================================================= */}
 
-                  <InputField
-                    name="email"
-                    label="Email"
-                    type="email"
-                  />
+                  <InputField name="email" label="Email" type="email" />
 
                   {/* =================================================
                       GENDER
                   ================================================= */}
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">
-                      Gender
-                    </label>
+                    <label className="text-sm font-medium">Gender</label>
 
                     <Select
                       value={methods.watch("gender")}
@@ -299,17 +272,11 @@ export default function UpdateUserProfile() {
                       </SelectTrigger>
 
                       <SelectContent>
-                        <SelectItem value="Male">
-                          Male
-                        </SelectItem>
+                        <SelectItem value="Male">Male</SelectItem>
 
-                        <SelectItem value="Female">
-                          Female
-                        </SelectItem>
+                        <SelectItem value="Female">Female</SelectItem>
 
-                        <SelectItem value="Other">
-                          Other
-                        </SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -318,28 +285,19 @@ export default function UpdateUserProfile() {
                       PHONE NUMBER
                   ================================================= */}
 
-                  <InputField
-                    name="number"
-                    label="Phone Number"
-                    type="tel"
-                  />
+                  <InputField name="number" label="Phone Number" type="tel" />
 
                   {/* =================================================
                       ADDRESS
                   ================================================= */}
 
-                  <InputField
-                    name="address"
-                    label="Address"
-                    type="text"
-                  />
+                  <InputField name="address" label="Address" type="text" />
 
                   {/* =================================================
                       BUTTONS
                   ================================================= */}
 
                   <div className="flex justify-between pt-4">
-
                     {/* BACK */}
                     <Button
                       type="button"
@@ -351,24 +309,14 @@ export default function UpdateUserProfile() {
                     </Button>
 
                     {/* UPDATE */}
-                    <Button
-                      type="submit"
-                      disabled={isUpdating}
-                    >
-                      {isUpdating
-                        ? "Updating..."
-                        : "Update Profile"}
+                    <Button type="submit" disabled={isUpdating}>
+                      {isUpdating ? "Updating..." : "Update Profile"}
                     </Button>
-
                   </div>
-
                 </form>
-
               </FormProvider>
-
             </CardContent>
           </Card>
-
         </div>
       </div>
     </div>

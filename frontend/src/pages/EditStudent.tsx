@@ -6,10 +6,7 @@ import EducationField from "../components/form/EducationField";
 import InputField from "../components/form/InputField";
 import FileField from "../components/form/FileField";
 
-import {
-  useGetStudentQuery,
-  useUpdateStudentMutation,
-} from "../api/api";
+import { useGetStudentQuery, useUpdateStudentMutation } from "../api/api";
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -41,8 +38,7 @@ export default function EditStudent() {
     refetchOnMountOrArgChange: true,
   });
 
-  const [updateStudent, { isLoading: isUpdating }] =
-    useUpdateStudentMutation();
+  const [updateStudent, { isLoading: isUpdating }] = useUpdateStudentMutation();
 
   // =========================
   // FORM
@@ -146,10 +142,7 @@ export default function EditStudent() {
     // EDUCATION
     // =========================
 
-    formData.append(
-      "Education",
-      JSON.stringify(data.education || [])
-    );
+    formData.append("Education", JSON.stringify(data.education || []));
 
     // =========================
     // DEBUG
@@ -180,10 +173,7 @@ export default function EditStudent() {
     } catch (error: any) {
       console.error("UPDATE ERROR:", error);
 
-      toast.error(
-        error?.data?.message ||
-          "Failed to update student"
-      );
+      toast.error(error?.data?.message || "Failed to update student");
     }
   };
 
@@ -229,17 +219,13 @@ export default function EditStudent() {
 
       <div className="flex min-h-screen items-center justify-center bg-muted/40 p-6">
         <Card className="w-full max-w-2xl p-6">
-
-          <h2 className="mb-6 text-center text-2xl font-bold">
-            Edit Student
-          </h2>
+          <h2 className="mb-6 text-center text-2xl font-bold">Edit Student</h2>
 
           <FormProvider {...methods}>
             <form
               onSubmit={methods.handleSubmit(onSubmit)}
               className="space-y-6"
             >
-
               {/* =========================
                   PROFILE
               ========================= */}
@@ -259,53 +245,35 @@ export default function EditStudent() {
                   FULL NAME
               ========================= */}
 
-              <InputField
-                name="fullName"
-                label="Full Name"
-                type="text"
-              />
+              <InputField name="fullName" label="Full Name" type="text" />
 
               {/* =========================
                   EMAIL
               ========================= */}
 
-              <InputField
-                name="email"
-                label="Email"
-                type="email"
-              />
+              <InputField name="email" label="Email" type="email" />
 
               {/* =========================
                   GENDER
               ========================= */}
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">
-                  Gender
-                </label>
+                <label className="text-sm font-medium">Gender</label>
 
                 <Select
                   value={methods.watch("gender")}
-                  onValueChange={(value) =>
-                    methods.setValue("gender", value)
-                  }
+                  onValueChange={(value) => methods.setValue("gender", value)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select gender" />
                   </SelectTrigger>
 
                   <SelectContent>
-                    <SelectItem value="Male">
-                      Male
-                    </SelectItem>
+                    <SelectItem value="Male">Male</SelectItem>
 
-                    <SelectItem value="Female">
-                      Female
-                    </SelectItem>
+                    <SelectItem value="Female">Female</SelectItem>
 
-                    <SelectItem value="Other">
-                      Other
-                    </SelectItem>
+                    <SelectItem value="Other">Other</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -314,21 +282,13 @@ export default function EditStudent() {
                   PHONE
               ========================= */}
 
-              <InputField
-                name="number"
-                label="Phone Number"
-                type="tel"
-              />
+              <InputField name="number" label="Phone Number" type="tel" />
 
               {/* =========================
                   ADDRESS
               ========================= */}
 
-              <InputField
-                name="addresh"
-                label="Address"
-                type="text"
-              />
+              <InputField name="addresh" label="Address" type="text" />
 
               {/* =========================
                   EDUCATION
@@ -341,7 +301,6 @@ export default function EditStudent() {
               ========================= */}
 
               <div className="flex justify-end gap-3">
-
                 {/* CANCEL */}
 
                 <Button
@@ -355,15 +314,9 @@ export default function EditStudent() {
 
                 {/* UPDATE */}
 
-                <Button
-                  type="submit"
-                  disabled={isUpdating}
-                >
-                  {isUpdating
-                    ? "Updating..."
-                    : "Update Student"}
+                <Button type="submit" disabled={isUpdating}>
+                  {isUpdating ? "Updating..." : "Update Student"}
                 </Button>
-
               </div>
             </form>
           </FormProvider>

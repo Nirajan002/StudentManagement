@@ -38,15 +38,9 @@ export default function Result() {
       <Navbar />
 
       <div className="container mx-auto p-6">
-        <h1 className="mb-6 text-2xl font-bold">
-          Student Management
-        </h1>
+        <h1 className="mb-6 text-2xl font-bold">Student Management</h1>
 
-        <StudentTable
-          students={students}
-          refetch={refetch}
-          page={page}
-        />
+        <StudentTable students={students} refetch={refetch} page={page} />
 
         <div className="flex items-center justify-center gap-4 p-4">
           {/* Previous */}
@@ -63,9 +57,7 @@ export default function Result() {
           </Button>
 
           {/* Page number */}
-          <span className="text-sm font-medium">
-            Page {page}
-          </span>
+          <span className="text-sm font-medium">Page {page}</span>
 
           {/* Next */}
           <Button

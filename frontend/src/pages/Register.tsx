@@ -69,8 +69,7 @@ export default function Register() {
       // OTHER SERVER ERRORS
       // ================================
       toast.error(
-        error?.data?.message ||
-          "Registration failed. Please try again."
+        error?.data?.message || "Registration failed. Please try again.",
       );
     }
   };
@@ -81,12 +80,9 @@ export default function Register() {
 
       <div className="flex min-h-screen items-center justify-center bg-muted/40 px-4 py-8">
         <div className="w-full max-w-md rounded-xl border bg-background p-6 shadow-sm">
-
           {/* Header */}
           <div className="mb-6 text-center">
-            <h1 className="text-2xl font-bold">
-              Create an Account
-            </h1>
+            <h1 className="text-2xl font-bold">Create an Account</h1>
 
             <p className="mt-2 text-sm text-muted-foreground">
               Register to continue
@@ -98,7 +94,6 @@ export default function Register() {
               onSubmit={methods.handleSubmit(onSubmit)}
               className="space-y-5"
             >
-
               {/* Profile */}
               <FileField
                 name="profile"
@@ -116,8 +111,7 @@ export default function Register() {
 
                   minLength: {
                     value: 5,
-                    message:
-                      "Full name must be at least 5 characters",
+                    message: "Full name must be at least 5 characters",
                   },
                 }}
               />
@@ -149,21 +143,14 @@ export default function Register() {
 
                   minLength: {
                     value: 6,
-                    message:
-                      "Password must be at least 6 characters",
+                    message: "Password must be at least 6 characters",
                   },
                 }}
               />
 
               {/* Register Button */}
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isLoading}
-              >
-                {isLoading
-                  ? "Creating Account..."
-                  : "Register"}
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? "Creating Account..." : "Register"}
               </Button>
             </form>
           </FormProvider>

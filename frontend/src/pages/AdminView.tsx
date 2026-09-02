@@ -1,9 +1,8 @@
 import React from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { useGetStudentsQuery } from "../api/api";
 import StudentTable from "../components/StudentTable";
-import Navbar from "../components/NavBar";
 import { Button } from "@/components/ui/button";
 
 export default function AdminView() {
@@ -11,6 +10,7 @@ export default function AdminView() {
   // PAGE
   // =========================
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   const page = Number(searchParams.get("page")) || 1;
 
@@ -33,8 +33,6 @@ export default function AdminView() {
   if (isLoading) {
     return (
       <div>
-        <Navbar />
-
         <div className="flex min-h-screen items-center justify-center">
           <h2>Loading students...</h2>
         </div>
@@ -48,7 +46,6 @@ export default function AdminView() {
   if (isError) {
     return (
       <div>
-        <Navbar />
 
         <div className="flex min-h-screen items-center justify-center">
           <h2>Failed to load students</h2>
@@ -81,26 +78,21 @@ export default function AdminView() {
   // =========================
   return (
     <div>
-      <Navbar />
 
       <div className="p-6">
         {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold">
-            Admin - Student Management
-          </h1>
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">Admin - Student Management</h1>
 
-          <p className="text-sm text-muted-foreground">
-            Manage all students
-          </p>
+            <p className="text-sm text-muted-foreground">Manage all students</p>
+          </div>
+
+          <Button onClick={() => navigate("/AddStudents")}>Add Student</Button>
         </div>
 
         {/* Student Table */}
-        <StudentTable
-          students={students}
-          refetch={refetch}
-          page={page}
-        />
+        <StudentTable students={students} refetch={refetch} page={page} />
 
         {/* Pagination */}
         <div className="flex items-center justify-center gap-4 p-6">
@@ -112,9 +104,7 @@ export default function AdminView() {
             Previous
           </Button>
 
-          <span className="text-sm font-medium">
-            Page {page}
-          </span>
+          <span className="text-sm font-medium">Page {page}</span>
 
           <Button
             variant="outline"

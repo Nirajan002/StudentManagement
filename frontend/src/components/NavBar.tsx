@@ -25,13 +25,9 @@ export default function Navbar() {
   // *LOGIN STATUS*
   // *=========================*
 
-  const [fullName, setFullName] = useState(
-    localStorage.getItem("fullName")
-  );
+  const [fullName, setFullName] = useState(localStorage.getItem("fullName"));
 
-  const [role, setRole] = useState(
-    localStorage.getItem("role")
-  );
+  const [role, setRole] = useState(localStorage.getItem("role"));
 
   const isLoggedIn = !!fullName;
 
@@ -47,18 +43,16 @@ export default function Navbar() {
 
   const [search, setSearch] = useState("");
 
-  const {
-    data: students = [],
-    isLoading: isSearching,
-  } = useSearchStudentsQuery(
-    {
-      search,
-      limit: 20,
-    },
-    {
-      skip: !search.trim(),
-    }
-  );
+  const { data: students = [], isLoading: isSearching } =
+    useSearchStudentsQuery(
+      {
+        search,
+        limit: 20,
+      },
+      {
+        skip: !search.trim(),
+      },
+    );
 
   // *=========================*
   // *LOGOUT*
@@ -121,16 +115,12 @@ export default function Navbar() {
 
   return (
     <nav className="sticky top-0 z-50 flex h-16 items-center border-b bg-background px-6">
-
       {/* =========================
           LEFT - LOGO
           ========================= */}
 
       <div className="flex flex-1 items-center">
-        <div
-          onClick={handleHomeClick}
-          className="cursor-pointer"
-        >
+        <div onClick={handleHomeClick} className="cursor-pointer">
           <img
             src="/YOUR-LOGO.png"
             alt="Logo"
@@ -144,7 +134,6 @@ export default function Navbar() {
           ========================= */}
 
       <div className="relative flex flex-1 justify-center">
-
         <Input
           type="text"
           placeholder="Search students..."
@@ -155,22 +144,17 @@ export default function Navbar() {
 
         {search.trim() && (
           <div className="absolute top-11 z-50 w-full max-w-sm rounded-md border bg-background shadow-md">
-
             {isSearching ? (
               <p className="px-4 py-3 text-sm text-muted-foreground">
                 Searching...
               </p>
             ) : students.length > 0 ? (
-
               students.map((student: any) => (
                 <div
                   key={student.id}
-                  onClick={() =>
-                    handleStudentClick(student.id)
-                  }
+                  onClick={() => handleStudentClick(student.id)}
                   className="flex cursor-pointer items-center gap-3 px-4 py-2 hover:bg-muted"
                 >
-
                   {student.profile ? (
                     <img
                       src={`https://localhost:7014/uploads/${student.profile}`}
@@ -179,30 +163,20 @@ export default function Navbar() {
                     />
                   ) : (
                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-xs font-medium">
-                      {student.fullName
-                        ?.charAt(0)
-                        .toUpperCase()}
+                      {student.fullName?.charAt(0).toUpperCase()}
                     </div>
                   )}
 
-                  <span className="text-sm">
-                    {student.fullName}
-                  </span>
-
+                  <span className="text-sm">{student.fullName}</span>
                 </div>
               ))
-
             ) : (
-
               <p className="px-4 py-3 text-sm text-muted-foreground">
                 No students found
               </p>
-
             )}
-
           </div>
         )}
-
       </div>
 
       {/* =========================
@@ -210,56 +184,37 @@ export default function Navbar() {
           ========================= */}
 
       <div className="relative flex flex-1 justify-end">
-
         {isLoggedIn ? (
-
           <div className="relative">
-
             {/* =========================
                 PROFILE BUTTON
                 ========================= */}
 
             <button
-              onClick={() =>
-                setProfileOpen(!profileOpen)
-              }
+              onClick={() => setProfileOpen(!profileOpen)}
               className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-muted"
             >
-
               {/* Profile Circle */}
 
               <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-muted text-sm font-medium">
-
                 {currentUser?.profile ? (
-
                   <img
                     src={`https://localhost:7014/uploads/${currentUser.profile}`}
                     alt={fullName || "Profile"}
                     className="h-full w-full object-cover"
                   />
-
                 ) : (
-
-                  fullName
-                    ?.charAt(0)
-                    .toUpperCase()
-
+                  fullName?.charAt(0).toUpperCase()
                 )}
-
               </div>
 
               {/* Name */}
 
-              <span className="text-sm font-semibold">
-                {fullName}
-              </span>
+              <span className="text-sm font-semibold">{fullName}</span>
 
               {/* Arrow */}
 
-              <span className="text-xs">
-                {profileOpen ? "▲" : "▼"}
-              </span>
-
+              <span className="text-xs">{profileOpen ? "▲" : "▼"}</span>
             </button>
 
             {/* =========================
@@ -267,9 +222,7 @@ export default function Navbar() {
                 ========================= */}
 
             {profileOpen && (
-
               <div className="absolute right-0 top-12 z-50 w-44 rounded-md border bg-background p-1 shadow-lg">
-
                 {/* View Profile */}
 
                 <button
@@ -287,40 +240,23 @@ export default function Navbar() {
                 >
                   Log Out
                 </button>
-
               </div>
-
             )}
-
           </div>
-
         ) : (
-
           /* =========================
              NOT LOGGED IN
              ========================= */
 
           <div className="flex gap-2">
-
-            <Button
-              variant="outline"
-              onClick={() => navigate("/Login")}
-            >
+            <Button variant="outline" onClick={() => navigate("/Login")}>
               Log In
             </Button>
 
-            <Button
-              onClick={() => navigate("/Register")}
-            >
-              Register
-            </Button>
-
+            <Button onClick={() => navigate("/Register")}>Register</Button>
           </div>
-
         )}
-
       </div>
-
     </nav>
   );
 }

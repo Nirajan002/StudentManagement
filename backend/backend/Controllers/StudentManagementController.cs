@@ -207,6 +207,7 @@ namespace backend.Controllers
             );
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost("AddStudent")]
         public async Task<IActionResult> AddStudent(AddStudent addStudent)
         {
@@ -677,6 +678,153 @@ namespace backend.Controllers
                 user.Number,
                 user.Gender,
                 user.Address
+            });
+        }
+
+        [HttpGet("Users")]
+        public IActionResult GetUsers(int page = 1)
+        {
+            int pageSize = 10;
+
+            var user = dbContext.Users
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(user => new
+                {
+                    user.Id,
+                    user.FullName,
+                    user.Gender,
+                    user.Number,
+                    user.Address,
+                    user.Email,
+                    user.Profile,
+                })
+                .ToList();
+
+            return Ok(user);
+        }
+
+        [HttpGet("User/{ID:guid}")]
+        public IActionResult GetUser([FromRoute] Guid ID)
+        {
+            var user = dbContext.Users.Find(ID);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(new
+            {
+                user.Id,
+                user.FullName,
+                user.Email,
+                user.Profile,
+                user.Gender,
+                user.Number,
+                user.Address,
+            });
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("user/{ID:guid}")]
+        public async Task<IActionResult> DeleteUser([FromRoute] Guid ID)
+        {
+            var user = await dbContext.Users.FindAsync(ID);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            dbContext.Users.Remove(user);
+
+            await dbContext.SaveChangesAsync();
+
+            return Ok(user);
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPut("user/{ID:guid}")]
+        public async Task<IActionResult> UpdateUser(
+    [FromRoute] Guid ID,
+    [FromForm] UpdateUser updateUser)
+        {
+            var user = await dbContext.Users.FindAsync(ID);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            user.FullName = updateUser.FullName;
+            user.Email = updateUser.Email;
+            user.Gender = updateUser.Gender;
+            user.Number = updateUser.Number;
+            user.Address = updateUser.Address;
+            user.Role = updateUser.Role;
+
+            if (updateUser.Profile != null &&
+                updateUser.Profile.Length > 0)
+            {
+                string uploadPath = Path.Combine(
+                    Directory.GetCurrentDirectory(),
+                    "wwwroot",
+                    "uploads"
+                );
+
+                if (!Directory.Exists(uploadPath))
+                {
+                    Directory.CreateDirectory(uploadPath);
+                }
+
+                // Delete old profile image
+                if (!string.IsNullOrEmpty(user.Profile))
+                {
+                    string oldFilePath = Path.Combine(
+                        uploadPath,
+                        user.Profile
+                    );
+
+                    if (System.IO.File.Exists(oldFilePath))
+                    {
+                        System.IO.File.Delete(oldFilePath);
+                    }
+                }
+
+                // Generate new filename
+                string fileName =
+                    Guid.NewGuid().ToString()
+                    + Path.GetExtension(updateUser.Profile.FileName);
+
+                string filePath = Path.Combine(
+                    uploadPath,
+                    fileName
+                );
+
+                // Save new image
+                using (var stream = new FileStream(
+                    filePath,
+                    FileMode.Create))
+                {
+                    await updateUser.Profile.CopyToAsync(stream);
+                }
+
+                user.Profile = fileName;
+            }
+
+            await dbContext.SaveChangesAsync();
+
+            return Ok(new
+            {
+                user.Id,
+                user.FullName,
+                user.Email,
+                user.Profile,
+                user.Number,
+                user.Gender,
+                user.Address,
+                user.Role
             });
         }
     }

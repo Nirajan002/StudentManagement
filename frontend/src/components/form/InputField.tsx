@@ -1,8 +1,5 @@
 import React from "react";
-import {
-  useFormContext,
-  type RegisterOptions,
-} from "react-hook-form";
+import { useFormContext, type RegisterOptions } from "react-hook-form";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -42,9 +39,7 @@ export default function InputField({
 
       {error && (
         <p className="text-sm text-destructive">
-          {typeof error.message === "string"
-            ? error.message
-            : "Invalid value"}
+          {typeof error.message === "string" ? error.message : "Invalid value"}
         </p>
       )}
     </div>

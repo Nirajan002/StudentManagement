@@ -9,12 +9,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import Navbar from "@/components/NavBar";
 
@@ -48,15 +43,13 @@ export default function StudentDetail() {
   // DELETE
   // =========================
 
-  const [deleteStudent, { isLoading: isDeleting }] =
-    useDeleteStudentMutation();
+  const [deleteStudent, { isLoading: isDeleting }] = useDeleteStudentMutation();
 
   // =========================
   // CHECK ADMIN
   // =========================
 
-  const isAdmin =
-    currentUser?.role?.toLowerCase() === "admin";
+  const isAdmin = currentUser?.role?.toLowerCase() === "admin";
 
   // =========================
   // DELETE STUDENT
@@ -80,10 +73,7 @@ export default function StudentDetail() {
     } catch (error: any) {
       console.error("Delete student error:", error);
 
-      toast.error(
-        error?.data?.message ||
-          "Failed to delete student"
-      );
+      toast.error(error?.data?.message || "Failed to delete student");
     }
   };
 
@@ -165,7 +155,6 @@ export default function StudentDetail() {
       <div className="min-h-screen bg-muted/40 px-4 py-10">
         <div className="mx-auto w-full max-w-2xl">
           <Card>
-
             {/* =========================
                 HEADER
             ========================= */}
@@ -177,7 +166,6 @@ export default function StudentDetail() {
             </CardHeader>
 
             <CardContent className="space-y-6">
-
               {/* =========================
                   PROFILE
               ========================= */}
@@ -191,9 +179,7 @@ export default function StudentDetail() {
                   />
                 ) : (
                   <div className="flex h-32 w-32 items-center justify-center rounded-full bg-muted text-3xl font-medium">
-                    {student.fullName
-                      ?.charAt(0)
-                      .toUpperCase()}
+                    {student.fullName?.charAt(0).toUpperCase()}
                   </div>
                 )}
               </div>
@@ -203,37 +189,26 @@ export default function StudentDetail() {
               ========================= */}
 
               <div className="grid gap-5 sm:grid-cols-2">
-
                 {/* FULL NAME */}
 
                 <div>
-                  <p className="text-sm text-muted-foreground">
-                    Full Name
-                  </p>
+                  <p className="text-sm text-muted-foreground">Full Name</p>
 
-                  <p className="text-lg font-medium">
-                    {student.fullName}
-                  </p>
+                  <p className="text-lg font-medium">{student.fullName}</p>
                 </div>
 
                 {/* EMAIL */}
 
                 <div>
-                  <p className="text-sm text-muted-foreground">
-                    Email
-                  </p>
+                  <p className="text-sm text-muted-foreground">Email</p>
 
-                  <p className="text-lg font-medium">
-                    {student.email}
-                  </p>
+                  <p className="text-lg font-medium">{student.email}</p>
                 </div>
 
                 {/* GENDER */}
 
                 <div>
-                  <p className="text-sm text-muted-foreground">
-                    Gender
-                  </p>
+                  <p className="text-sm text-muted-foreground">Gender</p>
 
                   <p className="text-lg font-medium">
                     {student.gender || "Not provided"}
@@ -243,9 +218,7 @@ export default function StudentDetail() {
                 {/* PHONE */}
 
                 <div>
-                  <p className="text-sm text-muted-foreground">
-                    Phone Number
-                  </p>
+                  <p className="text-sm text-muted-foreground">Phone Number</p>
 
                   <p className="text-lg font-medium">
                     {student.number || "Not provided"}
@@ -255,15 +228,12 @@ export default function StudentDetail() {
                 {/* ADDRESS */}
 
                 <div className="sm:col-span-2">
-                  <p className="text-sm text-muted-foreground">
-                    Address
-                  </p>
+                  <p className="text-sm text-muted-foreground">Address</p>
 
                   <p className="text-lg font-medium">
                     {student.addresh || "Not provided"}
                   </p>
                 </div>
-
               </div>
 
               {/* =========================
@@ -271,18 +241,13 @@ export default function StudentDetail() {
               ========================= */}
 
               <div className="border-t pt-6">
-
-                <h3 className="mb-4 text-lg font-semibold">
-                  Education
-                </h3>
+                <h3 className="mb-4 text-lg font-semibold">Education</h3>
 
                 {education.length > 0 ? (
                   <div className="space-y-4">
-
                     {education.map((item, index) => (
                       <Card key={index}>
                         <CardContent className="space-y-4 pt-6">
-
                           {/* INSTITUTION */}
 
                           <div>
@@ -291,8 +256,7 @@ export default function StudentDetail() {
                             </p>
 
                             <p className="font-medium">
-                              {item.institution ||
-                                "Not provided"}
+                              {item.institution || "Not provided"}
                             </p>
                           </div>
 
@@ -304,8 +268,7 @@ export default function StudentDetail() {
                             </p>
 
                             <p className="font-medium">
-                              {item.degree ||
-                                "Not provided"}
+                              {item.degree || "Not provided"}
                             </p>
                           </div>
 
@@ -317,22 +280,18 @@ export default function StudentDetail() {
                             </p>
 
                             <p className="font-medium">
-                              {item.date ||
-                                "Not provided"}
+                              {item.date || "Not provided"}
                             </p>
                           </div>
-
                         </CardContent>
                       </Card>
                     ))}
-
                   </div>
                 ) : (
                   <p className="text-sm text-muted-foreground">
                     No education information available.
                   </p>
                 )}
-
               </div>
 
               {/* =========================
@@ -340,15 +299,12 @@ export default function StudentDetail() {
               ========================= */}
 
               <div className="flex gap-3 pt-4">
-
                 {/* BACK */}
 
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() =>
-                    navigate(-1)
-                  }
+                  onClick={() => navigate(-1)}
                 >
                   Back
                 </Button>
@@ -362,9 +318,7 @@ export default function StudentDetail() {
                     <Button
                       type="button"
                       variant="secondary"
-                      onClick={() =>
-                        navigate(`/EditStudent/${student.id}`)
-                      }
+                      onClick={() => navigate(`/EditStudent/${student.id}`)}
                     >
                       Edit
                     </Button>
@@ -377,15 +331,11 @@ export default function StudentDetail() {
                       disabled={isDeleting}
                       onClick={handleDelete}
                     >
-                      {isDeleting
-                        ? "Deleting..."
-                        : "Delete"}
+                      {isDeleting ? "Deleting..." : "Delete"}
                     </Button>
                   </>
                 )}
-
               </div>
-
             </CardContent>
           </Card>
         </div>

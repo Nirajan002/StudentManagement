@@ -106,6 +106,33 @@ export const api = createApi({
       }),
       invalidatesTags: ["User"],
     }),
+
+    getUsers: builder.query({
+      query: (page = 1) => `Users?page=${page}`,
+      providesTags: ["User"],
+    }),
+
+    getUser: builder.query({
+      query: (id) => `User/${id}`,
+      providesTags: ["User"],
+    }),
+
+    updateUser: builder.mutation({
+      query: ({ id, data }) => ({
+        url: `user/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["User"],
+    }),
+
+    deleteUser: builder.mutation({
+      query: (id) => ({
+        url: `user/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["User"],
+    }),
   }),
 });
 
@@ -116,6 +143,10 @@ export const {
   useRefreshTokenMutation,
   useGetCurrentUserQuery,
   useUpdateUserProfileMutation,
+  useGetUserQuery,
+  useGetUsersQuery,
+  useDeleteUserMutation,
+  useUpdateUserMutation,
 
   useAddStudentMutation,
   useGetStudentsQuery,

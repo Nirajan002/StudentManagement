@@ -45,7 +45,7 @@ export default function Login() {
       // Redirect based on role
       if (user.role?.toLowerCase() === "admin") {
         console.log("Redirecting to AdminView");
-        navigate("/AdminView");
+        navigate("/AdminDashboard");
       } else {
         console.log("Redirecting to Result");
         navigate("/Result");

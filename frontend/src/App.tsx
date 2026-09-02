@@ -7,6 +7,11 @@ import StudentDetail from "./pages/StudentDetail";
 import EditStudent from "./pages/EditStudent";
 import ViewYourProfile from "./pages/ViewYourProfile";
 import UpdateUserProfile from "./pages/UpdateUserProfile";
+import AddStudents from "./pages/AddStudents";
+import Users from "./pages/Users"
+import AdminDashboard from "./pages/AdminDashboard";
+import EditUser from "./pages/EditUser";
+import UserDetail from "./pages/UserDetail";
 
 import AdminRoute from "./components/AdminRoute";
 import AdminView from "./pages/AdminView";
@@ -14,35 +19,21 @@ import AdminView from "./pages/AdminView";
 function App() {
   return (
     <Routes>
-
       {/* Default route */}
-      <Route
-        path="/"
-        element={<Navigate to="/Result" replace />}
-      />
+      <Route path="/" element={<Navigate to="/Result" replace />} />
 
       {/* Authentication */}
-      <Route
-        path="/Login"
-        element={<Login />}
-      />
+      <Route path="/Login" element={<Login />} />
 
-      <Route
-        path="/Register"
-        element={<Register />}
-      />
+      <Route path="/Register" element={<Register />} />
 
       {/* Students - Everyone can access */}
-      <Route
-        path="/Result"
-        element={<Result />}
-      />
+      <Route path="/Result" element={<Result />} />
 
+      <Route path="/Users" element={<Users />} />
       {/* Student Details - Everyone can access */}
-      <Route
-        path="/Student/:id"
-        element={<StudentDetail />}
-      />
+      <Route path="/Student/:id" element={<StudentDetail />} />
+      <Route path="/User/:id" element={<UserDetail />} />
 
       {/* Admin View - Admin only */}
       <Route
@@ -53,6 +44,24 @@ function App() {
           </AdminRoute>
         }
       />
+
+      <Route
+        path="/AdminDashboard"
+        element={
+          <AdminRoute>
+            <AdminDashboard />
+          </AdminRoute>
+        }
+      />    
+
+      <Route
+        path="/EditUser/:id"
+        element={
+          <AdminRoute>
+            <EditUser />
+          </AdminRoute>
+        }
+      />    
 
       {/* Edit Student - Admin only */}
       <Route
@@ -65,21 +74,20 @@ function App() {
       />
 
       <Route
-        path="ViewYourProfile"
-        element={<ViewYourProfile />}
+        path="/AddStudents"
+        element={
+          <AdminRoute>
+            <AddStudents />
+          </AdminRoute>
+        }
       />
 
-      <Route
-        path="UpdateUserProfile/:id"
-        element={<UpdateUserProfile />}
-      />
+      <Route path="ViewYourProfile" element={<ViewYourProfile />} />
+
+      <Route path="UpdateUserProfile/:id" element={<UpdateUserProfile />} />
 
       {/* Unknown route */}
-      <Route
-        path="*"
-        element={<Navigate to="/Result" replace />}
-      />
-
+      <Route path="*" element={<Navigate to="/Result" replace />} />
     </Routes>
   );
 }
