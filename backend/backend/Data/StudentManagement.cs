@@ -10,7 +10,7 @@ namespace backend.Data
         {
         }
 
-        public DbSet<User> Users { get; set; }
+        public DbSet<Teacher> Teachers { get; set; }
         public DbSet<Student> Students { get; set; }
 
         public DbSet<RefreshToken> RefreshTokens { get; set; }
@@ -20,9 +20,9 @@ namespace backend.Data
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<RefreshToken>()
-                .HasOne(r => r.User)
+                .HasOne(r => r.Teacher)
                 .WithMany()
-                .HasForeignKey(r => r.UserId);
+                .HasForeignKey(r => r.TeacherId);
         }
     }
 }

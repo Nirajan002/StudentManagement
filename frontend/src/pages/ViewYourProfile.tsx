@@ -1,8 +1,6 @@
 import { useNavigate } from "react-router-dom";
 
-import { useGetCurrentUserQuery } from "../api/api";
-
-import NavBar from "../components/NavBar";
+import { useGetCurrentTeacherQuery } from "../api/TeacherApi";
 
 import { Button } from "@/components/ui/button";
 
@@ -14,38 +12,46 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 
+import DashboardLayout from "@/components/DashboardLayout";
+
 export default function Profile() {
   const navigate = useNavigate();
 
-  const { data: user, isLoading, isError } = useGetCurrentUserQuery();
+  const {
+    data: user,
+    isLoading,
+    isError,
+  } = useGetCurrentTeacherQuery();
 
   // =========================
   // LOADING
   // =========================
+
   if (isLoading) {
     return (
-      <div>
-        <NavBar />
-
+      <DashboardLayout activeMenu="Profile">
         <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
-          <p className="text-muted-foreground">Loading profile...</p>
+          <p className="text-muted-foreground">
+            Loading profile...
+          </p>
         </div>
-      </div>
+      </DashboardLayout>
     );
   }
 
   // =========================
   // ERROR
   // =========================
+
   if (isError || !user) {
     return (
-      <div>
-        <NavBar />
-
+      <DashboardLayout activeMenu="Profile">
         <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4">
           <Card className="w-full max-w-md">
             <CardHeader>
-              <CardTitle>Unable to load profile</CardTitle>
+              <CardTitle>
+                Unable to load profile
+              </CardTitle>
 
               <CardDescription>
                 We couldn't retrieve your profile information.
@@ -53,28 +59,31 @@ export default function Profile() {
             </CardHeader>
 
             <CardContent>
-              <Button onClick={() => navigate("/Login")}>Go to Login</Button>
+              <Button onClick={() => navigate("/Login")}>
+                Go to Login
+              </Button>
             </CardContent>
           </Card>
         </div>
-      </div>
+      </DashboardLayout>
     );
   }
 
-  return (
-    <div>
-      <NavBar />
+  // =========================
+  // PROFILE
+  // =========================
 
+  return (
+    <DashboardLayout activeMenu="Profile">
       <div className="min-h-[calc(100vh-4rem)] bg-muted/30 px-4 py-10">
         <div className="mx-auto max-w-3xl">
-          {/* =========================
-              PROFILE CARD
-          ========================= */}
+
+          {/* PROFILE CARD */}
           <Card className="overflow-hidden">
-            {/* =========================
-                PROFILE HEADER
-            ========================= */}
+
+            {/* PROFILE HEADER */}
             <CardHeader className="flex flex-col items-center gap-4 border-b bg-background py-8">
+
               {/* PROFILE IMAGE */}
               {user.profile ? (
                 <img
@@ -90,9 +99,13 @@ export default function Profile() {
 
               {/* NAME + EMAIL */}
               <div className="text-center">
-                <CardTitle className="text-2xl">{user.fullName}</CardTitle>
+                <CardTitle className="text-2xl">
+                  {user.fullName}
+                </CardTitle>
 
-                <CardDescription className="mt-1">{user.email}</CardDescription>
+                <CardDescription className="mt-1">
+                  {user.email}
+                </CardDescription>
               </div>
 
               {/* ROLE */}
@@ -101,18 +114,20 @@ export default function Profile() {
               </span>
             </CardHeader>
 
-            {/* =========================
-                USER INFORMATION
-            ========================= */}
+            {/* USER INFORMATION */}
             <CardContent className="p-6">
+
               <h2 className="mb-6 text-lg font-semibold">
                 Personal Information
               </h2>
 
               <div className="space-y-5">
+
                 {/* FULL NAME */}
                 <div className="border-b pb-4">
-                  <p className="text-sm text-muted-foreground">Full Name</p>
+                  <p className="text-sm text-muted-foreground">
+                    Full Name
+                  </p>
 
                   <p className="mt-1 font-medium">
                     {user.fullName || "Not provided"}
@@ -121,7 +136,9 @@ export default function Profile() {
 
                 {/* EMAIL */}
                 <div className="border-b pb-4">
-                  <p className="text-sm text-muted-foreground">Email</p>
+                  <p className="text-sm text-muted-foreground">
+                    Email
+                  </p>
 
                   <p className="mt-1 font-medium">
                     {user.email || "Not provided"}
@@ -130,7 +147,9 @@ export default function Profile() {
 
                 {/* GENDER */}
                 <div className="border-b pb-4">
-                  <p className="text-sm text-muted-foreground">Gender</p>
+                  <p className="text-sm text-muted-foreground">
+                    Gender
+                  </p>
 
                   <p className="mt-1 font-medium">
                     {user.gender || "Not provided"}
@@ -139,7 +158,9 @@ export default function Profile() {
 
                 {/* PHONE NUMBER */}
                 <div className="border-b pb-4">
-                  <p className="text-sm text-muted-foreground">Phone Number</p>
+                  <p className="text-sm text-muted-foreground">
+                    Phone Number
+                  </p>
 
                   <p className="mt-1 font-medium">
                     {user.number || "Not provided"}
@@ -148,34 +169,43 @@ export default function Profile() {
 
                 {/* ADDRESS */}
                 <div className="border-b pb-4">
-                  <p className="text-sm text-muted-foreground">Address</p>
+                  <p className="text-sm text-muted-foreground">
+                    Address
+                  </p>
 
                   <p className="mt-1 font-medium">
                     {user.address || "Not provided"}
                   </p>
                 </div>
+
               </div>
 
-              {/* =========================
-                  ACTION BUTTONS
-              ========================= */}
+              {/* ACTION BUTTONS */}
               <div className="mt-8 flex items-center justify-between">
-                {/* BACK - LEFT */}
-                <Button variant="outline" onClick={() => navigate(-1)}>
+
+                {/* BACK */}
+                <Button
+                  variant="outline"
+                  onClick={() => navigate(-1)}
+                >
                   ← Back
                 </Button>
 
-                {/* EDIT - RIGHT */}
+                {/* EDIT */}
                 <Button
-                  onClick={() => navigate(`/UpdateUserProfile/${user.id}`)}
+                  onClick={() =>
+                    navigate(`/UpdateTeacherProfile/${user.id}`)
+                  }
                 >
                   Edit Profile
                 </Button>
+
               </div>
+
             </CardContent>
           </Card>
         </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

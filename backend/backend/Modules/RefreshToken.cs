@@ -6,10 +6,10 @@
 
         public string Token { get; set; } = string.Empty;
 
-        public Guid UserId { get; set; }
+        public Guid TeacherId { get; set; }
 
         public DateTime ExpiresAt { get; set; }
 
-        public User User { get; set; } = null!;
+        public Teacher Teacher { get; set; } = null!;
     }
 }

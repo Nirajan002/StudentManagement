@@ -3,15 +3,16 @@ import { toast } from "react-hot-toast";
 
 import {
   useGetStudentQuery,
-  useGetCurrentUserQuery,
   useDeleteStudentMutation,
-} from "../api/api";
+} from "../api/StudentApi";
+
+import { useGetCurrentTeacherQuery } from "../api/TeacherApi";
 
 import { Button } from "@/components/ui/button";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-import Navbar from "@/components/NavBar";
+import DashboardLayout from "@/components/DashboardLayout";
 
 export default function StudentDetail() {
   const { id } = useParams();
@@ -37,7 +38,7 @@ export default function StudentDetail() {
   // GET CURRENT USER
   // =========================
 
-  const { data: currentUser } = useGetCurrentUserQuery();
+  const { data: currentUser } = useGetCurrentTeacherQuery();
 
   // =========================
   // DELETE
@@ -83,13 +84,12 @@ export default function StudentDetail() {
 
   if (isLoading) {
     return (
-      <div>
-        <Navbar />
+      <DashboardLayout activeMenu="Students">
 
         <div className="flex min-h-screen items-center justify-center">
           <h2>Loading...</h2>
         </div>
-      </div>
+      </DashboardLayout>
     );
   }
 
@@ -99,13 +99,12 @@ export default function StudentDetail() {
 
   if (isError || !student) {
     return (
-      <div>
-        <Navbar />
+      <DashboardLayout activeMenu="Students">
 
         <div className="flex min-h-screen items-center justify-center">
           <h2>Failed to load student</h2>
         </div>
-      </div>
+      </DashboardLayout>
     );
   }
 
@@ -149,8 +148,7 @@ export default function StudentDetail() {
   // =========================
 
   return (
-    <div>
-      <Navbar />
+    <DashboardLayout activeMenu="Students">
 
       <div className="min-h-screen bg-muted/40 px-4 py-10">
         <div className="mx-auto w-full max-w-2xl">
@@ -340,6 +338,6 @@ export default function StudentDetail() {
           </Card>
         </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

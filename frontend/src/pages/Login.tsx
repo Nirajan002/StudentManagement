@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import Navbar from "../components/NavBar";
 import InputField from "../components/form/InputField";
 import { Button } from "@/components/ui/button";
-import { useLoginMutation } from "../api/api";
+import { useLoginMutation } from "../api/AuthApi";
 
 interface LoginForm {
   email: string;
@@ -45,7 +45,7 @@ export default function Login() {
       // Redirect based on role
       if (user.role?.toLowerCase() === "admin") {
         console.log("Redirecting to AdminView");
-        navigate("/AdminDashboard");
+        navigate("/Index");
       } else {
         console.log("Redirecting to Result");
         navigate("/Result");

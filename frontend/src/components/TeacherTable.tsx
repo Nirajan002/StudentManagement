@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 
 import {
-  useDeleteUserMutation,
-} from "../api/api";
+  useDeleteTeacherMutation,
+} from "../api/TeacherApi";
 
 import {
   Table,
@@ -42,14 +42,14 @@ interface UserTableProps {
   refetch: () => void | Promise<any>;
 }
 
-export default function UserTable({
+export default function TeacherTable({
   users,
   refetch,
 }: UserTableProps) {
   const navigate = useNavigate();
 
   const [deleteUser, { isLoading: isDeleting }] =
-    useDeleteUserMutation();
+    useDeleteTeacherMutation();
 
   // =========================
   // CHECK USER ROLE
@@ -134,7 +134,7 @@ export default function UserTable({
                   <Button
                     variant="outline"
                     onClick={() =>
-                      navigate(`/User/${user.id}`)
+                      navigate(`/Teacher/${user.id}`)
                     }
                   >
                     View More
@@ -145,7 +145,7 @@ export default function UserTable({
                     <Button
                       variant="secondary"
                       onClick={() =>
-                        navigate(`/EditUser/${user.id}`)
+                        navigate(`/EditTeacher/${user.id}`)
                       }
                     >
                       Edit

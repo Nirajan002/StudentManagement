@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 
 import { toast } from "react-hot-toast";
 
-import { useDeleteStudentMutation } from "../api/api";
+import { useDeleteStudentMutation } from "../api/StudentApi";
 
 import {
   Table,

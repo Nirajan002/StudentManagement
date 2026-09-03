@@ -6,7 +6,10 @@ import EducationField from "../components/form/EducationField";
 import InputField from "../components/form/InputField";
 import FileField from "../components/form/FileField";
 
-import { useGetStudentQuery, useUpdateStudentMutation } from "../api/api";
+import {
+  useGetStudentQuery,
+  useUpdateStudentMutation,
+} from "../api/StudentApi";
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,6 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import DashboardLayout from "@/components/DashboardLayout";
 
 export default function EditStudent() {
   const { id } = useParams();
@@ -183,13 +187,11 @@ export default function EditStudent() {
 
   if (isLoading) {
     return (
-      <div>
-        <Navbar />
-
+      <DashboardLayout activeMenu="Students">
         <div className="flex min-h-screen items-center justify-center">
           <h2>Loading...</h2>
         </div>
-      </div>
+      </DashboardLayout>
     );
   }
 
@@ -199,13 +201,11 @@ export default function EditStudent() {
 
   if (isError || !student) {
     return (
-      <div>
-        <Navbar />
-
+      <DashboardLayout activeMenu="Students">
         <div className="flex min-h-screen items-center justify-center">
           <h2>Failed to load student</h2>
         </div>
-      </div>
+      </DashboardLayout>
     );
   }
 
@@ -214,9 +214,7 @@ export default function EditStudent() {
   // =========================
 
   return (
-    <div>
-      <Navbar />
-
+    <DashboardLayout activeMenu="Students">
       <div className="flex min-h-screen items-center justify-center bg-muted/40 p-6">
         <Card className="w-full max-w-2xl p-6">
           <h2 className="mb-6 text-center text-2xl font-bold">Edit Student</h2>
@@ -322,6 +320,6 @@ export default function EditStudent() {
           </FormProvider>
         </Card>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

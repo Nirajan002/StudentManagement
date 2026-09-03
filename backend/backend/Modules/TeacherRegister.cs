@@ -1,6 +1,6 @@
 ﻿namespace backend.Modules
 {
-    public class UserRegister
+    public class TeacherRegister
     {
         public string FullName { get; set; }
 

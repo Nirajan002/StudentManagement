@@ -1,6 +1,6 @@
 ﻿namespace backend.Modules
 {
-    public class UpdateUser
+    public class UpdateTeacher
     {
         public string FullName { get; set; }
 

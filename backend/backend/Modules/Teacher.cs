@@ -1,6 +1,6 @@
 ﻿namespace backend.Modules
 {
-    public class User
+    public class Teacher
     {
         public Guid Id { get; set; }
 
@@ -8,11 +8,11 @@
 
         public string Email { get; set; }
 
-        public string Number { get; set; } = null;
+        public string? Number { get; set; }
 
-        public string Address { get; set; } = null;
+        public string? Address { get; set; }
 
-        public string Gender { get; set; } = null;
+        public string? Gender { get; set; }
 
         public string Password { get; set; }
 

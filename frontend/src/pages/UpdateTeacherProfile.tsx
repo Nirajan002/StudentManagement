@@ -4,11 +4,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 
 import {
-  useGetCurrentUserQuery,
-  useUpdateUserProfileMutation,
-} from "../api/api";
+  useGetCurrentTeacherQuery,
+  useUpdateTeacherProfileMutation,
+} from "../api/TeacherApi";
 
-import Navbar from "../components/NavBar";
 import InputField from "../components/form/InputField";
 import FileField from "../components/form/FileField";
 
@@ -22,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import DashboardLayout from "@/components/DashboardLayout";
 
 interface ProfileForm {
   profile: FileList | null;
@@ -32,7 +32,7 @@ interface ProfileForm {
   address: string;
 }
 
-export default function UpdateUserProfile() {
+export default function UpdateTeacherProfile() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
@@ -40,14 +40,14 @@ export default function UpdateUserProfile() {
   // GET CURRENT USER
   // =========================================================
 
-  const { data: user, isLoading, isError } = useGetCurrentUserQuery();
+  const { data: user, isLoading, isError } = useGetCurrentTeacherQuery();
 
   // =========================================================
   // UPDATE USER
   // =========================================================
 
   const [updateUserProfile, { isLoading: isUpdating }] =
-    useUpdateUserProfileMutation();
+    useUpdateTeacherProfileMutation();
 
   // =========================================================
   // FORM
@@ -162,13 +162,12 @@ export default function UpdateUserProfile() {
 
   if (isLoading) {
     return (
-      <div>
-        <Navbar />
+      <DashboardLayout activeMenu="Profile">
 
         <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
           <p className="text-muted-foreground">Loading profile...</p>
         </div>
-      </div>
+      </DashboardLayout>
     );
   }
 
@@ -178,8 +177,7 @@ export default function UpdateUserProfile() {
 
   if (isError || !user) {
     return (
-      <div>
-        <Navbar />
+      <DashboardLayout activeMenu="Profile">
 
         <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center p-6">
           <Card className="w-full max-w-md">
@@ -192,7 +190,7 @@ export default function UpdateUserProfile() {
             </CardContent>
           </Card>
         </div>
-      </div>
+      </DashboardLayout>
     );
   }
 
@@ -201,8 +199,8 @@ export default function UpdateUserProfile() {
   // =========================================================
 
   return (
-    <div>
-      <Navbar />
+    <DashboardLayout activeMenu="Profile">
+
 
       <div className="min-h-[calc(100vh-4rem)] bg-muted/40 p-6">
         <div className="mx-auto max-w-2xl">
@@ -319,6 +317,6 @@ export default function UpdateUserProfile() {
           </Card>
         </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

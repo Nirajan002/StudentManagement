@@ -6,21 +6,21 @@ import Result from "./pages/Result";
 import StudentDetail from "./pages/StudentDetail";
 import EditStudent from "./pages/EditStudent";
 import ViewYourProfile from "./pages/ViewYourProfile";
-import UpdateUserProfile from "./pages/UpdateUserProfile";
+import UpdateTeacherProfile from "./pages/UpdateTeacherProfile";
 import AddStudents from "./pages/AddStudents";
-import Users from "./pages/Users"
-import AdminDashboard from "./pages/AdminDashboard";
-import EditUser from "./pages/EditUser";
-import UserDetail from "./pages/UserDetail";
+import Teachers from "./pages/Teachers";
+import Index from "./pages/Index";
+import EditTeacher from "./pages/EditTeacher";
+import TeacherDetail from "./pages/TeacherDetail";
 
 import AdminRoute from "./components/AdminRoute";
-import AdminView from "./pages/AdminView";
+import StudentView from "./pages/StudentView";
 
 function App() {
   return (
     <Routes>
       {/* Default route */}
-      <Route path="/" element={<Navigate to="/Result" replace />} />
+      <Route path="/" element={<Navigate to="/Login" replace />} />
 
       {/* Authentication */}
       <Route path="/Login" element={<Login />} />
@@ -30,35 +30,35 @@ function App() {
       {/* Students - Everyone can access */}
       <Route path="/Result" element={<Result />} />
 
-      <Route path="/Users" element={<Users />} />
+      <Route path="/Teachers" element={<Teachers />} />
       {/* Student Details - Everyone can access */}
       <Route path="/Student/:id" element={<StudentDetail />} />
-      <Route path="/User/:id" element={<UserDetail />} />
+      <Route path="/Teacher/:id" element={<TeacherDetail />} />
 
       {/* Admin View - Admin only */}
       <Route
-        path="/AdminView"
+        path="/StudentView"
         element={
           <AdminRoute>
-            <AdminView />
+            <StudentView />
           </AdminRoute>
         }
       />
 
       <Route
-        path="/AdminDashboard"
+        path="/Index"
         element={
           <AdminRoute>
-            <AdminDashboard />
+            <Index />
           </AdminRoute>
         }
       />    
 
       <Route
-        path="/EditUser/:id"
+        path="/EditTeacher/:id"
         element={
           <AdminRoute>
-            <EditUser />
+            <EditTeacher />
           </AdminRoute>
         }
       />    
@@ -84,10 +84,10 @@ function App() {
 
       <Route path="ViewYourProfile" element={<ViewYourProfile />} />
 
-      <Route path="UpdateUserProfile/:id" element={<UpdateUserProfile />} />
+      <Route path="UpdateTeacherProfile/:id" element={<UpdateTeacherProfile />} />
 
       {/* Unknown route */}
-      <Route path="*" element={<Navigate to="/Result" replace />} />
+      <Route path="*" element={<Navigate to="/Login" replace />} />
     </Routes>
   );
 }

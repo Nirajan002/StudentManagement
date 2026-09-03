@@ -66,11 +66,11 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<StudentManagement>();
-    var hasher = new PasswordHasher<User>();
+    var hasher = new PasswordHasher<Teacher>();
 
-    if (!dbContext.Users.Any(u => u.Role == "Admin"))
+    if (!dbContext.Teachers.Any(u => u.Role == "Admin"))
     {
-        var admin = new User
+        var admin = new Teacher
         {
             Id = Guid.NewGuid(),
             FullName = "Admin User",
@@ -79,7 +79,7 @@ using (var scope = app.Services.CreateScope())
             Role = "Admin",
         };
 
-        dbContext.Users.Add(admin);
+        dbContext.Teachers.Add(admin);
         dbContext.SaveChanges();
     }
 }

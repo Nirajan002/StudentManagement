@@ -1,11 +1,12 @@
 import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-import { useGetStudentsQuery } from "../api/api";
+import { useGetStudentsQuery } from "../api/StudentApi";
 import StudentTable from "../components/StudentTable";
 import { Button } from "@/components/ui/button";
+import DashboardLayout from "@/components/DashboardLayout";
 
-export default function AdminView() {
+export default function StudentView() {
   // =========================
   // PAGE
   // =========================
@@ -77,7 +78,7 @@ export default function AdminView() {
   // UI
   // =========================
   return (
-    <div>
+    <DashboardLayout activeMenu="Students">
 
       <div className="p-6">
         {/* Header */}
@@ -115,6 +116,6 @@ export default function AdminView() {
           </Button>
         </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

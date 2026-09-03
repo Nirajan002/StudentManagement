@@ -1,86 +1,89 @@
 import { useState } from "react";
-
 import { useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
-
 import { Input } from "@/components/ui/input";
 
+import { useSearchStudentsQuery } from "../api/StudentApi";
 import {
-  useSearchStudentsQuery,
-  useLogoutMutation,
-  useGetCurrentUserQuery,
-} from "../api/api";
+  useGetCurrentTeacherQuery,
+  useSearchTeachersQuery,
+} from "../api/TeacherApi";
 
 export default function Navbar() {
   const navigate = useNavigate();
 
-  // *=========================*
-  // *CURRENT USER*
-  // *=========================*
+  // =========================
+  // CURRENT TEACHER
+  // =========================
 
-  const { data: currentUser } = useGetCurrentUserQuery();
+  const { data: currentTeacher } = useGetCurrentTeacherQuery();
 
-  // *=========================*
-  // *LOGIN STATUS*
-  // *=========================*
+  // =========================
+  // LOGIN STATUS
+  // =========================
 
-  const [fullName, setFullName] = useState(localStorage.getItem("fullName"));
-
-  const [role, setRole] = useState(localStorage.getItem("role"));
+  const [fullName] = useState(localStorage.getItem("fullName"));
+  const [role] = useState(localStorage.getItem("role"));
 
   const isLoggedIn = !!fullName;
 
-  // *=========================*
-  // *PROFILE DROPDOWN*
-  // *=========================*
-
-  const [profileOpen, setProfileOpen] = useState(false);
-
-  // *=========================*
-  // *SEARCH*
-  // *=========================*
+  // =========================
+  // SEARCH
+  // =========================
 
   const [search, setSearch] = useState("");
 
-  const { data: students = [], isLoading: isSearching } =
-    useSearchStudentsQuery(
-      {
-        search,
-        limit: 20,
-      },
-      {
-        skip: !search.trim(),
-      },
-    );
+  // Search Students
+  const {
+    data: students = [],
+    isLoading: isSearchingStudents,
+  } = useSearchStudentsQuery(
+    {
+      search,
+      limit: 20,
+    },
+    {
+      skip: !search.trim(),
+    },
+  );
 
-  // *=========================*
-  // *LOGOUT*
-  // *=========================*
+  // Search Teachers
+  const {
+    data: teachers = [],
+    isLoading: isSearchingTeachers,
+  } = useSearchTeachersQuery(
+    {
+      search,
+      limit: 20,
+    },
+    {
+      skip: !search.trim(),
+    },
+  );
 
-  const [logoutUser] = useLogoutMutation();
+  const isSearching =
+    isSearchingStudents || isSearchingTeachers;
 
-  const handleLogout = async () => {
-    try {
-      await logoutUser().unwrap();
-    } catch (error) {
-      console.error("Logout failed:", error);
-    } finally {
-      localStorage.removeItem("fullName");
-      localStorage.removeItem("role");
-      localStorage.removeItem("token");
+  // =========================
+  // COMBINE STUDENTS + TEACHERS
+  // =========================
 
-      setFullName(null);
-      setRole(null);
-      setProfileOpen(false);
+  const searchResults = [
+    ...students.map((student: any) => ({
+      ...student,
+      resultType: "student",
+    })),
 
-      navigate("/Login");
-    }
-  };
+    ...teachers.map((teacher: any) => ({
+      ...teacher,
+      resultType: "teacher",
+    })),
+  ];
 
-  // *=========================*
-  // *LOGO / HOME*
-  // *=========================*
+  // =========================
+  // LOGO / HOME
+  // =========================
 
   const handleHomeClick = () => {
     if (!isLoggedIn) {
@@ -89,28 +92,27 @@ export default function Navbar() {
     }
 
     if (role?.toLowerCase() === "admin") {
-      navigate("/AdminView");
+      navigate("/Index");
     } else {
       navigate("/Result");
     }
   };
 
-  // *=========================*
-  // *VIEW PROFILE*
-  // *=========================*
+  // =========================
+  // SEARCH RESULT CLICK
+  // =========================
 
-  const handleViewProfile = () => {
-    setProfileOpen(false);
-    navigate("/ViewYourProfile");
-  };
-
-  // *=========================*
-  // *STUDENT CLICK*
-  // *=========================*
-
-  const handleStudentClick = (id: string) => {
+  const handleSearchResultClick = (
+    id: string,
+    resultType: string,
+  ) => {
     setSearch("");
-    navigate(`/Student/${id}`);
+
+    if (resultType === "student") {
+      navigate(`/Student/${id}`);
+    } else {
+      navigate(`/Teacher/${id}`);
+    }
   };
 
   return (
@@ -120,7 +122,10 @@ export default function Navbar() {
           ========================= */}
 
       <div className="flex flex-1 items-center">
-        <div onClick={handleHomeClick} className="cursor-pointer">
+        <div
+          onClick={handleHomeClick}
+          className="cursor-pointer"
+        >
           <img
             src="/YOUR-LOGO.png"
             alt="Logo"
@@ -136,7 +141,7 @@ export default function Navbar() {
       <div className="relative flex flex-1 justify-center">
         <Input
           type="text"
-          placeholder="Search students..."
+          placeholder="Search students or teachers..."
           className="w-full max-w-sm"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -144,35 +149,64 @@ export default function Navbar() {
 
         {search.trim() && (
           <div className="absolute top-11 z-50 w-full max-w-sm rounded-md border bg-background shadow-md">
+            {/* LOADING */}
+
             {isSearching ? (
               <p className="px-4 py-3 text-sm text-muted-foreground">
                 Searching...
               </p>
-            ) : students.length > 0 ? (
-              students.map((student: any) => (
+            ) : searchResults.length > 0 ? (
+              /* RESULTS */
+
+              searchResults.map((result: any) => (
                 <div
-                  key={student.id}
-                  onClick={() => handleStudentClick(student.id)}
+                  key={`${result.resultType}-${result.id}`}
+                  onClick={() =>
+                    handleSearchResultClick(
+                      result.id,
+                      result.resultType,
+                    )
+                  }
                   className="flex cursor-pointer items-center gap-3 px-4 py-2 hover:bg-muted"
                 >
-                  {student.profile ? (
+                  {/* PROFILE IMAGE */}
+
+                  {result.profile ? (
                     <img
-                      src={`https://localhost:7014/uploads/${student.profile}`}
-                      alt={student.fullName}
+                      src={`https://localhost:7014/uploads/${result.profile}`}
+                      alt={result.fullName}
                       className="h-8 w-8 rounded-full object-cover"
                     />
                   ) : (
                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-xs font-medium">
-                      {student.fullName?.charAt(0).toUpperCase()}
+                      {result.fullName
+                        ?.charAt(0)
+                        .toUpperCase()}
                     </div>
                   )}
 
-                  <span className="text-sm">{student.fullName}</span>
+                  {/* NAME */}
+
+                  <div className="flex flex-1 flex-col">
+                    <span className="text-sm">
+                      {result.fullName}
+                    </span>
+
+                    {/* RESULT TYPE */}
+
+                    <span className="text-xs text-muted-foreground">
+                      {result.resultType === "student"
+                        ? "Student"
+                        : "Teacher"}
+                    </span>
+                  </div>
                 </div>
               ))
             ) : (
+              /* NO RESULTS */
+
               <p className="px-4 py-3 text-sm text-muted-foreground">
-                No students found
+                No students or teachers found
               </p>
             )}
           </div>
@@ -180,81 +214,17 @@ export default function Navbar() {
       </div>
 
       {/* =========================
-          RIGHT - PROFILE / AUTH
+          RIGHT - LOGIN
           ========================= */}
 
-      <div className="relative flex flex-1 justify-end">
-        {isLoggedIn ? (
-          <div className="relative">
-            {/* =========================
-                PROFILE BUTTON
-                ========================= */}
-
-            <button
-              onClick={() => setProfileOpen(!profileOpen)}
-              className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-muted"
-            >
-              {/* Profile Circle */}
-
-              <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-muted text-sm font-medium">
-                {currentUser?.profile ? (
-                  <img
-                    src={`https://localhost:7014/uploads/${currentUser.profile}`}
-                    alt={fullName || "Profile"}
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  fullName?.charAt(0).toUpperCase()
-                )}
-              </div>
-
-              {/* Name */}
-
-              <span className="text-sm font-semibold">{fullName}</span>
-
-              {/* Arrow */}
-
-              <span className="text-xs">{profileOpen ? "▲" : "▼"}</span>
-            </button>
-
-            {/* =========================
-                DROPDOWN
-                ========================= */}
-
-            {profileOpen && (
-              <div className="absolute right-0 top-12 z-50 w-44 rounded-md border bg-background p-1 shadow-lg">
-                {/* View Profile */}
-
-                <button
-                  onClick={handleViewProfile}
-                  className="w-full rounded-sm px-3 py-2 text-left text-sm hover:bg-muted"
-                >
-                  View Profile
-                </button>
-
-                {/* Logout */}
-
-                <button
-                  onClick={handleLogout}
-                  className="w-full rounded-sm px-3 py-2 text-left text-sm text-red-600 hover:bg-muted"
-                >
-                  Log Out
-                </button>
-              </div>
-            )}
-          </div>
-        ) : (
-          /* =========================
-             NOT LOGGED IN
-             ========================= */
-
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => navigate("/Login")}>
-              Log In
-            </Button>
-
-            <Button onClick={() => navigate("/Register")}>Register</Button>
-          </div>
+      <div className="flex flex-1 justify-end">
+        {!isLoggedIn && (
+          <Button
+            variant="outline"
+            onClick={() => navigate("/Login")}
+          >
+            Log In
+          </Button>
         )}
       </div>
     </nav>

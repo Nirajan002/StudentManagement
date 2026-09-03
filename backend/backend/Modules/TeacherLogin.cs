@@ -2,7 +2,7 @@
 
 namespace backend.Modules
 {
-    public class UserLogin
+    public class TeacherLogin
     {
         [Required]
         [EmailAddress]

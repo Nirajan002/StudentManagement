@@ -19,7 +19,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { useAddStudentMutation } from "../api/api";
+import { useAddStudentMutation } from "../api/StudentApi";
+import DashboardLayout from "@/components/DashboardLayout";
 
 interface EducationItem {
   institution: string;
@@ -100,144 +101,146 @@ export default function AddStudents() {
   };
 
   return (
-    <div className="min-h-screen bg-background px-4 py-8">
-      <div className="mx-auto max-w-3xl">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl">Add Student</CardTitle>
-          </CardHeader>
+    <DashboardLayout activeMenu="Students">
+      <div className="min-h-screen bg-background px-4 py-8">
+        <div className="mx-auto max-w-3xl">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl">Add Student</CardTitle>
+            </CardHeader>
 
-          <CardContent>
-            <FormProvider {...methods}>
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                {/* Profile */}
-                <FileField
-                  name="profile"
-                  label="Profile Picture"
-                  accept="image/*"
-                  rules={{
-                    validate: {
-                      fileType: (files) => {
-                        if (!files || files.length === 0) {
-                          return true;
-                        }
-
-                        const file = files[0];
-
-                        return file.type.startsWith("image/")
-                          ? true
-                          : "Please select an image file";
-                      },
-                    },
-                  }}
-                />
-
-                {/* Full Name */}
-                <InputField
-                  name="fullName"
-                  label="Full Name"
-                  placeholder="Enter full name"
-                  rules={{
-                    required: "Full name is required",
-                  }}
-                />
-
-                {/* Email */}
-                <InputField
-                  name="email"
-                  label="Email"
-                  type="email"
-                  placeholder="Enter email"
-                  rules={{
-                    required: "Email is required",
-                    pattern: {
-                      value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                      message: "Enter a valid email address",
-                    },
-                  }}
-                />
-
-                {/* Gender */}
-                <div className="space-y-2">
-                  <Label htmlFor="gender">Gender</Label>
-
-                  <Controller
-                    name="gender"
-                    control={methods.control}
+            <CardContent>
+              <FormProvider {...methods}>
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                  {/* Profile */}
+                  <FileField
+                    name="profile"
+                    label="Profile Picture"
+                    accept="image/*"
                     rules={{
-                      required: "Gender is required",
-                    }}
-                    render={({ field }) => (
-                      <Select
-                        value={field.value || ""}
-                        onValueChange={field.onChange}
-                      >
-                        <SelectTrigger id="gender">
-                          <SelectValue placeholder="Select gender" />
-                        </SelectTrigger>
+                      validate: {
+                        fileType: (files) => {
+                          if (!files || files.length === 0) {
+                            return true;
+                          }
 
-                        <SelectContent>
-                          <SelectItem value="Male">Male</SelectItem>
-                          <SelectItem value="Female">Female</SelectItem>
-                          <SelectItem value="Other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    )}
+                          const file = files[0];
+
+                          return file.type.startsWith("image/")
+                            ? true
+                            : "Please select an image file";
+                        },
+                      },
+                    }}
                   />
 
-                  {methods.formState.errors.gender && (
-                    <p className="text-sm text-destructive">
-                      {methods.formState.errors.gender.message}
-                    </p>
-                  )}
-                </div>
-                {/* Phone */}
-                <InputField
-                  name="number"
-                  label="Phone Number"
-                  type="tel"
-                  placeholder="Enter 10 digit phone number"
-                  rules={{
-                    required: "Phone number is required",
-                    pattern: {
-                      value: /^[0-9]{10}$/,
-                      message: "Phone number must be exactly 10 digits",
-                    },
-                  }}
-                />
+                  {/* Full Name */}
+                  <InputField
+                    name="fullName"
+                    label="Full Name"
+                    placeholder="Enter full name"
+                    rules={{
+                      required: "Full name is required",
+                    }}
+                  />
 
-                {/* Address */}
-                <InputField
-                  name="address"
-                  label="Address"
-                  placeholder="Enter address"
-                  rules={{
-                    required: "Address is required",
-                  }}
-                />
+                  {/* Email */}
+                  <InputField
+                    name="email"
+                    label="Email"
+                    type="email"
+                    placeholder="Enter email"
+                    rules={{
+                      required: "Email is required",
+                      pattern: {
+                        value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                        message: "Enter a valid email address",
+                      },
+                    }}
+                  />
 
-                {/* Education */}
-                <Education />
+                  {/* Gender */}
+                  <div className="space-y-2">
+                    <Label htmlFor="gender">Gender</Label>
 
-                {/* Buttons */}
-                <div className="flex justify-end gap-3 pt-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => navigate(-1)}
-                  >
-                    Cancel
-                  </Button>
+                    <Controller
+                      name="gender"
+                      control={methods.control}
+                      rules={{
+                        required: "Gender is required",
+                      }}
+                      render={({ field }) => (
+                        <Select
+                          value={field.value || ""}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger id="gender">
+                            <SelectValue placeholder="Select gender" />
+                          </SelectTrigger>
 
-                  <Button type="submit" disabled={isLoading}>
-                    {isLoading ? "Adding Student..." : "Add Student"}
-                  </Button>
-                </div>
-              </form>
-            </FormProvider>
-          </CardContent>
-        </Card>
+                          <SelectContent>
+                            <SelectItem value="Male">Male</SelectItem>
+                            <SelectItem value="Female">Female</SelectItem>
+                            <SelectItem value="Other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+
+                    {methods.formState.errors.gender && (
+                      <p className="text-sm text-destructive">
+                        {methods.formState.errors.gender.message}
+                      </p>
+                    )}
+                  </div>
+                  {/* Phone */}
+                  <InputField
+                    name="number"
+                    label="Phone Number"
+                    type="tel"
+                    placeholder="Enter 10 digit phone number"
+                    rules={{
+                      required: "Phone number is required",
+                      pattern: {
+                        value: /^[0-9]{10}$/,
+                        message: "Phone number must be exactly 10 digits",
+                      },
+                    }}
+                  />
+
+                  {/* Address */}
+                  <InputField
+                    name="address"
+                    label="Address"
+                    placeholder="Enter address"
+                    rules={{
+                      required: "Address is required",
+                    }}
+                  />
+
+                  {/* Education */}
+                  <Education />
+
+                  {/* Buttons */}
+                  <div className="flex justify-end gap-3 pt-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => navigate(-1)}
+                    >
+                      Cancel
+                    </Button>
+
+                    <Button type="submit" disabled={isLoading}>
+                      {isLoading ? "Adding Student..." : "Add Student"}
+                    </Button>
+                  </div>
+                </form>
+              </FormProvider>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

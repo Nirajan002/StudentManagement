@@ -7,7 +7,7 @@ import InputField from "../components/form/InputField";
 import FileField from "../components/form/FileField";
 
 import { Button } from "@/components/ui/button";
-import { useRegisterMutation } from "../api/api";
+import { useRegisterMutation } from "../api/AuthApi";
 
 interface RegisterForm {
   fullName: string;

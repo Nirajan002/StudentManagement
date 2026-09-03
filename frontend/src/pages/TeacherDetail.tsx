@@ -3,10 +3,10 @@ import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 
 import {
-  useGetUserQuery,
-  useGetCurrentUserQuery,
-  useDeleteUserMutation,
-} from "../api/api";
+  useGetTeacherQuery,
+  useGetCurrentTeacherQuery,
+  useDeleteTeacherMutation,
+} from "../api/TeacherApi";
 
 import { Button } from "@/components/ui/button";
 
@@ -17,9 +17,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-import Navbar from "@/components/NavBar";
+import DashboardLayout from "@/components/DashboardLayout";
 
-export default function UserDetail() {
+export default function TeacherDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -31,7 +31,7 @@ export default function UserDetail() {
     data: user,
     isLoading,
     isError,
-  } = useGetUserQuery(id, {
+  } = useGetTeacherQuery(id, {
     skip: !id,
     refetchOnMountOrArgChange: true,
   });
@@ -40,14 +40,14 @@ export default function UserDetail() {
   // GET CURRENT USER
   // =========================
 
-  const { data: currentUser } = useGetCurrentUserQuery();
+  const { data: currentUser } = useGetCurrentTeacherQuery();
 
   // =========================
   // DELETE
   // =========================
 
   const [deleteUser, { isLoading: isDeleting }] =
-    useDeleteUserMutation();
+    useDeleteTeacherMutation();
 
   // =========================
   // CHECK ADMIN
@@ -89,13 +89,12 @@ export default function UserDetail() {
 
   if (isLoading) {
     return (
-      <div>
-        <Navbar />
+      <DashboardLayout activeMenu="Teachers">
 
         <div className="flex min-h-screen items-center justify-center">
           <h2>Loading...</h2>
         </div>
-      </div>
+      </DashboardLayout>
     );
   }
 
@@ -105,13 +104,12 @@ export default function UserDetail() {
 
   if (isError || !user) {
     return (
-      <div>
-        <Navbar />
+      <DashboardLayout activeMenu="Teachers">
 
         <div className="flex min-h-screen items-center justify-center">
           <h2>Failed to load user</h2>
         </div>
-      </div>
+      </DashboardLayout>
     );
   }
 
@@ -120,8 +118,7 @@ export default function UserDetail() {
   // =========================
 
   return (
-    <div>
-      <Navbar />
+    <DashboardLayout activeMenu="Teachers">
 
       <div className="min-h-screen bg-muted/40 px-4 py-10">
         <div className="mx-auto w-full max-w-2xl">
@@ -265,7 +262,7 @@ export default function UserDetail() {
                       type="button"
                       variant="secondary"
                       onClick={() =>
-                        navigate(`/EditUser/${user.id}`)
+                        navigate(`/EditTeacher/${user.id}`)
                       }
                     >
                       Edit
@@ -292,6 +289,6 @@ export default function UserDetail() {
           </Card>
         </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

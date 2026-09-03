@@ -1,4 +1,4 @@
-import { useGetStudentsQuery } from "../api/api";
+import { useGetStudentsQuery } from "../api/StudentApi";
 import StudentTable from "../components/StudentTable";
 import Navbar from "../components/NavBar";
 import { Button } from "@/components/ui/button";
