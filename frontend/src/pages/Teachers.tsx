@@ -38,7 +38,7 @@ export default function Teachers() {
             <h1 className="text-2xl font-bold">Teacher Management</h1>
 
             <p className="text-sm text-muted-foreground">
-              Manage all registered users
+              Manage all registered teachers
             </p>
           </div>
 

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 import { useSearchStudentsQuery } from "../api/StudentApi";
+
 import {
   useGetCurrentTeacherQuery,
   useSearchTeachersQuery,
@@ -34,7 +35,10 @@ export default function Navbar() {
 
   const [search, setSearch] = useState("");
 
-  // Search Students
+  // =========================
+  // SEARCH STUDENTS
+  // =========================
+
   const {
     data: students = [],
     isLoading: isSearchingStudents,
@@ -44,11 +48,14 @@ export default function Navbar() {
       limit: 20,
     },
     {
-      skip: !search.trim(),
-    },
+      skip: !isLoggedIn || !search.trim(),
+    }
   );
 
-  // Search Teachers
+  // =========================
+  // SEARCH TEACHERS
+  // =========================
+
   const {
     data: teachers = [],
     isLoading: isSearchingTeachers,
@@ -58,15 +65,15 @@ export default function Navbar() {
       limit: 20,
     },
     {
-      skip: !search.trim(),
-    },
+      skip: !isLoggedIn || !search.trim(),
+    }
   );
 
   const isSearching =
     isSearchingStudents || isSearchingTeachers;
 
   // =========================
-  // COMBINE STUDENTS + TEACHERS
+  // COMBINE SEARCH RESULTS
   // =========================
 
   const searchResults = [
@@ -94,7 +101,7 @@ export default function Navbar() {
     if (role?.toLowerCase() === "admin") {
       navigate("/Index");
     } else {
-      navigate("/Result");
+      navigate("/Login");
     }
   };
 
@@ -104,7 +111,7 @@ export default function Navbar() {
 
   const handleSearchResultClick = (
     id: string,
-    resultType: string,
+    resultType: string
   ) => {
     setSearch("");
 
@@ -117,6 +124,7 @@ export default function Navbar() {
 
   return (
     <nav className="sticky top-0 z-50 flex h-16 items-center border-b bg-background px-6">
+
       {/* =========================
           LEFT - LOGO
           ========================= */}
@@ -124,94 +132,105 @@ export default function Navbar() {
       <div className="flex flex-1 items-center">
         <div
           onClick={handleHomeClick}
-          className="cursor-pointer"
+          className="cursor-pointer text-2xl font-bold tracking-tight"
         >
-          <img
-            src="/YOUR-LOGO.png"
-            alt="Logo"
-            className="h-10 w-auto object-contain"
-          />
+          Student<span className="text-green-500">Grid</span>
         </div>
       </div>
 
       {/* =========================
           CENTER - SEARCH
+          ONLY WHEN LOGGED IN
           ========================= */}
 
-      <div className="relative flex flex-1 justify-center">
-        <Input
-          type="text"
-          placeholder="Search students or teachers..."
-          className="w-full max-w-sm"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+      {isLoggedIn && (
+        <div className="relative flex flex-1 justify-center">
 
-        {search.trim() && (
-          <div className="absolute top-11 z-50 w-full max-w-sm rounded-md border bg-background shadow-md">
-            {/* LOADING */}
+          <Input
+            type="text"
+            placeholder="Search students or teachers..."
+            className="w-full max-w-sm"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
 
-            {isSearching ? (
-              <p className="px-4 py-3 text-sm text-muted-foreground">
-                Searching...
-              </p>
-            ) : searchResults.length > 0 ? (
-              /* RESULTS */
+          {/* SEARCH RESULTS */}
 
-              searchResults.map((result: any) => (
-                <div
-                  key={`${result.resultType}-${result.id}`}
-                  onClick={() =>
-                    handleSearchResultClick(
-                      result.id,
-                      result.resultType,
-                    )
-                  }
-                  className="flex cursor-pointer items-center gap-3 px-4 py-2 hover:bg-muted"
-                >
-                  {/* PROFILE IMAGE */}
+          {search.trim() && (
+            <div className="absolute top-11 z-50 w-full max-w-sm rounded-md border bg-background shadow-md">
 
-                  {result.profile ? (
-                    <img
-                      src={`https://localhost:7014/uploads/${result.profile}`}
-                      alt={result.fullName}
-                      className="h-8 w-8 rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-xs font-medium">
-                      {result.fullName
-                        ?.charAt(0)
-                        .toUpperCase()}
+              {/* LOADING */}
+
+              {isSearching ? (
+                <p className="px-4 py-3 text-sm text-muted-foreground">
+                  Searching...
+                </p>
+              ) : searchResults.length > 0 ? (
+
+                /* RESULTS */
+
+                searchResults.map((result: any) => (
+                  <div
+                    key={`${result.resultType}-${result.id}`}
+                    onClick={() =>
+                      handleSearchResultClick(
+                        result.id,
+                        result.resultType
+                      )
+                    }
+                    className="flex cursor-pointer items-center gap-3 px-4 py-2 hover:bg-muted"
+                  >
+
+                    {/* PROFILE IMAGE */}
+
+                    {result.profile ? (
+                      <img
+                        src={`https://localhost:7014/uploads/${result.profile}`}
+                        alt={result.fullName}
+                        className="h-8 w-8 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-xs font-medium">
+                        {result.fullName
+                          ?.charAt(0)
+                          .toUpperCase()}
+                      </div>
+                    )}
+
+                    {/* NAME */}
+
+                    <div className="flex flex-1 flex-col">
+                      <span className="text-sm">
+                        {result.fullName}
+                      </span>
+
+                      {/* RESULT TYPE */}
+
+                      <span className="text-xs text-muted-foreground">
+                        {result.resultType === "student"
+                          ? "Student"
+                          : "Teacher"}
+                      </span>
                     </div>
-                  )}
 
-                  {/* NAME */}
-
-                  <div className="flex flex-1 flex-col">
-                    <span className="text-sm">
-                      {result.fullName}
-                    </span>
-
-                    {/* RESULT TYPE */}
-
-                    <span className="text-xs text-muted-foreground">
-                      {result.resultType === "student"
-                        ? "Student"
-                        : "Teacher"}
-                    </span>
                   </div>
-                </div>
-              ))
-            ) : (
-              /* NO RESULTS */
+                ))
 
-              <p className="px-4 py-3 text-sm text-muted-foreground">
-                No students or teachers found
-              </p>
-            )}
-          </div>
-        )}
-      </div>
+              ) : (
+
+                /* NO RESULTS */
+
+                <p className="px-4 py-3 text-sm text-muted-foreground">
+                  No students or teachers found
+                </p>
+
+              )}
+
+            </div>
+          )}
+
+        </div>
+      )}
 
       {/* =========================
           RIGHT - LOGIN
@@ -227,6 +246,7 @@ export default function Navbar() {
           </Button>
         )}
       </div>
+
     </nav>
   );
 }

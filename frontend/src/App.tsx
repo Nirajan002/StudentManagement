@@ -12,6 +12,7 @@ import Teachers from "./pages/Teachers";
 import Index from "./pages/Index";
 import EditTeacher from "./pages/EditTeacher";
 import TeacherDetail from "./pages/TeacherDetail";
+import NotFound from "./pages/NotFound"
 
 import AdminRoute from "./components/AdminRoute";
 import StudentView from "./pages/StudentView";
@@ -87,7 +88,7 @@ function App() {
       <Route path="UpdateTeacherProfile/:id" element={<UpdateTeacherProfile />} />
 
       {/* Unknown route */}
-      <Route path="*" element={<Navigate to="/Login" replace />} />
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }
