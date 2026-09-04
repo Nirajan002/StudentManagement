@@ -8,6 +8,5 @@
 
         public string Password { get; set; }
 
-        public IFormFile? Profile { get; set; }
     }
 }

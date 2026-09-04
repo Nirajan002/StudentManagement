@@ -18,7 +18,7 @@
 
         public string? Profile { get; set; }
 
-        public string Role { get; set; } = "User";
+        public string Role { get; set; } = "Teacher";
 
         public string? RefreshToken { get; set; }
         public DateTime? RefreshTokenExpiry { get; set; }

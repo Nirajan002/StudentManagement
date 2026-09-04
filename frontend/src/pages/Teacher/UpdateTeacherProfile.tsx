@@ -6,10 +6,10 @@ import toast from "react-hot-toast";
 import {
   useGetCurrentTeacherQuery,
   useUpdateTeacherProfileMutation,
-} from "../api/TeacherApi";
+} from "../../api/TeacherApi";
 
-import InputField from "../components/form/InputField";
-import FileField from "../components/form/FileField";
+import InputField from "@/components/form/InputField";
+import FileField from "@/components/form/FileField";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import DashboardLayout from "@/components/DashboardLayout";
+import DashboardLayout from "@/components/layouts/DashboardLayout";
 
 interface ProfileForm {
   profile: FileList | null;

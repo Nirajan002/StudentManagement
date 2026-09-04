@@ -1,28 +1,48 @@
 import React from "react";
+
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-import { useGetStudentsQuery } from "../api/StudentApi";
-import StudentTable from "../components/StudentTable";
+import { useGetStudentsQuery } from "../../api/StudentApi";
+import { useGetCurrentTeacherQuery } from "../../api/TeacherApi";
+
+import StudentTable from "@/components/layouts/StudentTable";
+
 import { Button } from "@/components/ui/button";
-import DashboardLayout from "@/components/DashboardLayout";
+
+import DashboardLayout from "@/components/layouts/DashboardLayout";
 
 export default function StudentView() {
   // =========================
   // PAGE
   // =========================
+
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
 
   const page = Number(searchParams.get("page")) || 1;
 
   // =========================
+  // GET CURRENT USER
+  // =========================
+
+  const {
+    data: currentUser,
+    isLoading: isUserLoading,
+    isError: isUserError,
+  } = useGetCurrentTeacherQuery();
+
+  // Check role from database
+  const isAdmin = currentUser?.role === "Admin";
+
+  // =========================
   // GET STUDENTS
   // =========================
+
   const {
     data: students = [],
-    isLoading,
+    isLoading: isStudentsLoading,
     isFetching,
-    isError,
+    isError: isStudentsError,
     refetch,
   } = useGetStudentsQuery(page, {
     refetchOnMountOrArgChange: true,
@@ -31,12 +51,11 @@ export default function StudentView() {
   // =========================
   // LOADING
   // =========================
-  if (isLoading) {
+
+  if (isUserLoading || isStudentsLoading) {
     return (
-      <div>
-        <div className="flex min-h-screen items-center justify-center">
-          <h2>Loading students...</h2>
-        </div>
+      <div className="flex min-h-screen items-center justify-center">
+        <h2>Loading students...</h2>
       </div>
     );
   }
@@ -44,13 +63,11 @@ export default function StudentView() {
   // =========================
   // ERROR
   // =========================
-  if (isError) {
-    return (
-      <div>
 
-        <div className="flex min-h-screen items-center justify-center">
-          <h2>Failed to load students</h2>
-        </div>
+  if (isUserError || isStudentsError) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <h2>Failed to load students</h2>
       </div>
     );
   }
@@ -58,6 +75,7 @@ export default function StudentView() {
   // =========================
   // PAGE CHANGE
   // =========================
+
   const goToPreviousPage = () => {
     if (page > 1) {
       setSearchParams({
@@ -77,25 +95,52 @@ export default function StudentView() {
   // =========================
   // UI
   // =========================
+
   return (
     <DashboardLayout activeMenu="Students">
-
       <div className="p-6">
-        {/* Header */}
+
+        {/* =========================
+            HEADER
+        ========================= */}
+
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold">Admin - Student Management</h1>
+            <h1 className="text-2xl font-bold">
+              Student Management
+            </h1>
 
-            <p className="text-sm text-muted-foreground">Manage all students</p>
+            <p className="text-sm text-muted-foreground">
+              Manage all students
+            </p>
           </div>
 
-          <Button onClick={() => navigate("/AddStudents")}>Add Student</Button>
+          {/* =========================
+              ADD STUDENT - ADMIN ONLY
+          ========================= */}
+
+          {isAdmin && (
+            <Button onClick={() => navigate("/AddStudents")}>
+              Add Student
+            </Button>
+          )}
         </div>
 
-        {/* Student Table */}
-        <StudentTable students={students} refetch={refetch} page={page} />
+        {/* =========================
+            STUDENT TABLE
+        ========================= */}
 
-        {/* Pagination */}
+        <StudentTable
+          students={students}
+          refetch={refetch}
+          page={page}
+          isAdmin={isAdmin}
+        />
+
+        {/* =========================
+            PAGINATION
+        ========================= */}
+
         <div className="flex items-center justify-center gap-4 p-6">
           <Button
             variant="outline"
@@ -105,7 +150,9 @@ export default function StudentView() {
             Previous
           </Button>
 
-          <span className="text-sm font-medium">Page {page}</span>
+          <span className="text-sm font-medium">
+            Page {page}
+          </span>
 
           <Button
             variant="outline"
@@ -115,6 +162,7 @@ export default function StudentView() {
             Next
           </Button>
         </div>
+
       </div>
     </DashboardLayout>
   );

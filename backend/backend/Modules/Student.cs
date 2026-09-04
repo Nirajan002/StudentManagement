@@ -8,14 +8,18 @@
 
         public string? Profile { get; set; }
 
-        public string Gender { get; set; }
+        public string? Gender { get; set; }
 
         public string Email { get; set; }
 
-        public long Number { get; set; }
+        public string Password { get; set; }
 
-        public string Addresh {  get; set; }
+        public long? Number { get; set; }
 
-        public string Education { get; set; }
+        public string? Addresh {  get; set; }
+
+        public string? Education { get; set; }
+
+        public string Role { get; set; } = "Studdent";
     }
 }

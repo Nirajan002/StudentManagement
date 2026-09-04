@@ -1,59 +1,85 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Result from "./pages/Result";
-import StudentDetail from "./pages/StudentDetail";
-import EditStudent from "./pages/EditStudent";
-import ViewYourProfile from "./pages/ViewYourProfile";
-import UpdateTeacherProfile from "./pages/UpdateTeacherProfile";
-import AddStudents from "./pages/AddStudents";
-import Teachers from "./pages/Teachers";
-import Index from "./pages/Index";
-import EditTeacher from "./pages/EditTeacher";
-import TeacherDetail from "./pages/TeacherDetail";
-import NotFound from "./pages/NotFound"
+// Authentication
+import Login from "./pages/Auth/Login";
+import RegisterTeacher from "./pages/Auth/RegisterTeacher";
+import AddStudents from "./pages/Auth/AddStudents";
 
-import AdminRoute from "./components/AdminRoute";
-import StudentView from "./pages/StudentView";
+// Common
+import StudentDetail from "./pages/Student/StudentDetail";
+import TeacherDetail from "./pages/Teacher/TeacherDetail";
+
+// Admin - Students
+import StudentView from "./pages/Student/StudentView";
+import EditStudent from "./pages/Student/EditStudent";
+
+// Admin - Teachers
+import Teachers from "./pages/Teacher/Teachers";
+import ViewYourProfile from "./pages/Teacher/ViewYourProfile";
+import UpdateTeacherProfile from "./pages/Teacher/UpdateTeacherProfile";
+import EditTeacher from "./pages/Teacher/EditTeacher";
+
+// Admin
+import AdminIndex from "./pages/AdminIndex";
+
+// Teacher
+import TeacherIndex from "./pages/TeacherIndex";
+
+// Other
+import NotFound from "./pages/NotFound";
+
+// Route protection
+import AdminRoute from "./components/Routes/AdminRoute";
+import TeacherRout from "./components/Routes/TeacherRout";
+
+import RoleRoute from "./components/Routes/RoleRoute";
+
+import GroupsList from "./pages/Group/GroupList";
+import CreateGroup from "./pages/Group/CreateGroups";
+import GroupDetail from "./pages/Group/GroupDetail";
 
 function App() {
   return (
     <Routes>
-      {/* Default route */}
+      {/* =========================
+          DEFAULT ROUTE
+          ========================= */}
       <Route path="/" element={<Navigate to="/Login" replace />} />
 
-      {/* Authentication */}
+      {/* =========================
+          AUTHENTICATION
+          ========================= */}
       <Route path="/Login" element={<Login />} />
 
-      <Route path="/Register" element={<Register />} />
-
-      {/* Students - Everyone can access */}
-      <Route path="/Result" element={<Result />} />
-
-      <Route path="/Teachers" element={<Teachers />} />
-      {/* Student Details - Everyone can access */}
+      {/* =========================
+          COMMON ROUTES
+          ========================= */}
       <Route path="/Student/:id" element={<StudentDetail />} />
+
       <Route path="/Teacher/:id" element={<TeacherDetail />} />
 
-      {/* Admin View - Admin only */}
+      {/* =========================
+          ADMIN ROUTES
+          ========================= */}
+
+      {/* Teacher Management */}
       <Route
-        path="/StudentView"
+        path="/Teachers"
         element={
-          <AdminRoute>
-            <StudentView />
-          </AdminRoute>
+          <RoleRoute allowedRoles={["Admin", "Teacher"]}>
+            <Teachers />
+          </RoleRoute>
         }
       />
 
       <Route
-        path="/Index"
+        path="/RegisterTeacher"
         element={
           <AdminRoute>
-            <Index />
+            <RegisterTeacher />
           </AdminRoute>
         }
-      />    
+      />
 
       <Route
         path="/EditTeacher/:id"
@@ -62,9 +88,18 @@ function App() {
             <EditTeacher />
           </AdminRoute>
         }
-      />    
+      />
 
-      {/* Edit Student - Admin only */}
+      {/* Student Management */}
+      <Route
+        path="/StudentView"
+        element={
+          <RoleRoute allowedRoles={["Admin", "Teacher"]}>
+            <StudentView />
+          </RoleRoute>
+        }
+      />
+
       <Route
         path="/EditStudent/:id"
         element={
@@ -83,13 +118,61 @@ function App() {
         }
       />
 
-      <Route path="ViewYourProfile" element={<ViewYourProfile />} />
+      {/* Admin Dashboard */}
+      <Route
+        path="/AdminIndex"
+        element={
+          <AdminRoute>
+            <AdminIndex />
+          </AdminRoute>
+        }
+      />
 
-      <Route path="UpdateTeacherProfile/:id" element={<UpdateTeacherProfile />} />
+      {/* =========================
+          TEACHER ROUTES
+          ========================= */}
+      <Route
+        path="/TeacherIndex"
+        element={
+          <TeacherRout>
+            <TeacherIndex />
+          </TeacherRout>
+        }
+      />
 
-      {/* Unknown route */}
+      {/* =========================
+          PROFILE
+          ========================= */}
+      <Route path="/ViewYourProfile" element={<ViewYourProfile />} />
+
+      <Route
+        path="/UpdateTeacherProfile/:id"
+        element={<UpdateTeacherProfile />}
+      />
+
+      {/* =========================
+          UNKNOWN ROUTE
+          ========================= */}
       <Route path="*" element={<NotFound />} />
+
+      <Route
+        path="/GroupsList"
+        element={ <GroupsList /> }
+      />
+
+      <Route path="/groups/:id" element={<GroupDetail />} />
+
+      <Route
+        path="/CreateGroup"
+        element={
+          <RoleRoute allowedRoles={["Admin", "Teacher"]}>
+            <CreateGroup />
+          </RoleRoute>
+        }
+      />
     </Routes>
+
+    
   );
 }
 

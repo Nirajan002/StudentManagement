@@ -4,27 +4,30 @@ import { toast } from "react-hot-toast";
 import {
   useGetStudentQuery,
   useDeleteStudentMutation,
-} from "../api/StudentApi";
+} from "../../api/StudentApi";
 
-import { useGetCurrentTeacherQuery } from "../api/TeacherApi";
+import { useGetCurrentTeacherQuery } from "../../api/TeacherApi";
 
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-import DashboardLayout from "@/components/DashboardLayout";
+import DashboardLayout from "@/components/layouts/DashboardLayout";
 
 export default function StudentDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-
   const [searchParams] = useSearchParams();
+
   const page = searchParams.get("page") || "1";
 
   // =========================
   // GET STUDENT
   // =========================
-
   const {
     data: student,
     isLoading,
@@ -37,28 +40,32 @@ export default function StudentDetail() {
   // =========================
   // GET CURRENT USER
   // =========================
-
   const { data: currentUser } = useGetCurrentTeacherQuery();
 
   // =========================
   // DELETE
   // =========================
-
-  const [deleteStudent, { isLoading: isDeleting }] = useDeleteStudentMutation();
+  const [deleteStudent, { isLoading: isDeleting }] =
+    useDeleteStudentMutation();
 
   // =========================
   // CHECK ADMIN
   // =========================
-
-  const isAdmin = currentUser?.role?.toLowerCase() === "admin";
+  const isAdmin =
+    currentUser?.role?.toLowerCase() === "admin";
 
   // =========================
   // DELETE STUDENT
   // =========================
-
   const handleDelete = async () => {
     if (!id) {
       toast.error("Student ID is missing");
+      return;
+    }
+
+    // Extra frontend protection
+    if (!isAdmin) {
+      toast.error("Only administrators can delete students.");
       return;
     }
 
@@ -67,25 +74,24 @@ export default function StudentDetail() {
 
       toast.success("Student deleted successfully!");
 
-      // Go back to the previous page
       setTimeout(() => {
         navigate(`/Result?page=${page}`);
       }, 500);
     } catch (error: any) {
       console.error("Delete student error:", error);
 
-      toast.error(error?.data?.message || "Failed to delete student");
+      toast.error(
+        error?.data?.message || "Failed to delete student"
+      );
     }
   };
 
   // =========================
   // LOADING
   // =========================
-
   if (isLoading) {
     return (
       <DashboardLayout activeMenu="Students">
-
         <div className="flex min-h-screen items-center justify-center">
           <h2>Loading...</h2>
         </div>
@@ -96,11 +102,9 @@ export default function StudentDetail() {
   // =========================
   // ERROR
   // =========================
-
   if (isError || !student) {
     return (
       <DashboardLayout activeMenu="Students">
-
         <div className="flex min-h-screen items-center justify-center">
           <h2>Failed to load student</h2>
         </div>
@@ -111,7 +115,6 @@ export default function StudentDetail() {
   // =========================
   // EDUCATION
   // =========================
-
   let education: any[] = [];
 
   try {
@@ -146,17 +149,12 @@ export default function StudentDetail() {
   // =========================
   // UI
   // =========================
-
   return (
     <DashboardLayout activeMenu="Students">
-
       <div className="min-h-screen bg-muted/40 px-4 py-10">
         <div className="mx-auto w-full max-w-2xl">
           <Card>
-            {/* =========================
-                HEADER
-            ========================= */}
-
+            {/* HEADER */}
             <CardHeader>
               <CardTitle className="text-center text-2xl">
                 Student Details
@@ -164,10 +162,7 @@ export default function StudentDetail() {
             </CardHeader>
 
             <CardContent className="space-y-6">
-              {/* =========================
-                  PROFILE
-              ========================= */}
-
+              {/* PROFILE */}
               <div className="flex justify-center">
                 {student.profile ? (
                   <img
@@ -182,64 +177,64 @@ export default function StudentDetail() {
                 )}
               </div>
 
-              {/* =========================
-                  STUDENT INFORMATION
-              ========================= */}
-
+              {/* STUDENT INFORMATION */}
               <div className="grid gap-5 sm:grid-cols-2">
                 {/* FULL NAME */}
-
                 <div>
-                  <p className="text-sm text-muted-foreground">Full Name</p>
-
-                  <p className="text-lg font-medium">{student.fullName}</p>
+                  <p className="text-sm text-muted-foreground">
+                    Full Name
+                  </p>
+                  <p className="text-lg font-medium">
+                    {student.fullName}
+                  </p>
                 </div>
 
                 {/* EMAIL */}
-
                 <div>
-                  <p className="text-sm text-muted-foreground">Email</p>
-
-                  <p className="text-lg font-medium">{student.email}</p>
+                  <p className="text-sm text-muted-foreground">
+                    Email
+                  </p>
+                  <p className="text-lg font-medium">
+                    {student.email}
+                  </p>
                 </div>
 
                 {/* GENDER */}
-
                 <div>
-                  <p className="text-sm text-muted-foreground">Gender</p>
-
+                  <p className="text-sm text-muted-foreground">
+                    Gender
+                  </p>
                   <p className="text-lg font-medium">
                     {student.gender || "Not provided"}
                   </p>
                 </div>
 
                 {/* PHONE */}
-
                 <div>
-                  <p className="text-sm text-muted-foreground">Phone Number</p>
-
+                  <p className="text-sm text-muted-foreground">
+                    Phone Number
+                  </p>
                   <p className="text-lg font-medium">
                     {student.number || "Not provided"}
                   </p>
                 </div>
 
                 {/* ADDRESS */}
-
                 <div className="sm:col-span-2">
-                  <p className="text-sm text-muted-foreground">Address</p>
-
+                  <p className="text-sm text-muted-foreground">
+                    Address
+                  </p>
                   <p className="text-lg font-medium">
                     {student.addresh || "Not provided"}
                   </p>
                 </div>
               </div>
 
-              {/* =========================
-                  EDUCATION
-              ========================= */}
-
+              {/* EDUCATION */}
               <div className="border-t pt-6">
-                <h3 className="mb-4 text-lg font-semibold">Education</h3>
+                <h3 className="mb-4 text-lg font-semibold">
+                  Education
+                </h3>
 
                 {education.length > 0 ? (
                   <div className="space-y-4">
@@ -247,36 +242,30 @@ export default function StudentDetail() {
                       <Card key={index}>
                         <CardContent className="space-y-4 pt-6">
                           {/* INSTITUTION */}
-
                           <div>
                             <p className="text-sm text-muted-foreground">
                               Institution
                             </p>
-
                             <p className="font-medium">
                               {item.institution || "Not provided"}
                             </p>
                           </div>
 
                           {/* DEGREE */}
-
                           <div>
                             <p className="text-sm text-muted-foreground">
                               Degree
                             </p>
-
                             <p className="font-medium">
                               {item.degree || "Not provided"}
                             </p>
                           </div>
 
                           {/* DATE */}
-
                           <div>
                             <p className="text-sm text-muted-foreground">
                               Date
                             </p>
-
                             <p className="font-medium">
                               {item.date || "Not provided"}
                             </p>
@@ -292,13 +281,9 @@ export default function StudentDetail() {
                 )}
               </div>
 
-              {/* =========================
-                  BUTTONS
-              ========================= */}
-
+              {/* BUTTONS */}
               <div className="flex gap-3 pt-4">
-                {/* BACK */}
-
+                {/* BACK - EVERYONE */}
                 <Button
                   type="button"
                   variant="outline"
@@ -307,22 +292,21 @@ export default function StudentDetail() {
                   Back
                 </Button>
 
-                {/* ADMIN ONLY BUTTONS */}
-
+                {/* ADMIN ONLY */}
                 {isAdmin && (
                   <>
                     {/* EDIT */}
-
                     <Button
                       type="button"
                       variant="secondary"
-                      onClick={() => navigate(`/EditStudent/${student.id}`)}
+                      onClick={() =>
+                        navigate(`/EditStudent/${student.id}`)
+                      }
                     >
                       Edit
                     </Button>
 
                     {/* DELETE */}
-
                     <Button
                       type="button"
                       variant="destructive"

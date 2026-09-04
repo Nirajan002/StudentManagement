@@ -2,18 +2,17 @@ import React from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 
-import EducationField from "../components/form/EducationField";
-import InputField from "../components/form/InputField";
-import FileField from "../components/form/FileField";
+import EducationField from "@/components/form/EducationField";
+import InputField from "@/components/form/InputField";
+import FileField from "@/components/form/FileField";
 
 import {
   useGetStudentQuery,
   useUpdateStudentMutation,
-} from "../api/StudentApi";
+} from "../../api/StudentApi";
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import Navbar from "@/components/NavBar";
 import { toast } from "react-hot-toast";
 
 import {
@@ -23,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import DashboardLayout from "@/components/DashboardLayout";
+import DashboardLayout from "@/components/layouts/DashboardLayout";
 
 export default function EditStudent() {
   const { id } = useParams();

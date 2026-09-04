@@ -9,18 +9,30 @@ export const AuthApi = createApi({
   reducerPath: "Auth",
   baseQuery,
 
-  tagTypes: ["User", "Student"],
+  tagTypes: ["User", "Teacher", "Student"],
 
-  endpoints: (builder) => ({ 
-
-    register: builder.mutation({
+  endpoints: (builder) => ({
+    // Register Teacher
+    registerTeacher: builder.mutation({
       query: (data) => ({
-        url: "/register",
+        url: "/TeacherRegister",
         method: "POST",
         body: data,
       }),
+      invalidatesTags: ["Teacher"],
     }),
 
+    // Add Student
+    addStudent: builder.mutation({
+      query: (data) => ({
+        url: "/AddStudent",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["Student"],
+    }),
+
+    // Login
     login: builder.mutation({
       query: (data) => ({
         url: "/login",
@@ -30,6 +42,7 @@ export const AuthApi = createApi({
       invalidatesTags: ["User"],
     }),
 
+    // Logout
     logout: builder.mutation({
       query: () => ({
         url: "/logout",
@@ -38,6 +51,7 @@ export const AuthApi = createApi({
       invalidatesTags: ["User"],
     }),
 
+    // Refresh token
     refreshToken: builder.mutation({
       query: () => ({
         url: "/refresh",
@@ -48,7 +62,8 @@ export const AuthApi = createApi({
 });
 
 export const {
-  useRegisterMutation,
+  useRegisterTeacherMutation,
+  useAddStudentMutation,
   useLoginMutation,
   useLogoutMutation,
   useRefreshTokenMutation,

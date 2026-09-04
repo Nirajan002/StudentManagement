@@ -4,12 +4,16 @@ import {
   GraduationCap,
   User,
   LogOut,
+  Group,
 } from "lucide-react";
 
-export const SlideMenuData = [
+export const getSlideMenuData = (role?: string) => [
   {
     label: "Dashboard",
-    path: "/Index",
+    path:
+      role?.toLowerCase() === "admin"
+        ? "/AdminIndex"
+        : "/TeacherIndex",
     icon: LayoutDashboard,
   },
   {
@@ -21,6 +25,11 @@ export const SlideMenuData = [
     label: "Teachers",
     path: "/Teachers",
     icon: Users,
+  },
+  {
+    label: "Groups",
+    path: "/GroupsList",
+    icon: Group,
   },
   {
     label: "Profile",

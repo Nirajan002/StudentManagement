@@ -28,14 +28,14 @@ namespace backend.Controllers
             this.passwordHasher = new PasswordHasher<Teacher>();
         }
 
-        [HttpPost("register")]
-        public async Task<IActionResult> RegisterUsers(TeacherRegister userInsert)
+        [HttpPost("TeacherRegister")]
+        public async Task<IActionResult> RegisterTeacher(TeacherRegister teacherRegister)
         {
-            var existingUser = await dbContext.Teachers
+            var existingTeacher = await dbContext.Teachers
                 .FirstOrDefaultAsync(u =>
-                    u.Email.ToLower() == userInsert.Email.ToLower());
+                    u.Email.ToLower() == teacherRegister.Email.ToLower());
 
-            if (existingUser != null)
+            if (existingTeacher != null)
             {
                 return Conflict(new
                 {
@@ -43,55 +43,66 @@ namespace backend.Controllers
                 });
             }
 
-            string? fileName = null;
-
-            if (userInsert.Profile != null)
-            {
-                fileName = Guid.NewGuid().ToString()
-                           + Path.GetExtension(userInsert.Profile.FileName);
-
-                string uploadPath = Path.Combine(
-                    Directory.GetCurrentDirectory(),
-                    "wwwroot",
-                    "uploads"
-                );
-
-                if (!Directory.Exists(uploadPath))
-                {
-                    Directory.CreateDirectory(uploadPath);
-                }
-
-                string filePath = Path.Combine(uploadPath, fileName);
-
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await userInsert.Profile.CopyToAsync(stream);
-                }
-            }
-
-            var user = new Teacher
+            var teacher = new Teacher
             {
                 Id = Guid.NewGuid(),
-                FullName = userInsert.FullName,
-                Email = userInsert.Email,
+                FullName = teacherRegister.FullName,
+                Email = teacherRegister.Email,
                 Password = passwordHasher.HashPassword(
                     null,
-                    userInsert.Password
+                    teacherRegister.Password
                 ),
-                Profile = fileName,
             };
 
-            dbContext.Teachers.Add(user);
+            dbContext.Teachers.Add(teacher);
 
             await dbContext.SaveChangesAsync();
 
             return Ok(new
             {
-                user.Id,
-                user.FullName,
-                user.Email,
-                user.Profile,
-                user.Role
+                teacher.Id,
+                teacher.FullName,
+                teacher.Email,
+                teacher.Role
+            });
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost("AddStudent")]
+        public async Task<IActionResult> AddStudent(AddStudent addStudent)
+        {
+            var existingStudent = await dbContext.Students
+                .FirstOrDefaultAsync(s =>
+                    s.Email.ToLower() == addStudent.Email.ToLower());
+
+            if (existingStudent != null)
+            {
+                return Conflict(new
+                {
+                    message = "A student with this email already exists."
+                });
+            }
+
+            var student = new Student
+            {
+                Id = Guid.NewGuid(),
+                FullName = addStudent.FullName,
+                Email = addStudent.Email,
+                Password = passwordHasher.HashPassword(
+                    null,
+                    addStudent.Password
+                ),
+            };
+
+            dbContext.Students.Add(student);
+
+            await dbContext.SaveChangesAsync();
+
+            return Ok(new
+            {
+                student.Id,
+                student.FullName,
+                student.Email,
             });
         }
 

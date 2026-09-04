@@ -1,12 +1,12 @@
 import { useParams, useNavigate } from "react-router-dom";
-
 import { toast } from "react-hot-toast";
 
 import {
   useGetTeacherQuery,
-  useGetCurrentTeacherQuery,
   useDeleteTeacherMutation,
-} from "../api/TeacherApi";
+} from "../../api/TeacherApi";
+
+import { useGetCurrentTeacherQuery } from "../../api/TeacherApi";
 
 import { Button } from "@/components/ui/button";
 
@@ -17,16 +17,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-import DashboardLayout from "@/components/DashboardLayout";
+import DashboardLayout from "@/components/layouts/DashboardLayout";
 
 export default function TeacherDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
 
   // =========================
-  // GET USER
+  // GET TEACHER
   // =========================
-
   const {
     data: user,
     isLoading,
@@ -39,30 +38,32 @@ export default function TeacherDetail() {
   // =========================
   // GET CURRENT USER
   // =========================
-
   const { data: currentUser } = useGetCurrentTeacherQuery();
 
   // =========================
   // DELETE
   // =========================
-
   const [deleteUser, { isLoading: isDeleting }] =
     useDeleteTeacherMutation();
 
   // =========================
   // CHECK ADMIN
   // =========================
-
   const isAdmin =
     currentUser?.role?.toLowerCase() === "admin";
 
   // =========================
-  // DELETE USER
+  // DELETE TEACHER
   // =========================
-
   const handleDelete = async () => {
     if (!id) {
       toast.error("User ID is missing");
+      return;
+    }
+
+    // Extra frontend protection
+    if (!isAdmin) {
+      toast.error("Only administrators can delete teachers.");
       return;
     }
 
@@ -72,7 +73,7 @@ export default function TeacherDetail() {
       toast.success("User deleted successfully!");
 
       setTimeout(() => {
-        navigate("/Users");
+        navigate("/Teachers");
       }, 500);
     } catch (error: any) {
       console.error("Delete user error:", error);
@@ -86,11 +87,9 @@ export default function TeacherDetail() {
   // =========================
   // LOADING
   // =========================
-
   if (isLoading) {
     return (
       <DashboardLayout activeMenu="Teachers">
-
         <div className="flex min-h-screen items-center justify-center">
           <h2>Loading...</h2>
         </div>
@@ -101,11 +100,9 @@ export default function TeacherDetail() {
   // =========================
   // ERROR
   // =========================
-
   if (isError || !user) {
     return (
       <DashboardLayout activeMenu="Teachers">
-
         <div className="flex min-h-screen items-center justify-center">
           <h2>Failed to load user</h2>
         </div>
@@ -116,18 +113,12 @@ export default function TeacherDetail() {
   // =========================
   // UI
   // =========================
-
   return (
     <DashboardLayout activeMenu="Teachers">
-
       <div className="min-h-screen bg-muted/40 px-4 py-10">
         <div className="mx-auto w-full max-w-2xl">
           <Card>
-
-            {/* =========================
-                HEADER
-            ========================= */}
-
+            {/* HEADER */}
             <CardHeader>
               <CardTitle className="text-center text-2xl">
                 User Details
@@ -135,11 +126,7 @@ export default function TeacherDetail() {
             </CardHeader>
 
             <CardContent className="space-y-6">
-
-              {/* =========================
-                  PROFILE
-              ========================= */}
-
+              {/* PROFILE */}
               <div className="flex justify-center">
                 {user.profile ? (
                   <img
@@ -149,101 +136,77 @@ export default function TeacherDetail() {
                   />
                 ) : (
                   <div className="flex h-32 w-32 items-center justify-center rounded-full bg-muted text-3xl font-medium">
-                    {user.fullName
-                      ?.charAt(0)
-                      .toUpperCase()}
+                    {user.fullName?.charAt(0).toUpperCase()}
                   </div>
                 )}
               </div>
 
-              {/* =========================
-                  USER INFORMATION
-              ========================= */}
-
+              {/* USER INFORMATION */}
               <div className="grid gap-5 sm:grid-cols-2">
-
                 {/* FULL NAME */}
-
                 <div>
                   <p className="text-sm text-muted-foreground">
                     Full Name
                   </p>
-
                   <p className="text-lg font-medium">
                     {user.fullName}
                   </p>
                 </div>
 
                 {/* EMAIL */}
-
                 <div>
                   <p className="text-sm text-muted-foreground">
                     Email
                   </p>
-
                   <p className="text-lg font-medium">
                     {user.email}
                   </p>
                 </div>
 
                 {/* GENDER */}
-
                 <div>
                   <p className="text-sm text-muted-foreground">
                     Gender
                   </p>
-
                   <p className="text-lg font-medium">
                     {user.gender || "Not provided"}
                   </p>
                 </div>
 
                 {/* PHONE */}
-
                 <div>
                   <p className="text-sm text-muted-foreground">
                     Phone Number
                   </p>
-
                   <p className="text-lg font-medium">
                     {user.number || "Not provided"}
                   </p>
                 </div>
 
                 {/* ADDRESS */}
-
                 <div className="sm:col-span-2">
                   <p className="text-sm text-muted-foreground">
                     Address
                   </p>
-
                   <p className="text-lg font-medium">
                     {user.address || "Not provided"}
                   </p>
                 </div>
 
                 {/* ROLE */}
-
                 <div>
                   <p className="text-sm text-muted-foreground">
                     Role
                   </p>
-
                   <p className="text-lg font-medium">
                     {user.role || "Not provided"}
                   </p>
                 </div>
-
               </div>
 
-              {/* =========================
-                  BUTTONS
-              ========================= */}
-
+              {/* BUTTONS */}
               <div className="flex gap-3 pt-4">
-
-                {/* BACK */}
-
+                {/* BACK - EVERYONE */}
                 <Button
                   type="button"
                   variant="outline"
@@ -252,12 +215,10 @@ export default function TeacherDetail() {
                   Back
                 </Button>
 
-                {/* ADMIN ONLY BUTTONS */}
-
+                {/* ADMIN ONLY */}
                 {isAdmin && (
                   <>
                     {/* EDIT */}
-
                     <Button
                       type="button"
                       variant="secondary"
@@ -269,7 +230,6 @@ export default function TeacherDetail() {
                     </Button>
 
                     {/* DELETE */}
-
                     <Button
                       type="button"
                       variant="destructive"
@@ -282,9 +242,7 @@ export default function TeacherDetail() {
                     </Button>
                   </>
                 )}
-
               </div>
-
             </CardContent>
           </Card>
         </div>

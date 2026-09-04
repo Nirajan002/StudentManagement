@@ -3,12 +3,12 @@ import { Controller, FormProvider, useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 
-import InputField from "../components/form/InputField";
-import FileField from "../components/form/FileField";
+import InputField from "@/components/form/InputField";
+import FileField from "@/components/form/FileField";
 import {
   useGetTeacherQuery,
   useUpdateTeacherMutation,
-} from "../api/TeacherApi";
+} from "../../api/TeacherApi";
 
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -27,7 +27,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-import DashboardLayout from "@/components/DashboardLayout";
+import DashboardLayout from "@/components/layouts/DashboardLayout";
 
 interface EditTeacherForm {
   fullName: string;

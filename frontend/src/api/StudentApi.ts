@@ -12,15 +12,6 @@ export const StudentApi = createApi({
   tagTypes: ["User", "Student"],
 
   endpoints: (builder) => ({
-    addStudent: builder.mutation({
-      query: (data) => ({
-        url: "/AddStudent",
-        method: "POST",
-        body: data,
-      }),
-      invalidatesTags: ["Student"],
-    }),
-
     getStudents: builder.query({
       query: (page = 1) => `/Students?page=${page}`,
       providesTags: ["Student"],
@@ -56,7 +47,6 @@ export const StudentApi = createApi({
 });
 
 export const {
-  useAddStudentMutation,
   useGetStudentsQuery,
   useGetStudentQuery,
   useSearchStudentsQuery,

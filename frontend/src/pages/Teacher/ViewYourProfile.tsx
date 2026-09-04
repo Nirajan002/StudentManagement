@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 
-import { useGetCurrentTeacherQuery } from "../api/TeacherApi";
+import { useGetCurrentTeacherQuery } from "../../api/TeacherApi";
 
 import { Button } from "@/components/ui/button";
 
@@ -12,7 +12,7 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 
-import DashboardLayout from "@/components/DashboardLayout";
+import DashboardLayout from "@/components/layouts/DashboardLayout";
 
 export default function Profile() {
   const navigate = useNavigate();

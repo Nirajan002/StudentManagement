@@ -75,7 +75,7 @@ using (var scope = app.Services.CreateScope())
             Id = Guid.NewGuid(),
             FullName = "Admin User",
             Email = "admin@example.com",
-            Password = hasher.HashPassword(null, "@Admin12345"),
+            Password = hasher.HashPassword(null, "admin123"),
             Role = "Admin",
         };
 

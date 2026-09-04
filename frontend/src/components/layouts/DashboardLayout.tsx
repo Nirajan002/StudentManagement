@@ -1,7 +1,7 @@
 import React from "react";
-import Navbar from "./NavBar";
-import SideMenu from "./SlideMenu";
-import { useGetCurrentTeacherQuery } from "../api/TeacherApi";
+import Navbar from "../NavBar";
+import SideMenu from "../SlideMenu";
+import { useGetCurrentTeacherQuery } from "../../api/TeacherApi";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -34,7 +34,7 @@ export default function DashboardLayout({
         <>
           {/* Fixed Sidebar */}
           <aside className="fixed left-0 top-16 z-40 hidden h-[calc(100vh-4rem)] w-64 border-r bg-card md:block">
-            <SideMenu activeMenu={activeMenu} />
+            <SideMenu activeMenu={activeMenu} user={user} />
           </aside>
 
           {/* Main Content */}
