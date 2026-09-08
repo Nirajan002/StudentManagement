@@ -91,6 +91,29 @@ export const GroupApi = createApi({
       }),
       providesTags: [{ type: "Group", id: "LIST" }],
     }),
+
+    // Add co-teachers (managers) to a group
+    addGroupManagers: builder.mutation({
+      query: ({ groupId, teacherIds }) => ({
+        url: `/${groupId}/managers`,
+        method: "POST",
+        body: { teacherIds },
+      }),
+      invalidatesTags: (_result, _error, { groupId }) => [
+        { type: "Group", id: groupId },
+      ],
+    }),
+
+    // Remove a co-teacher (manager) from a group
+    removeGroupManager: builder.mutation({
+      query: ({ groupId, teacherId }) => ({
+        url: `/${groupId}/managers/${teacherId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (_result, _error, { groupId }) => [
+        { type: "Group", id: groupId },
+      ],
+    }),
   }),
 });
 
@@ -102,4 +125,6 @@ export const {
   useRemoveGroupMemberMutation,
   useDeleteGroupMutation,
   useGetGroupsForStudentQuery,
+  useAddGroupManagersMutation,
+  useRemoveGroupManagerMutation,
 } = GroupApi;

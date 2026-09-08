@@ -20,6 +20,6 @@
 
         public string? Education { get; set; }
 
-        public string Role { get; set; } = "Studdent";
+        public string Role { get; set; } = "Student";
     }
 }

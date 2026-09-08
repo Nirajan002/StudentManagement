@@ -16,7 +16,7 @@ import EditStudent from "./pages/Student/EditStudent";
 // Admin - Teachers
 import Teachers from "./pages/Teacher/Teachers";
 import ViewYourProfile from "./pages/Teacher/ViewYourProfile";
-import UpdateTeacherProfile from "./pages/Teacher/UpdateTeacherProfile";
+import UpdateYourProfile from "./pages/Teacher/UpdateYourProfile";
 import EditTeacher from "./pages/Teacher/EditTeacher";
 
 // Admin
@@ -25,18 +25,24 @@ import AdminIndex from "./pages/AdminIndex";
 // Teacher
 import TeacherIndex from "./pages/TeacherIndex";
 
+//Student
+import StudentIndex from "./pages/StudentIndex";
+
 // Other
 import NotFound from "./pages/NotFound";
 
 // Route protection
 import AdminRoute from "./components/Routes/AdminRoute";
 import TeacherRout from "./components/Routes/TeacherRout";
+import StudentRoute from "./components/Routes/StudentRoute";
 
 import RoleRoute from "./components/Routes/RoleRoute";
 
 import GroupsList from "./pages/Group/GroupList";
 import CreateGroup from "./pages/Group/CreateGroups";
 import GroupDetail from "./pages/Group/GroupDetail";
+
+
 
 function App() {
   return (
@@ -146,8 +152,8 @@ function App() {
       <Route path="/ViewYourProfile" element={<ViewYourProfile />} />
 
       <Route
-        path="/UpdateTeacherProfile/:id"
-        element={<UpdateTeacherProfile />}
+        path="/UpdateYourProfile/:id"
+        element={<UpdateYourProfile />}
       />
 
       {/* =========================
@@ -168,6 +174,15 @@ function App() {
           <RoleRoute allowedRoles={["Admin", "Teacher"]}>
             <CreateGroup />
           </RoleRoute>
+        }
+      />
+
+      <Route
+        path="/StudentIndex"
+        element={
+          <StudentRoute>
+            <StudentIndex />
+          </StudentRoute>
         }
       />
     </Routes>

@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 
-import { useGetCurrentTeacherQuery } from "../../api/TeacherApi";
+import { useGetCurrentUserQuery } from "../../api/AuthApi";
 
 import { Button } from "@/components/ui/button";
 
@@ -21,7 +21,7 @@ export default function Profile() {
     data: user,
     isLoading,
     isError,
-  } = useGetCurrentTeacherQuery();
+  } = useGetCurrentUserQuery();
 
   // =========================
   // LOADING
@@ -194,7 +194,7 @@ export default function Profile() {
                 {/* EDIT */}
                 <Button
                   onClick={() =>
-                    navigate(`/UpdateTeacherProfile/${user.id}`)
+                    navigate(`/UpdateYourProfile/${user.id}`)
                   }
                 >
                   Edit Profile

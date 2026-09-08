@@ -25,6 +25,8 @@ namespace backend.Controllers
         private bool IsAdmin =>
             User.IsInRole("Admin");
 
+        private bool IsCreatorOrAdmin(Group group) => IsAdmin || group.CreatedById == CurrentUserId;
+
         // Checks whether the current user can manage (edit members of) a given group:
         // Admins can manage any group; Teachers only groups they created or co-manage.
         private async Task<bool> CanManageGroup(int groupId)
@@ -93,6 +95,8 @@ namespace backend.Controllers
             });
         }
 
+
+
         // GET api/groups
         // Admin sees all groups; Teacher sees groups they created or co-manage
         [Authorize(Roles = "Admin,Teacher")]
@@ -117,6 +121,7 @@ namespace backend.Controllers
                     g.Name,
                     g.Description,
                     g.CreatedById,
+                    CreatedByName = g.CreatedBy.FullName,
                     g.CreatedAt,
                     MemberCount = g.Members.Count(m => m.RemovedAt == null)
                 })
@@ -143,7 +148,17 @@ namespace backend.Controllers
                     g.Name,
                     g.Description,
                     g.CreatedById,
+                    CreatedByName = g.CreatedBy.FullName,
+                    CreatedByRole = g.CreatedBy.Role,
                     g.CreatedAt,
+                    Managers = g.Managers.Select(m => new
+                    {
+                        TeacherId = m.UserId,
+                        m.User.FullName,
+                        m.User.Email,
+                        m.User.Profile,
+                        m.AssignedAt
+                    }),
                     Members = g.Members
                         .Where(m => m.RemovedAt == null)
                         .Select(m => new
@@ -151,6 +166,7 @@ namespace backend.Controllers
                             m.StudentId,
                             m.Student.FullName,
                             m.Student.Email,
+                            m.Student.Profile,
                             m.AddedAt
                         })
                 })
@@ -286,6 +302,93 @@ namespace backend.Controllers
                 .ToListAsync();
 
             return Ok(groups);
+        }
+
+        // POST api/groups/{id}/managers
+        [Authorize(Roles = "Admin,Teacher")]
+        [HttpPost("{id}/managers")]
+        public async Task<IActionResult> AddManagers(int id, AddGroupManagersRequest request)
+        {
+            var group = await dbContext.Groups
+                .Include(g => g.Managers)
+                .FirstOrDefaultAsync(g => g.Id == id);
+
+            if (group == null)
+            {
+                return NotFound(new { message = "Group not found." });
+            }
+
+            if (!IsCreatorOrAdmin(group))
+            {
+                return Forbid();
+            }
+
+            if (request.TeacherIds == null || !request.TeacherIds.Any())
+            {
+                return BadRequest(new { message = "At least one teacher is required." });
+            }
+
+            var existingManagerIds = group.Managers.Select(m => m.UserId).ToList();
+
+            var validTeacherIds = await dbContext.Teachers
+                .Where(t => request.TeacherIds.Contains(t.Id))
+                .Select(t => t.Id)
+                .ToListAsync();
+
+            // Can't add the creator as a manager (already implicitly owns the group)
+            var toAdd = validTeacherIds
+                .Except(existingManagerIds)
+                .Where(tid => tid != group.CreatedById)
+                .ToList();
+
+            foreach (var teacherId in toAdd)
+            {
+                dbContext.GroupManagers.Add(new GroupManager
+                {
+                    GroupId = id,
+                    UserId = teacherId,
+                    AssignedAt = DateTime.UtcNow
+                });
+            }
+
+            await dbContext.SaveChangesAsync();
+
+            return Ok(new
+            {
+                added = toAdd.Count,
+                skipped = validTeacherIds.Count - toAdd.Count
+            });
+        }
+
+        // DELETE api/groups/{id}/managers/{teacherId}
+        [Authorize(Roles = "Admin,Teacher")]
+        [HttpDelete("{id}/managers/{teacherId}")]
+        public async Task<IActionResult> RemoveManager(int id, Guid teacherId)
+        {
+            var group = await dbContext.Groups.FindAsync(id);
+
+            if (group == null)
+            {
+                return NotFound();
+            }
+
+            if (!IsCreatorOrAdmin(group))
+            {
+                return Forbid();
+            }
+
+            var manager = await dbContext.GroupManagers
+                .FirstOrDefaultAsync(m => m.GroupId == id && m.UserId == teacherId);
+
+            if (manager == null)
+            {
+                return NotFound(new { message = "Manager not found." });
+            }
+
+            dbContext.GroupManagers.Remove(manager);
+            await dbContext.SaveChangesAsync();
+
+            return Ok(new { message = "Co-teacher removed from group." });
         }
     }
 }

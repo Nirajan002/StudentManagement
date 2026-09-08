@@ -4,9 +4,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 
 import {
-  useGetCurrentTeacherQuery,
   useUpdateTeacherProfileMutation,
 } from "../../api/TeacherApi";
+import { useGetCurrentUserQuery } from "../../api/AuthApi";
 
 import InputField from "@/components/form/InputField";
 import FileField from "@/components/form/FileField";
@@ -32,7 +32,7 @@ interface ProfileForm {
   address: string;
 }
 
-export default function UpdateTeacherProfile() {
+export default function UpdateYourProfile() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
@@ -40,7 +40,7 @@ export default function UpdateTeacherProfile() {
   // GET CURRENT USER
   // =========================================================
 
-  const { data: user, isLoading, isError } = useGetCurrentTeacherQuery();
+  const { data: user, isLoading, isError } = useGetCurrentUserQuery();
 
   // =========================================================
   // UPDATE USER

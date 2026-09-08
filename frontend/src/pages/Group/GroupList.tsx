@@ -1,7 +1,7 @@
-import { Link, useNavigate } from "react-router-dom"; // swap for your router if different
+import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, Plus, Loader2 } from "lucide-react";
+import { Users, Plus, Loader2, ShieldCheck } from "lucide-react";
 import { useGetGroupsQuery } from "../../api/GroupApi";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 
@@ -59,11 +59,31 @@ export default function GroupsList() {
                       {group.description}
                     </p>
                   )}
+
+                  {/* Member count */}
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <Users className="h-3.5 w-3.5" />
                     {group.memberCount ?? 0} student
                     {group.memberCount === 1 ? "" : "s"}
                   </div>
+
+                  {/* Admin / creator */}
+                  {group.createdByName && (
+                    <p
+                      className="mt-2 flex w-fit cursor-pointer items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        navigate(`/Teacher/${group.createdById}`);
+                      }}
+                    >
+                      <ShieldCheck className="h-3.5 w-3.5" />
+                      {group.createdByRole || "Admin"}:{" "}
+                      <span className="font-medium text-foreground">
+                        {group.createdByName}
+                      </span>
+                    </p>
+                  )}
                 </CardContent>
               </Card>
             </Link>

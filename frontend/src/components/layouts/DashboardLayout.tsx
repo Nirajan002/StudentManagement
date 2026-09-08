@@ -1,7 +1,7 @@
 import React from "react";
 import Navbar from "../NavBar";
 import SideMenu from "../SlideMenu";
-import { useGetCurrentTeacherQuery } from "../../api/TeacherApi";
+import { useGetCurrentUserQuery } from "../../api/AuthApi";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -12,7 +12,7 @@ export default function DashboardLayout({
   children,
   activeMenu,
 }: DashboardLayoutProps) {
-  const { data: user, isLoading } = useGetCurrentTeacherQuery();
+  const { data: user, isLoading } = useGetCurrentUserQuery();
 
   // Loading state
   if (isLoading) {

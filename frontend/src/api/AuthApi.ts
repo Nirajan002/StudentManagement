@@ -9,7 +9,7 @@ export const AuthApi = createApi({
   reducerPath: "Auth",
   baseQuery,
 
-  tagTypes: ["User", "Teacher", "Student"],
+  tagTypes: ["User", "Teacher", "Student", "CurrentUser"],
 
   endpoints: (builder) => ({
     // Register Teacher
@@ -58,6 +58,15 @@ export const AuthApi = createApi({
         method: "POST",
       }),
     }),
+
+    // Unified "who am I" — works for Admin, Teacher, and Student
+    getCurrentUser: builder.query({
+      query: () => ({
+        url: "/me",
+        method: "GET",
+      }),
+      providesTags: ["CurrentUser"],
+    }),
   }),
 });
 
@@ -67,4 +76,5 @@ export const {
   useLoginMutation,
   useLogoutMutation,
   useRefreshTokenMutation,
+  useGetCurrentUserQuery,
 } = AuthApi;

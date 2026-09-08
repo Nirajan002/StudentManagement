@@ -19,12 +19,13 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-import { useGetStudentsQuery } from "../../api/StudentApi";
+import { useSearchStudentsQuery } from "../../api/StudentApi";
 
 export interface PickedStudent {
   id: string;
   fullName: string;
   email: string;
+  profile?: string | null;
 }
 
 interface StudentPickerProps {
@@ -41,14 +42,23 @@ export function StudentPicker({
   placeholder = "Search students by name or email...",
 }: StudentPickerProps) {
   const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
 
   const {
-    data: students,
+    data: students = [],
     isLoading,
     isError,
-  } = useGetStudentsQuery(undefined);
+  } = useSearchStudentsQuery(
+    {
+      search,
+      limit: 20,
+    },
+    {
+      skip: !search.trim(),
+    }
+  );
 
-  const availableStudents: PickedStudent[] = (students ?? []).filter(
+  const availableStudents: PickedStudent[] = students.filter(
     (student: PickedStudent) => !excludeIds.includes(student.id)
   );
 
@@ -90,26 +100,43 @@ export function StudentPicker({
           align="start"
           className="w-[--radix-popover-trigger-width] p-0"
         >
-          <Command>
-            <CommandInput placeholder="Search students..." />
+          <Command shouldFilter={false}>
+            <CommandInput
+              placeholder="Search students..."
+              value={search}
+              onValueChange={setSearch}
+            />
 
             <CommandList>
-              {isLoading && (
+              {!search.trim() && (
                 <div className="py-6 text-center text-sm text-muted-foreground">
-                  Loading students...
+                  Start typing to search students...
                 </div>
               )}
 
-              {isError && (
+              {isLoading && search.trim() && (
+                <div className="py-6 text-center text-sm text-muted-foreground">
+                  Searching students...
+                </div>
+              )}
+
+              {isError && search.trim() && (
                 <div className="py-6 text-center text-sm text-destructive">
                   Couldn't load students.
                 </div>
               )}
 
-              {!isLoading && !isError && (
-                <>
+              {!isLoading &&
+                !isError &&
+                search.trim() &&
+                availableStudents.length === 0 && (
                   <CommandEmpty>No student found.</CommandEmpty>
+                )}
 
+              {!isLoading &&
+                !isError &&
+                search.trim() &&
+                availableStudents.length > 0 && (
                   <CommandGroup>
                     {availableStudents.map((student) => {
                       const isSelected = selected.some(
@@ -119,7 +146,7 @@ export function StudentPicker({
                       return (
                         <CommandItem
                           key={student.id}
-                          value={`${student.fullName} ${student.email}`}
+                          value={student.id}
                           data-checked={isSelected}
                           onSelect={() => toggleStudent(student)}
                         >
@@ -134,8 +161,7 @@ export function StudentPicker({
                       );
                     })}
                   </CommandGroup>
-                </>
-              )}
+                )}
             </CommandList>
           </Command>
         </PopoverContent>

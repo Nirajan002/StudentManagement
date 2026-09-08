@@ -7,9 +7,10 @@ import { Input } from "@/components/ui/input";
 import { useSearchStudentsQuery } from "../api/StudentApi";
 
 import {
-  useGetCurrentTeacherQuery,
   useSearchTeachersQuery,
 } from "../api/TeacherApi";
+
+import { useGetCurrentUserQuery } from "../api/AuthApi";
 
 export default function Navbar() {
   const navigate = useNavigate();
@@ -19,7 +20,7 @@ export default function Navbar() {
   // =========================
   const roleFromStorage = localStorage.getItem("role");
 
-  const { data: currentUser } = useGetCurrentTeacherQuery(undefined, {
+  const { data: currentUser } = useGetCurrentUserQuery(undefined, {
     skip: !roleFromStorage,
   });
 

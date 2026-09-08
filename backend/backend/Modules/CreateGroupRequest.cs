@@ -4,8 +4,6 @@
     {
         public string Name { get; set; } = string.Empty;
         public string? Description { get; set; }
-
-        // Optional: allow adding initial members at creation time
         public List<Guid>? StudentIds { get; set; }
     }
 
@@ -19,8 +17,9 @@
         public Guid StudentId { get; set; }
     }
 
-    public class AddGroupManagerRequest
+    public class AddGroupManagersRequest
     {
-        public Guid TeacherId { get; set; }
+        public List<Guid> TeacherIds { get; set; } = new List<Guid>();
     }
+
 }
