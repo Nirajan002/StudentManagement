@@ -12,11 +12,12 @@ import TeacherDetail from "./pages/Teacher/TeacherDetail";
 // Admin - Students
 import StudentView from "./pages/Student/StudentView";
 import EditStudent from "./pages/Student/EditStudent";
+import UpdateStudentProfile from "./pages/Student/UpdateStudentProfile";
 
 // Admin - Teachers
 import Teachers from "./pages/Teacher/Teachers";
 import ViewYourProfile from "./pages/Teacher/ViewYourProfile";
-import UpdateYourProfile from "./pages/Teacher/UpdateYourProfile";
+import UpdateTeacherProfile from "./pages/Teacher/UpdateTeacherProfile";
 import EditTeacher from "./pages/Teacher/EditTeacher";
 
 // Admin
@@ -41,8 +42,6 @@ import RoleRoute from "./components/Routes/RoleRoute";
 import GroupsList from "./pages/Group/GroupList";
 import CreateGroup from "./pages/Group/CreateGroups";
 import GroupDetail from "./pages/Group/GroupDetail";
-
-
 
 function App() {
   return (
@@ -151,9 +150,11 @@ function App() {
           ========================= */}
       <Route path="/ViewYourProfile" element={<ViewYourProfile />} />
 
+      <Route path="/UpdateTeacherProfile/:id" element={<UpdateTeacherProfile />} />
+
       <Route
-        path="/UpdateYourProfile/:id"
-        element={<UpdateYourProfile />}
+        path="/UpdateStudentProfile/:id"
+        element={<UpdateStudentProfile />}
       />
 
       {/* =========================
@@ -161,10 +162,7 @@ function App() {
           ========================= */}
       <Route path="*" element={<NotFound />} />
 
-      <Route
-        path="/GroupsList"
-        element={ <GroupsList /> }
-      />
+      <Route path="/GroupsList" element={<GroupsList />} />
 
       <Route path="/groups/:id" element={<GroupDetail />} />
 
@@ -186,8 +184,6 @@ function App() {
         }
       />
     </Routes>
-
-    
   );
 }
 

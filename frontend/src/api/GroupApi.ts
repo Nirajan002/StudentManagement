@@ -8,6 +8,7 @@ const baseQuery = fetchBaseQuery({
 export const GroupApi = createApi({
   reducerPath: "Group",
   baseQuery,
+  refetchOnMountOrArgChange: true,
 
   tagTypes: ["Group"],
 
@@ -114,6 +115,34 @@ export const GroupApi = createApi({
         { type: "Group", id: groupId },
       ],
     }),
+
+    getGroupPosts: builder.query({
+      query: (groupId: string) => `/${groupId}/posts`,
+      providesTags: (_result, _error, groupId) => [
+        { type: "GroupPost", id: groupId },
+      ],
+    }),
+
+    createGroupPost: builder.mutation({
+      query: ({ groupId, formData }) => ({
+        url: `/${groupId}/posts`,
+        method: "POST",
+        body: formData,
+      }),
+      invalidatesTags: (_result, _error, { groupId }) => [
+        { type: "GroupPost", id: groupId },
+      ],
+    }),
+
+    deleteGroupPost: builder.mutation({
+      query: ({ groupId, postId }) => ({
+        url: `/${groupId}/posts/${postId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (_result, _error, { groupId }) => [
+        { type: "GroupPost", id: groupId },
+      ],
+    }),
   }),
 });
 
@@ -127,4 +156,7 @@ export const {
   useGetGroupsForStudentQuery,
   useAddGroupManagersMutation,
   useRemoveGroupManagerMutation,
+  useGetGroupPostsQuery,
+  useCreateGroupPostMutation,
+  useDeleteGroupPostMutation,
 } = GroupApi;

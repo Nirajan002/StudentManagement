@@ -25,6 +25,9 @@ namespace backend.Controllers
         private bool IsAdmin =>
             User.IsInRole("Admin");
 
+        private bool IsStudent =>
+            User.IsInRole("Student");
+
         private bool IsCreatorOrAdmin(Group group) => IsAdmin || group.CreatedById == CurrentUserId;
 
         // Checks whether the current user can manage (edit members of) a given group:
@@ -96,19 +99,31 @@ namespace backend.Controllers
         }
 
 
-
-        // GET api/groups
-        // Admin sees all groups; Teacher sees groups they created or co-manage
-        [Authorize(Roles = "Admin,Teacher")]
+        // Admin sees all groups; Teacher sees groups they created or co-manage;
+        // Student sees groups they're a member of
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetGroups()
         {
             var query = dbContext.Groups
                 .Where(g => g.IsActive);
 
-            if (!IsAdmin)
+            if (IsAdmin)
             {
+                // Admins see everything, no extra filter
+            }
+            else if (IsStudent)
+            {
+                var studentId = CurrentUserId;
+
+                query = query.Where(g =>
+                    g.Members.Any(m => m.StudentId == studentId && m.RemovedAt == null));
+            }
+            else
+            {
+                // Teacher
                 var userId = CurrentUserId;
+
                 query = query.Where(g =>
                     g.CreatedById == userId ||
                     g.Managers.Any(m => m.UserId == userId));
@@ -123,19 +138,37 @@ namespace backend.Controllers
                     g.CreatedById,
                     CreatedByName = g.CreatedBy.FullName,
                     g.CreatedAt,
-                    MemberCount = g.Members.Count(m => m.RemovedAt == null)
+                    MemberCount = g.Members.Count(m => m.RemovedAt == null),
+                    LastPostAt = dbContext.GroupPosts
+                        .Where(p => p.GroupId == g.Id)
+                        .OrderByDescending(p => p.PostedAt)
+                        .Select(p => (DateTime?)p.PostedAt)
+                        .FirstOrDefault()
                 })
                 .ToListAsync();
+                var result = groups.Select(g => new
+                {
+                    g.Id,
+                    g.Name,
+                    g.Description,
+                    g.CreatedById,
+                    g.CreatedByName,
+                    CreatedAt = DateTime.SpecifyKind(g.CreatedAt, DateTimeKind.Utc),
+                    g.MemberCount,
+                    LastPostAt = g.LastPostAt.HasValue
+                        ? DateTime.SpecifyKind(g.LastPostAt.Value, DateTimeKind.Utc)
+                        : (DateTime?)null
+                });
 
-            return Ok(groups);
+            return Ok(result);
         }
 
         // GET api/groups/{id}
-        [Authorize(Roles = "Admin,Teacher")]
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetGroup(int id)
         {
-            if (!await CanManageGroup(id) && !IsAdmin)
+            if (!await CanViewGroup(id))
             {
                 return Forbid();
             }
@@ -178,6 +211,27 @@ namespace backend.Controllers
             }
 
             return Ok(group);
+        }
+
+        private async Task<bool> CanViewGroup(int groupId)
+        {
+            if (IsAdmin) return true;
+
+            var userId = CurrentUserId;
+
+            if (IsStudent)
+            {
+                return await dbContext.GroupMembers.AnyAsync(m =>
+                    m.GroupId == groupId &&
+                    m.StudentId == userId &&
+                    m.RemovedAt == null);
+            }
+
+            // Teacher
+            return await dbContext.Groups.AnyAsync(g =>
+                g.Id == groupId &&
+                (g.CreatedById == userId ||
+                 g.Managers.Any(m => m.UserId == userId)));
         }
 
         // POST api/groups/{id}/members
@@ -389,6 +443,202 @@ namespace backend.Controllers
             await dbContext.SaveChangesAsync();
 
             return Ok(new { message = "Co-teacher removed from group." });
+        }
+
+        // POST api/groups/{id}/posts
+        // Admin, group creator, or co-teacher can post files or notices
+        [Authorize(Roles = "Admin,Teacher")]
+        [HttpPost("{id}/posts")]
+        public async Task<IActionResult> CreateGroupPost(int id, [FromForm] CreateGroupPostRequest request)
+        {
+            if (!await CanManageGroup(id))
+            {
+                return Forbid();
+            }
+
+            var group = await dbContext.Groups.FindAsync(id);
+            if (group == null)
+            {
+                return NotFound(new { message = "Group not found." });
+            }
+
+            if (string.IsNullOrWhiteSpace(request.Title))
+            {
+                return BadRequest(new { message = "Title is required." });
+            }
+
+            var type = request.Type == "Notice" ? "Notice" : "File";
+
+            if (type == "Notice" && string.IsNullOrWhiteSpace(request.Content))
+            {
+                return BadRequest(new { message = "Notice content is required." });
+            }
+
+            if (type == "File" && (request.File == null || request.File.Length == 0))
+            {
+                return BadRequest(new { message = "A file is required." });
+            }
+
+            string? storedFileName = null;
+            string? originalFileName = null;
+
+            if (request.File != null && request.File.Length > 0)
+            {
+                string uploadPath = Path.Combine(
+                    Directory.GetCurrentDirectory(), "wwwroot", "uploads"
+                );
+
+                if (!Directory.Exists(uploadPath))
+                {
+                    Directory.CreateDirectory(uploadPath);
+                }
+
+                storedFileName = Guid.NewGuid().ToString() + Path.GetExtension(request.File.FileName);
+                originalFileName = request.File.FileName;
+
+                string filePath = Path.Combine(uploadPath, storedFileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await request.File.CopyToAsync(stream);
+                }
+            }
+
+            var post = new GroupPost
+            {
+                GroupId = id,
+                Type = type,
+                Title = request.Title,
+                Content = request.Content,
+                FileName = storedFileName,
+                OriginalFileName = originalFileName,
+                PostedById = CurrentUserId,
+                PostedAt = DateTime.UtcNow
+            };
+
+            dbContext.GroupPosts.Add(post);
+            await dbContext.SaveChangesAsync();
+
+            var postedBy = await dbContext.Teachers.FindAsync(CurrentUserId);
+
+            return Ok(new
+            {
+                post.Id,
+                post.GroupId,
+                post.Type,
+                post.Title,
+                post.Content,
+                post.FileName,
+                post.OriginalFileName,
+                post.PostedById,
+                PostedByName = postedBy?.FullName,
+                post.PostedAt
+            });
+        }
+
+        // GET api/groups/{id}/posts
+        // Anyone who can view the group (creator, co-teacher, admin, or member student) can list posts
+        [Authorize]
+        [HttpGet("{id}/posts")]
+        public async Task<IActionResult> GetGroupPosts(int id)
+        {
+            if (!await CanViewGroup(id))
+            {
+                return Forbid();
+            }
+
+            var posts = await dbContext.GroupPosts
+                .Where(p => p.GroupId == id)
+                .OrderByDescending(p => p.PostedAt)
+                .Select(p => new
+                {
+                    p.Id,
+                    p.GroupId,
+                    p.Type,
+                    p.Title,
+                    p.Content,
+                    p.FileName,
+                    p.OriginalFileName,
+                    p.PostedById,
+                    PostedByName = p.PostedBy.FullName,
+                    p.PostedAt
+                })
+                .ToListAsync();
+
+            return Ok(posts);
+        }
+
+        // DELETE api/groups/{id}/posts/{postId}
+        // Admin can delete any post; otherwise only the original poster can delete their own
+        [Authorize(Roles = "Admin,Teacher")]
+        [HttpDelete("{id}/posts/{postId}")]
+        public async Task<IActionResult> DeleteGroupPost(int id, int postId)
+        {
+            var post = await dbContext.GroupPosts
+                .FirstOrDefaultAsync(p => p.Id == postId && p.GroupId == id);
+
+            if (post == null)
+            {
+                return NotFound();
+            }
+
+            if (!IsAdmin && post.PostedById != CurrentUserId)
+            {
+                return Forbid();
+            }
+
+            if (!string.IsNullOrEmpty(post.FileName))
+            {
+                string uploadPath = Path.Combine(
+                    Directory.GetCurrentDirectory(), "wwwroot", "uploads"
+                );
+                string filePath = Path.Combine(uploadPath, post.FileName);
+
+                if (System.IO.File.Exists(filePath))
+                {
+                    System.IO.File.Delete(filePath);
+                }
+            }
+
+            dbContext.GroupPosts.Remove(post);
+            await dbContext.SaveChangesAsync();
+
+            return Ok(new { message = "Post deleted." });
+        }
+
+        // GET api/groups/{id}/posts/{postId}/download
+        // Anyone who can view the group can download an attached file
+        [Authorize]
+        [HttpGet("{id}/posts/{postId}/download")]
+        public async Task<IActionResult> DownloadGroupPost(int id, int postId)
+        {
+            if (!await CanViewGroup(id))
+            {
+                return Forbid();
+            }
+
+            var post = await dbContext.GroupPosts
+                .FirstOrDefaultAsync(p => p.Id == postId && p.GroupId == id);
+
+            if (post == null || string.IsNullOrEmpty(post.FileName))
+            {
+                return NotFound();
+            }
+
+            string uploadPath = Path.Combine(
+                Directory.GetCurrentDirectory(), "wwwroot", "uploads"
+            );
+            string filePath = Path.Combine(uploadPath, post.FileName);
+
+            if (!System.IO.File.Exists(filePath))
+            {
+                return NotFound();
+            }
+
+            var bytes = await System.IO.File.ReadAllBytesAsync(filePath);
+            var downloadName = post.OriginalFileName ?? post.FileName;
+
+            return File(bytes, "application/octet-stream", downloadName);
         }
     }
 }

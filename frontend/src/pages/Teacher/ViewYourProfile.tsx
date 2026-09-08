@@ -70,6 +70,13 @@ export default function Profile() {
   }
 
   // =========================
+  // DERIVED VALUES
+  // (must come AFTER `user` is defined above)
+  // =========================
+
+  const isStudent = user.role?.toLowerCase() === "student";
+
+  // =========================
   // PROFILE
   // =========================
 
@@ -194,7 +201,11 @@ export default function Profile() {
                 {/* EDIT */}
                 <Button
                   onClick={() =>
-                    navigate(`/UpdateYourProfile/${user.id}`)
+                    navigate(
+                      isStudent
+                        ? `/UpdateStudentProfile/${user.id}`
+                        : `/UpdateTeacherProfile/${user.id}`
+                    )
                   }
                 >
                   Edit Profile

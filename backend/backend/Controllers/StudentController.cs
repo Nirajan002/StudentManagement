@@ -203,5 +203,90 @@ namespace backend.Controllers
             return Ok(students);
         }
 
+        [Authorize]
+        [HttpPut("profile/{ID:guid}")]
+        public async Task<IActionResult> StudentProfileUpdate(
+    [FromRoute] Guid ID,
+    [FromForm] StudentProfileUpdate studentProfileUpdate)
+        {
+            var loggedInId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(loggedInId))
+            {
+                return Unauthorized();
+            }
+
+            if (!Guid.TryParse(loggedInId, out var currentId))
+            {
+                return Unauthorized();
+            }
+
+            if (currentId != ID)
+            {
+                return Forbid();
+            }
+
+            var student = await dbContext.Students.FindAsync(ID);
+
+            if (student == null)
+            {
+                return NotFound();
+            }
+
+            student.Gender = studentProfileUpdate.Gender;
+            student.Number = studentProfileUpdate.Number;
+            student.Addresh = studentProfileUpdate.Addresh;
+
+            if (studentProfileUpdate.Profile != null &&
+                studentProfileUpdate.Profile.Length > 0)
+            {
+                string uploadPath = Path.Combine(
+                    Directory.GetCurrentDirectory(),
+                    "wwwroot",
+                    "uploads"
+                );
+
+                if (!Directory.Exists(uploadPath))
+                {
+                    Directory.CreateDirectory(uploadPath);
+                }
+
+                if (!string.IsNullOrEmpty(student.Profile))
+                {
+                    string oldFilePath = Path.Combine(uploadPath, student.Profile);
+
+                    if (System.IO.File.Exists(oldFilePath))
+                    {
+                        System.IO.File.Delete(oldFilePath);
+                    }
+                }
+
+                string fileName = Guid.NewGuid().ToString()
+                    + Path.GetExtension(studentProfileUpdate.Profile.FileName);
+
+                string filePath = Path.Combine(uploadPath, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await studentProfileUpdate.Profile.CopyToAsync(stream);
+                }
+
+                student.Profile = fileName;
+            }
+
+            await dbContext.SaveChangesAsync();
+
+            return Ok(new
+            {
+                student.Id,
+                student.FullName,
+                student.Email,
+                student.Profile,
+                student.Gender,
+                student.Number,
+                student.Addresh
+            });
+        }
+
     }
 }

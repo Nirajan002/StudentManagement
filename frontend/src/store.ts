@@ -1,4 +1,5 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
+import { setupListeners } from "@reduxjs/toolkit/query";
 import { AuthApi } from "./api/AuthApi";
 import { GroupApi } from "./api/GroupApi";
 import { StudentApi } from "./api/StudentApi";
@@ -9,10 +10,8 @@ const appReducer = combineReducers({
   [GroupApi.reducerPath]: GroupApi.reducer,
   [StudentApi.reducerPath]: StudentApi.reducer,
   [TeacherApi.reducerPath]: TeacherApi.reducer,
-  // ...any other slices
 });
 
-// Wipe the whole store (including every RTK Query cache) on logout
 const rootReducer = (state: ReturnType<typeof appReducer> | undefined, action: any) => {
   if (action.type === "auth/resetStore") {
     state = undefined;
@@ -29,6 +28,8 @@ export const store = configureStore({
       .concat(StudentApi.middleware)
       .concat(TeacherApi.middleware),
 });
+
+setupListeners(store.dispatch);
 
 export type RootState = ReturnType<typeof appReducer>;
 export type AppDispatch = typeof store.dispatch;

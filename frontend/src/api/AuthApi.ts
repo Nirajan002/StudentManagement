@@ -8,6 +8,7 @@ const baseQuery = fetchBaseQuery({
 export const AuthApi = createApi({
   reducerPath: "Auth",
   baseQuery,
+  refetchOnMountOrArgChange: true,
 
   tagTypes: ["User", "Teacher", "Student", "CurrentUser"],
 

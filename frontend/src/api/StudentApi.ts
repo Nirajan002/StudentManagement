@@ -8,6 +8,7 @@ const baseQuery = fetchBaseQuery({
 export const StudentApi = createApi({
   reducerPath: "Student",
   baseQuery,
+  refetchOnMountOrArgChange: true,
 
   tagTypes: ["User", "Student"],
 
@@ -43,6 +44,15 @@ export const StudentApi = createApi({
       }),
       invalidatesTags: ["Student"],
     }),
+
+    updateStudentProfile: builder.mutation({
+      query: ({ id, formData }) => ({
+        url: `/profile/${id}`,
+        method: "PUT",
+        body: formData,
+      }),
+      invalidatesTags: ["Student"],
+    }),
   }),
 });
 
@@ -52,4 +62,5 @@ export const {
   useSearchStudentsQuery,
   useUpdateStudentMutation,
   useDeleteStudentMutation,
+  useUpdateStudentProfileMutation,
 } = StudentApi;

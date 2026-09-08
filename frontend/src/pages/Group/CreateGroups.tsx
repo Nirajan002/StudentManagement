@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Loader2 } from "lucide-react";
-import { StudentPicker, type PickedStudent } from "./StudentPicker";
+import { StudentPicker, type PickedStudent } from "@/components/group/StudentPicker";
 import { useCreateGroupMutation } from "../../api/GroupApi";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 

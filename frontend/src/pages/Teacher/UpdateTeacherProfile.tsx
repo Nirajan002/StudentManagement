@@ -32,7 +32,7 @@ interface ProfileForm {
   address: string;
 }
 
-export default function UpdateYourProfile() {
+export default function UpdateTeacherProfile() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
@@ -40,7 +40,7 @@ export default function UpdateYourProfile() {
   // GET CURRENT USER
   // =========================================================
 
-  const { data: user, isLoading, isError } = useGetCurrentUserQuery();
+  const { data: user, isLoading, isError, refetch } = useGetCurrentUserQuery();
 
   // =========================================================
   // UPDATE USER
@@ -141,6 +141,8 @@ export default function UpdateYourProfile() {
         id,
         formData,
       }).unwrap();
+
+      await refetch();
 
       toast.success("Profile updated successfully!");
 

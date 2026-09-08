@@ -3,11 +3,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Users, Plus, Loader2, ShieldCheck } from "lucide-react";
 import { useGetGroupsQuery } from "../../api/GroupApi";
+import { useGetCurrentUserQuery } from "../../api/AuthApi";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
+import { hasUnreadActivity } from "@/components/utils/groupActivity";
 
 export default function GroupsList() {
   const { data: groups, isLoading, isError } = useGetGroupsQuery(undefined);
+  const { data: currentUser } = useGetCurrentUserQuery();
   const navigate = useNavigate();
+
+  const isStudent = currentUser?.role?.toLowerCase() === "student";
 
   return (
     <DashboardLayout>
@@ -19,10 +24,13 @@ export default function GroupsList() {
               Organize students into groups for announcements and coordination.
             </p>
           </div>
-          <Button onClick={() => navigate("/CreateGroup")}>
-            <Plus className="mr-2 h-4 w-4" />
-            New group
-          </Button>
+
+          {!isStudent && (
+            <Button onClick={() => navigate("/CreateGroup")}>
+              <Plus className="mr-2 h-4 w-4" />
+              New group
+            </Button>
+          )}
         </div>
 
         {isLoading && (
@@ -41,53 +49,65 @@ export default function GroupsList() {
             <Users className="mx-auto mb-3 h-8 w-8 text-muted-foreground" />
             <p className="font-medium">No groups yet</p>
             <p className="text-sm text-muted-foreground">
-              Create your first group to start organizing students.
+              {isStudent
+                ? "You haven't been added to any groups yet."
+                : "Create your first group to start organizing students."}
             </p>
           </div>
         )}
 
         <div className="grid gap-3 sm:grid-cols-2">
-          {groups?.map((group: any) => (
-            <Link key={group.id} to={`/groups/${group.id}`}>
-              <Card className="transition-colors hover:border-foreground/20">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base">{group.name}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {group.description && (
-                    <p className="mb-2 line-clamp-2 text-sm text-muted-foreground">
-                      {group.description}
-                    </p>
+          {groups?.map((group: any) => {
+            const unread = hasUnreadActivity(group.id, group.lastPostAt);
+
+            return (
+              <Link key={group.id} to={`/groups/${group.id}`}>
+                <Card className="relative transition-colors hover:border-foreground/20">
+                  {unread && (
+                    <span
+                      className="absolute right-3 top-3 h-2.5 w-2.5 rounded-full bg-red-500"
+                      aria-label="New activity"
+                    />
                   )}
 
-                  {/* Member count */}
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Users className="h-3.5 w-3.5" />
-                    {group.memberCount ?? 0} student
-                    {group.memberCount === 1 ? "" : "s"}
-                  </div>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base">{group.name}</CardTitle>
+                  </CardHeader>
 
-                  {/* Admin / creator */}
-                  {group.createdByName && (
-                    <p
-                      className="mt-2 flex w-fit cursor-pointer items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        navigate(`/Teacher/${group.createdById}`);
-                      }}
-                    >
-                      <ShieldCheck className="h-3.5 w-3.5" />
-                      {group.createdByRole || "Admin"}:{" "}
-                      <span className="font-medium text-foreground">
-                        {group.createdByName}
-                      </span>
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
+                  <CardContent>
+                    {group.description && (
+                      <p className="mb-2 line-clamp-2 text-sm text-muted-foreground">
+                        {group.description}
+                      </p>
+                    )}
+
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Users className="h-3.5 w-3.5" />
+                      {group.memberCount ?? 0} student
+                      {group.memberCount === 1 ? "" : "s"}
+                    </div>
+
+                    {group.createdByName && (
+                      <p
+                        className="mt-2 flex w-fit cursor-pointer items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          navigate(`/Teacher/${group.createdById}`);
+                        }}
+                      >
+                        <ShieldCheck className="h-3.5 w-3.5" />
+                        Admin:{" "}
+                        <span className="font-medium text-foreground">
+                          {group.createdByName}
+                        </span>
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+              </Link>
+            );
+          })}
         </div>
       </div>
     </DashboardLayout>

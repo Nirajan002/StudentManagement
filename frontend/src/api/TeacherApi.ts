@@ -8,6 +8,7 @@ const baseQuery = fetchBaseQuery({
 export const TeacherApi = createApi({
   reducerPath: "Teacher",
   baseQuery,
+  refetchOnMountOrArgChange: true,
 
   tagTypes: ["Teacher", "Student"],
 
