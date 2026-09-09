@@ -10,6 +10,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using System.Security.Cryptography;
+using backend.DTOs;
 
 namespace backend.Controllers
 {
@@ -91,10 +92,7 @@ namespace backend.Controllers
             {
                 return NotFound();
             }
-
-            // ==========================================
             // UPDATE NORMAL USER INFORMATION
-            // ==========================================
 
             teacher.FullName = teacherProfileUpdate.FullName;
             teacher.Email = teacherProfileUpdate.Email;
@@ -102,9 +100,7 @@ namespace backend.Controllers
             teacher.Number = teacherProfileUpdate.Number;
             teacher.Address = teacherProfileUpdate.Address;
 
-            // ==========================================
             // UPDATE PROFILE IMAGE
-            // ==========================================
 
             if (teacherProfileUpdate.Profile != null &&
                 teacherProfileUpdate.Profile.Length > 0)
@@ -121,9 +117,7 @@ namespace backend.Controllers
                     Directory.CreateDirectory(uploadPath);
                 }
 
-                // ------------------------------------------
                 // DELETE OLD PROFILE IMAGE
-                // ------------------------------------------
 
                 if (!string.IsNullOrEmpty(teacher.Profile))
                 {
@@ -138,9 +132,7 @@ namespace backend.Controllers
                     }
                 }
 
-                // ------------------------------------------
                 // CREATE NEW FILE NAME
-                // ------------------------------------------
 
                 string fileName =
                     Guid.NewGuid().ToString()
@@ -153,9 +145,7 @@ namespace backend.Controllers
                     fileName
                 );
 
-                // ------------------------------------------
                 // SAVE NEW IMAGE
-                // ------------------------------------------
 
                 using (var stream = new FileStream(
                     filePath,
@@ -164,16 +154,12 @@ namespace backend.Controllers
                     await teacherProfileUpdate.Profile.CopyToAsync(stream);
                 }
 
-                // ------------------------------------------
                 // SAVE FILE NAME IN DATABASE
-                // ------------------------------------------
 
                 teacher.Profile = fileName;
             }
 
-            // ==========================================
             // SAVE EVERYTHING
-            // ==========================================
 
             await dbContext.SaveChangesAsync();
 

@@ -128,3 +128,41 @@
     @apply font-sans;
     }
 }
+
+@layer utilities {
+  /* Fully hides the scrollbar but keeps the element scrollable.
+     Used by cmdk's CommandList (see command.tsx). */
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* A slim, borderless scrollbar — no arrow buttons, rounded thumb,
+     transparent track. Used for the independently-scrolling panes
+     in GroupDetail. */
+  .thin-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  .thin-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .thin-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .thin-scrollbar::-webkit-scrollbar-thumb {
+    background-color: var(--border);
+    border-radius: 9999px;
+  }
+
+  .thin-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: var(--muted-foreground);
+  }
+}

@@ -17,6 +17,19 @@ function scopedKey(groupId: string | number): string {
   return `${getUserKey()}:${groupId}`;
 }
 
+export interface RecentNotice {
+  id: number;
+  groupId: number;
+  groupName: string;
+  title: string;
+  postedAt: string;
+  postedByName: string;
+}
+
+export function getUnreadNotices(notices: RecentNotice[]): RecentNotice[] {
+  return notices.filter((n) => hasUnreadActivity(n.groupId, n.postedAt));
+}
+
 export function getLastViewed(groupId: string | number): string | null {
   return readStore()[scopedKey(groupId)] ?? null;
 }

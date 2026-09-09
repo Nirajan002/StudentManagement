@@ -60,7 +60,7 @@ export const AuthApi = createApi({
       }),
     }),
 
-    // Unified "who am I" — works for Admin, Teacher, and Student
+    // Unified "who am I" 
     getCurrentUser: builder.query({
       query: () => ({
         url: "/me",

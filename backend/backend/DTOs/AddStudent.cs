@@ -1,6 +1,6 @@
-﻿namespace backend.Modules
+﻿namespace backend.DTOs
 {
-    public class TeacherRegister
+    public class AddStudent
     {
         public string FullName { get; set; }
 

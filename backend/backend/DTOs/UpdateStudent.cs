@@ -1,4 +1,4 @@
-﻿namespace backend.Modules
+﻿namespace backend.DTOs
 {
     public class UpdateStudent
     {

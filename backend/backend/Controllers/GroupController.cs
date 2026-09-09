@@ -1,4 +1,5 @@
 ﻿using backend.Data;
+using backend.DTOs;
 using backend.Modules;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -30,8 +31,6 @@ namespace backend.Controllers
 
         private bool IsCreatorOrAdmin(Group group) => IsAdmin || group.CreatedById == CurrentUserId;
 
-        // Checks whether the current user can manage (edit members of) a given group:
-        // Admins can manage any group; Teachers only groups they created or co-manage.
         private async Task<bool> CanManageGroup(int groupId)
         {
             if (IsAdmin) return true;
@@ -99,8 +98,7 @@ namespace backend.Controllers
         }
 
 
-        // Admin sees all groups; Teacher sees groups they created or co-manage;
-        // Student sees groups they're a member of
+        // sees groups they're a member of
         [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetGroups()
@@ -316,8 +314,7 @@ namespace backend.Controllers
             return Ok(new { message = "Student removed from group." });
         }
 
-        // DELETE api/groups/{id}
-        // Deactivate a group (soft delete) — Admin only, or the Teacher who created it
+        // Deactivate a group (soft delete)
         [Authorize(Roles = "Admin,Teacher")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteGroup(int id)
@@ -339,8 +336,7 @@ namespace backend.Controllers
             return Ok(new { message = "Group deleted." });
         }
 
-        // GET api/groups/student/{studentId}
-        // Lists groups a given student belongs to (for admin/teacher lookup)
+        // Lists groups a given student belongs to 
         [Authorize(Roles = "Admin,Teacher")]
         [HttpGet("student/{studentId}")]
         public async Task<IActionResult> GetGroupsForStudent(Guid studentId)
@@ -445,7 +441,6 @@ namespace backend.Controllers
             return Ok(new { message = "Co-teacher removed from group." });
         }
 
-        // POST api/groups/{id}/posts
         // Admin, group creator, or co-teacher can post files or notices
         [Authorize(Roles = "Admin,Teacher")]
         [HttpPost("{id}/posts")]
@@ -536,7 +531,6 @@ namespace backend.Controllers
             });
         }
 
-        // GET api/groups/{id}/posts
         // Anyone who can view the group (creator, co-teacher, admin, or member student) can list posts
         [Authorize]
         [HttpGet("{id}/posts")]
@@ -568,7 +562,6 @@ namespace backend.Controllers
             return Ok(posts);
         }
 
-        // DELETE api/groups/{id}/posts/{postId}
         // Admin can delete any post; otherwise only the original poster can delete their own
         [Authorize(Roles = "Admin,Teacher")]
         [HttpDelete("{id}/posts/{postId}")]
@@ -639,6 +632,42 @@ namespace backend.Controllers
             var downloadName = post.OriginalFileName ?? post.FileName;
 
             return File(bytes, "application/octet-stream", downloadName);
+        }
+
+       
+        [Authorize]
+        [HttpGet("notices")]
+        public async Task<IActionResult> GetRecentNotices()
+        {
+            var query = dbContext.GroupPosts
+                .Where(p => p.Type == "Notice")
+                .Where(p => p.Group.IsActive);
+
+            if (!IsAdmin)
+            {
+                var userId = CurrentUserId;
+
+                query = query.Where(p =>
+                    p.Group.CreatedById == userId ||
+                    p.Group.Managers.Any(m => m.UserId == userId) ||
+                    p.Group.Members.Any(m => m.StudentId == userId && m.RemovedAt == null));
+            }
+
+            var notices = await query
+                .OrderByDescending(p => p.PostedAt)
+                .Take(50)
+                .Select(p => new
+                {
+                    p.Id,
+                    p.GroupId,
+                    GroupName = p.Group.Name,
+                    p.Title,
+                    p.PostedAt,
+                    PostedByName = p.PostedBy.FullName
+                })
+                .ToListAsync();
+
+            return Ok(notices);
         }
     }
 }

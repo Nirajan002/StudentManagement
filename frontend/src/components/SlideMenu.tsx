@@ -16,11 +16,13 @@ import { useLogoutMutation, AuthApi } from "../api/AuthApi";
 interface SideMenuProps {
   activeMenu?: string;
   user: any;
+  onNavigate?: () => void;
 }
 
 export default function SideMenu({
   activeMenu,
   user,
+  onNavigate,
 }: SideMenuProps) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -65,6 +67,7 @@ export default function SideMenu({
     }
 
     navigate(route);
+    onNavigate?.();
   };
 
   return (

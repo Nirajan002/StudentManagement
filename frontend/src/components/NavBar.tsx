@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Menu } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
@@ -6,13 +7,22 @@ import { Input } from "@/components/ui/input";
 
 import { useSearchStudentsQuery } from "../api/StudentApi";
 
-import {
-  useSearchTeachersQuery,
-} from "../api/TeacherApi";
+import { useSearchTeachersQuery } from "../api/TeacherApi";
 
 import { useGetCurrentUserQuery } from "../api/AuthApi";
 
-export default function Navbar() {
+import NotificationBell from "./NotificationBell";
+
+interface NavbarProps {
+  activeMenu?: string;
+  onMenuButtonClick?: () => void; 
+  showMenuButton?: boolean; 
+}
+
+export default function Navbar({
+  onMenuButtonClick,
+  showMenuButton,
+}: NavbarProps) {
   const navigate = useNavigate();
 
   // =========================
@@ -117,7 +127,18 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="sticky top-0 z-50 flex h-16 items-center border-b bg-background px-6">
+    <nav className="sticky top-0 z-50 flex h-16 items-center gap-2 border-b bg-background px-3 sm:px-6">
+      
+      {showMenuButton && (
+        <button
+          onClick={onMenuButtonClick}
+          className="rounded-md p-2 hover:bg-muted md:hidden"
+          aria-label="Open menu"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
+      )}
+
       {/* =========================
           LEFT - LOGO
           ========================= */}
@@ -136,7 +157,7 @@ export default function Navbar() {
           ONLY WHEN LOGGED IN
           ========================= */}
       {isLoggedIn && (
-        <div className="relative flex flex-1 justify-center">
+        <div className="relative flex flex-1 justify-center sm:flex">
           <Input
             type="text"
             placeholder="Search students or teachers..."
@@ -201,9 +222,11 @@ export default function Navbar() {
       )}
 
       {/* =========================
-          RIGHT - LOGIN
-          ========================= */}
-      <div className="flex flex-1 justify-end">
+        RIGHT - NOTIFICATIONS + LOGIN
+        ========================= */}
+      <div className="flex flex-1 items-center justify-end gap-2">
+        {isLoggedIn && <NotificationBell />}
+
         {!isLoggedIn && (
           <Button variant="outline" onClick={() => navigate("/Login")}>
             Log In

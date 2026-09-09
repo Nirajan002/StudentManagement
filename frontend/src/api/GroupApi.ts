@@ -131,6 +131,7 @@ export const GroupApi = createApi({
       }),
       invalidatesTags: (_result, _error, { groupId }) => [
         { type: "GroupPost", id: groupId },
+        { type: "Group", id: "NOTICES" },
       ],
     }),
 
@@ -141,7 +142,14 @@ export const GroupApi = createApi({
       }),
       invalidatesTags: (_result, _error, { groupId }) => [
         { type: "GroupPost", id: groupId },
+        { type: "Group", id: "NOTICES" },
       ],
+    }),
+
+    // inside endpoints: (builder) => ({ ... })
+    getRecentNotices: builder.query({
+      query: () => "/notices",
+      providesTags: [{ type: "Group", id: "NOTICES" }],
     }),
   }),
 });
@@ -159,4 +167,5 @@ export const {
   useGetGroupPostsQuery,
   useCreateGroupPostMutation,
   useDeleteGroupPostMutation,
+  useGetRecentNoticesQuery,
 } = GroupApi;

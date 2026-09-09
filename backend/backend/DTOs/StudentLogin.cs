@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace backend.Modules
+namespace backend.DTOs
 {
     public class StudentLogin
     {

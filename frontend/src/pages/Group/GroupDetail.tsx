@@ -164,6 +164,9 @@ export default function GroupDetail() {
       setError(null);
       await createPost({ groupId, formData }).unwrap();
       await refetchPosts();
+      // Push our own "last viewed" timestamp forward so the post we just
+      // created never shows up as unread activity for ourselves.
+      markGroupViewed(groupId);
       return true;
     } catch {
       setError("Couldn't publish post. Try again.");
@@ -185,15 +188,15 @@ export default function GroupDetail() {
     }
   };
 
-  // RENDER
+    // RENDER
 
   return (
     <DashboardLayout>
-      <div className="mx-auto max-w-5xl p-6">
+      <div className="mx-auto flex h-[calc(100vh-4rem)] max-w-5xl flex-col p-6">
         <Button
           variant="ghost"
           size="sm"
-          className="mb-4 -ml-2 text-muted-foreground"
+          className="mb-4 -ml-2 shrink-0 text-muted-foreground"
           onClick={() => navigate(-1)}
         >
           <ArrowLeft className="mr-1 h-4 w-4" />
@@ -213,23 +216,26 @@ export default function GroupDetail() {
 
         {group && (
           <>
-            <GroupHeader
-              group={group}
-              canManageStudents={canManageStudents}
-              isAdding={isAdding}
-              onAddMembers={handleAddMembers}
-            />
+            <div className="shrink-0">
+              <GroupHeader
+                group={group}
+                canManageStudents={canManageStudents}
+                isAdding={isAdding}
+                onAddMembers={handleAddMembers}
+              />
 
-            {error && <p className="mb-4 text-sm text-destructive">{error}</p>}
+              {error && (
+                <p className="mb-4 text-sm text-destructive">{error}</p>
+              )}
+            </div>
 
             {/* =========================
                 TWO-COLUMN LAYOUT
-                Left: notices & files
-                Right: owner, co-teachers & members
             ========================= */}
 
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-              <div className="lg:col-span-2">
+            <div className="grid grid-cols-1 gap-6 overflow-visible lg:min-h-0 lg:flex-1 lg:grid-cols-3 lg:overflow-hidden">
+              {/* LEFT COLUMN — scrolling div #1 */}
+              <div className="thin-scrollbar lg:col-span-2 lg:h-full lg:overflow-y-auto lg:pr-1">
                 <PostsSection
                   groupId={groupId}
                   groupName={group.name}
@@ -245,7 +251,8 @@ export default function GroupDetail() {
                 />
               </div>
 
-              <div className="space-y-6 lg:col-span-1">
+              {/* RIGHT COLUMN — scrolling div #2 */}
+              <div className="thin-scrollbar space-y-6 lg:col-span-1 lg:h-full lg:overflow-y-auto lg:pr-1">
                 {group.createdByName && (
                   <div className="rounded-lg border p-4">
                     <p className="mb-2 text-sm font-medium">Owner</p>

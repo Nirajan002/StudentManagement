@@ -65,11 +65,7 @@ export default function RegisterTeacher() {
         <div className="w-full max-w-md rounded-xl border bg-background p-6 shadow-sm">
           {/* Header */}
           <div className="mb-6 text-center">
-            <h1 className="text-2xl font-bold">Create an Account</h1>
-
-            <p className="mt-2 text-sm text-muted-foreground">
-              Register to continue
-            </p>
+            <h1 className="text-2xl font-bold">Register a Teacher</h1>
           </div>
 
           <FormProvider {...methods}>
@@ -124,26 +120,27 @@ export default function RegisterTeacher() {
                 }}
               />
 
-              {/* Register Button */}
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Creating Account..." : "Register"}
-              </Button>
+              {/* Buttons */}
+                  <div className="flex justify-end gap-3 pt-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => navigate(-1)}
+                    >
+                      Cancel
+                    </Button>
+
+                    <Button
+                      type="submit"
+                      disabled={isLoading}
+                    >
+                      {isLoading
+                        ? "Adding Teacher..."
+                        : "Add Teacher"}
+                    </Button>
+                  </div>
             </form>
           </FormProvider>
-
-          {/* Login */}
-          <div className="mt-6 text-center text-sm">
-            <span className="text-muted-foreground">
-              Already have an account?{" "}
-            </span>
-
-            <Link
-              to="/Login"
-              className="font-medium underline underline-offset-4"
-            >
-              Login
-            </Link>
-          </div>
         </div>
       </div>
     </div>

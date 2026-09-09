@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, Plus, Loader2, ShieldCheck } from "lucide-react";
+import { Users, Plus, Loader2, ShieldCheck, Bell } from "lucide-react";
 import { useGetGroupsQuery } from "../../api/GroupApi";
 import { useGetCurrentUserQuery } from "../../api/AuthApi";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
@@ -65,9 +65,11 @@ export default function GroupsList() {
                 <Card className="relative transition-colors hover:border-foreground/20">
                   {unread && (
                     <span
-                      className="absolute right-3 top-3 h-2.5 w-2.5 rounded-full bg-red-500"
+                      className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white shadow-sm"
                       aria-label="New activity"
-                    />
+                    >
+                      <Bell className="h-3 w-3 fill-current" />
+                    </span>
                   )}
 
                   <CardHeader className="pb-2">

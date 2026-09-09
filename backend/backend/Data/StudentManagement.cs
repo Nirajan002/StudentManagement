@@ -83,10 +83,6 @@ namespace backend.Data
                 .HasForeignKey(p => p.PostedById)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Every DateTime read from the DB comes back as Kind=Unspecified (SQL Server
-            // datetime2 has no timezone info). We store everything as UTC via
-            // DateTime.UtcNow, so tag it back as UTC on the way out — otherwise the
-            // serialized JSON is missing the "Z" suffix and the frontend misparses it
             // as local time, throwing off any client-side date comparisons.
             var utcConverter = new ValueConverter<DateTime, DateTime>(
                 v => v,
