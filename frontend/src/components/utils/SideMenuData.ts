@@ -5,6 +5,7 @@ import {
   User,
   LogOut,
   Group,
+  Megaphone,
 } from "lucide-react";
 
 export const getSlideMenuData = (role?: string) => {
@@ -26,6 +27,11 @@ export const getSlideMenuData = (role?: string) => {
         icon: Group,
       },
       {
+        label: "Announcements",
+        path: "/GlobalNotices",
+        icon: Megaphone,
+      },
+      {
         label: "Profile",
         path: "/ViewYourProfile",
         icon: User,
@@ -44,10 +50,7 @@ export const getSlideMenuData = (role?: string) => {
   return [
     {
       label: "Dashboard",
-      path:
-        normalizedRole === "admin"
-          ? "/AdminIndex"
-          : "/TeacherIndex",
+      path: normalizedRole === "admin" ? "/AdminIndex" : "/TeacherIndex",
       icon: LayoutDashboard,
     },
     {
@@ -64,6 +67,11 @@ export const getSlideMenuData = (role?: string) => {
       label: "Groups",
       path: "/GroupsList",
       icon: Group,
+    },
+    {
+      label: "Announcements",
+      path: "/GlobalNotices",
+      icon: Megaphone,
     },
     {
       label: "Profile",

@@ -2,7 +2,6 @@ import React from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 
-import EducationField from "@/components/form/EducationField";
 import InputField from "@/components/form/InputField";
 import FileField from "@/components/form/FileField";
 
@@ -55,7 +54,8 @@ export default function EditStudent() {
       gender: "",
       number: "",
       addresh: "",
-      education: [],
+      studentClass: "",
+      section: "",
     },
   });
 
@@ -66,40 +66,6 @@ export default function EditStudent() {
   React.useEffect(() => {
     if (!student) return;
 
-    let education: any[] = [];
-
-    try {
-      if (Array.isArray(student.education)) {
-        // Education is already an array
-        education = student.education;
-      } else if (typeof student.education === "string") {
-        try {
-          // Try to parse JSON
-          const parsed = JSON.parse(student.education);
-
-          if (Array.isArray(parsed)) {
-            education = parsed;
-          } else {
-            education = [
-              {
-                level: student.education,
-              },
-            ];
-          }
-        } catch {
-          // Education is a normal string such as "Master"
-          education = [
-            {
-              level: student.education,
-            },
-          ];
-        }
-      }
-    } catch (error) {
-      console.error("Education error:", error);
-      education = [];
-    }
-
     methods.reset({
       profile: null,
       fullName: student.fullName || "",
@@ -107,7 +73,8 @@ export default function EditStudent() {
       gender: student.gender || "",
       number: student.number || "",
       addresh: student.addresh || "",
-      education: education,
+      studentClass: student.class || "",
+      section: student.section || "",
     });
   }, [student, methods]);
 
@@ -140,22 +107,8 @@ export default function EditStudent() {
     formData.append("Gender", data.gender);
     formData.append("Number", data.number);
     formData.append("Addresh", data.addresh);
-
-    // =========================
-    // EDUCATION
-    // =========================
-
-    formData.append("Education", JSON.stringify(data.education || []));
-
-    // =========================
-    // DEBUG
-    // =========================
-
-    console.log("Updating student:", id);
-
-    for (const [key, value] of formData.entries()) {
-      console.log(key, value);
-    }
+    formData.append("Class", data.studentClass || "");
+    formData.append("Section", data.section || "");
 
     // =========================
     // UPDATE
@@ -169,7 +122,6 @@ export default function EditStudent() {
 
       toast.success("Student updated successfully!");
 
-      // Go back to the previous page
       setTimeout(() => {
         navigate(-1);
       }, 500);
@@ -288,10 +240,24 @@ export default function EditStudent() {
               <InputField name="addresh" label="Address" type="text" />
 
               {/* =========================
-                  EDUCATION
+                  CLASS & SECTION
               ========================= */}
 
-              <EducationField />
+              <div className="grid grid-cols-2 gap-4">
+                <InputField
+                  name="studentClass"
+                  label="Class"
+                  type="text"
+                  placeholder="e.g. 10"
+                />
+
+                <InputField
+                  name="section"
+                  label="Section"
+                  type="text"
+                  placeholder="e.g. A"
+                />
+              </div>
 
               {/* =========================
                   BUTTONS

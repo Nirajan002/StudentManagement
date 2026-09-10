@@ -90,7 +90,7 @@ namespace backend.Controllers
                     student.Role,
                     student.Gender,
                     student.Number,
-                    Addresh = student.Addresh
+                    Address = student.Addresh
                 });
             }
 

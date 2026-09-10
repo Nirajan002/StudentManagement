@@ -441,7 +441,6 @@ namespace backend.Controllers
             return Ok(new { message = "Co-teacher removed from group." });
         }
 
-        // Admin, group creator, or co-teacher can post files or notices
         [Authorize(Roles = "Admin,Teacher")]
         [HttpPost("{id}/posts")]
         public async Task<IActionResult> CreateGroupPost(int id, [FromForm] CreateGroupPostRequest request)
@@ -462,16 +461,21 @@ namespace backend.Controllers
                 return BadRequest(new { message = "Title is required." });
             }
 
-            var type = request.Type == "Notice" ? "Notice" : "File";
+            var type = request.Type == "Notice" ? "Notice" : "Assignment";
 
             if (type == "Notice" && string.IsNullOrWhiteSpace(request.Content))
             {
                 return BadRequest(new { message = "Notice content is required." });
             }
 
-            if (type == "File" && (request.File == null || request.File.Length == 0))
+            if (type == "Assignment" && (request.File == null || request.File.Length == 0))
             {
-                return BadRequest(new { message = "A file is required." });
+                return BadRequest(new { message = "A file is required for assignments." });
+            }
+
+            if (request.AutoDeleteAt.HasValue && request.AutoDeleteAt.Value <= DateTime.UtcNow)
+            {
+                return BadRequest(new { message = "Auto-delete date must be in the future." });
             }
 
             string? storedFileName = null;
@@ -507,6 +511,8 @@ namespace backend.Controllers
                 Content = request.Content,
                 FileName = storedFileName,
                 OriginalFileName = originalFileName,
+                DueDate = type == "Assignment" ? request.DueDate : null,
+                AutoDeleteAt = request.AutoDeleteAt,
                 PostedById = CurrentUserId,
                 PostedAt = DateTime.UtcNow
             };
@@ -525,11 +531,14 @@ namespace backend.Controllers
                 post.Content,
                 post.FileName,
                 post.OriginalFileName,
+                post.DueDate,
+                post.AutoDeleteAt,
                 post.PostedById,
                 PostedByName = postedBy?.FullName,
                 post.PostedAt
             });
         }
+
 
         // Anyone who can view the group (creator, co-teacher, admin, or member student) can list posts
         [Authorize]
@@ -540,6 +549,8 @@ namespace backend.Controllers
             {
                 return Forbid();
             }
+
+            await RemoveExpiredPostsAsync(id);
 
             var posts = await dbContext.GroupPosts
                 .Where(p => p.GroupId == id)
@@ -553,6 +564,8 @@ namespace backend.Controllers
                     p.Content,
                     p.FileName,
                     p.OriginalFileName,
+                    p.DueDate,
+                    p.AutoDeleteAt,
                     p.PostedById,
                     PostedByName = p.PostedBy.FullName,
                     p.PostedAt
@@ -634,11 +647,13 @@ namespace backend.Controllers
             return File(bytes, "application/octet-stream", downloadName);
         }
 
-       
+
         [Authorize]
         [HttpGet("notices")]
         public async Task<IActionResult> GetRecentNotices()
         {
+            await RemoveExpiredPostsAsync();
+
             var query = dbContext.GroupPosts
                 .Where(p => p.Type == "Notice")
                 .Where(p => p.Group.IsActive);
@@ -668,6 +683,100 @@ namespace backend.Controllers
                 .ToListAsync();
 
             return Ok(notices);
+        }
+
+        private async Task RemoveExpiredPostsAsync(int? groupId = null)
+        {
+            var now = DateTime.UtcNow;
+
+            var query = dbContext.GroupPosts
+                .Where(p => p.AutoDeleteAt != null && p.AutoDeleteAt <= now);
+
+            if (groupId.HasValue)
+            {
+                query = query.Where(p => p.GroupId == groupId.Value);
+            }
+
+            var expired = await query.ToListAsync();
+            if (expired.Count == 0) return;
+
+            foreach (var post in expired)
+            {
+                if (!string.IsNullOrEmpty(post.FileName))
+                {
+                    var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", post.FileName);
+                    if (System.IO.File.Exists(filePath))
+                    {
+                        System.IO.File.Delete(filePath);
+                    }
+                }
+            }
+
+            dbContext.GroupPosts.RemoveRange(expired);
+            await dbContext.SaveChangesAsync();
+        }
+
+        [Authorize]
+        [HttpGet("{id}/last-viewed")]
+        public async Task<IActionResult> GetGroupLastViewed(int id)
+        {
+            if (!await CanViewGroup(id)) return Forbid();
+
+            var state = await dbContext.ReadStates.FirstOrDefaultAsync(r =>
+                r.UserId == CurrentUserId &&
+                r.ChannelType == ReadChannelType.Group &&
+                r.GroupId == id);
+
+            return Ok(new { lastViewedAt = state?.LastReadAt });
+        }
+
+        [Authorize]
+        [HttpPost("{id}/mark-viewed")]
+        public async Task<IActionResult> MarkGroupViewed(int id)
+        {
+            if (!await CanViewGroup(id)) return Forbid();
+
+            var now = DateTime.UtcNow;
+
+            var state = await dbContext.ReadStates.FirstOrDefaultAsync(r =>
+                r.UserId == CurrentUserId &&
+                r.ChannelType == ReadChannelType.Group &&
+                r.GroupId == id);
+
+            if (state == null)
+            {
+                dbContext.ReadStates.Add(new ReadState
+                {
+                    UserId = CurrentUserId,
+                    ChannelType = ReadChannelType.Group,
+                    GroupId = id,
+                    LastReadAt = now
+                });
+            }
+            else
+            {
+                state.LastReadAt = now;
+            }
+
+            await dbContext.SaveChangesAsync();
+
+            return Ok(new { lastViewedAt = now });
+        }
+
+        [Authorize]
+        [HttpGet("last-viewed")]
+        public async Task<IActionResult> GetAllGroupsLastViewed()
+        {
+            var states = await dbContext.ReadStates
+                .Where(r => r.UserId == CurrentUserId && r.ChannelType == ReadChannelType.Group)
+                .ToListAsync();
+
+            var result = states.ToDictionary(
+                s => s.GroupId!.Value.ToString(),
+                s => s.LastReadAt
+            );
+
+            return Ok(result);
         }
     }
 }

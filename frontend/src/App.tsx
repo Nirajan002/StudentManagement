@@ -4,6 +4,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Auth/Login";
 import RegisterTeacher from "./pages/Auth/RegisterTeacher";
 import AddStudents from "./pages/Auth/AddStudents";
+import GlobalNotices from "./pages/GlobalNotices";
 
 // Common
 import StudentDetail from "./pages/Student/StudentDetail";
@@ -183,6 +184,8 @@ function App() {
           </StudentRoute>
         }
       />
+
+      <Route path="/GlobalNotices" element={<GlobalNotices />} />
     </Routes>
   );
 }

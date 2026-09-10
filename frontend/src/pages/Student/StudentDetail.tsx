@@ -25,9 +25,6 @@ export default function StudentDetail() {
 
   const page = searchParams.get("page") || "1";
 
-  // =========================
-  // GET STUDENT
-  // =========================
   const {
     data: student,
     isLoading,
@@ -37,33 +34,19 @@ export default function StudentDetail() {
     refetchOnMountOrArgChange: true,
   });
 
-  // =========================
-  // GET CURRENT USER
-  // =========================
   const { data: currentUser } = useGetCurrentTeacherQuery();
 
-  // =========================
-  // DELETE
-  // =========================
   const [deleteStudent, { isLoading: isDeleting }] =
     useDeleteStudentMutation();
 
-  // =========================
-  // CHECK ADMIN
-  // =========================
-  const isAdmin =
-    currentUser?.role?.toLowerCase() === "admin";
+  const isAdmin = currentUser?.role?.toLowerCase() === "admin";
 
-  // =========================
-  // DELETE STUDENT
-  // =========================
   const handleDelete = async () => {
     if (!id) {
       toast.error("Student ID is missing");
       return;
     }
 
-    // Extra frontend protection
     if (!isAdmin) {
       toast.error("Only administrators can delete students.");
       return;
@@ -86,9 +69,6 @@ export default function StudentDetail() {
     }
   };
 
-  // =========================
-  // LOADING
-  // =========================
   if (isLoading) {
     return (
       <DashboardLayout activeMenu="Students">
@@ -99,9 +79,6 @@ export default function StudentDetail() {
     );
   }
 
-  // =========================
-  // ERROR
-  // =========================
   if (isError || !student) {
     return (
       <DashboardLayout activeMenu="Students">
@@ -112,49 +89,11 @@ export default function StudentDetail() {
     );
   }
 
-  // =========================
-  // EDUCATION
-  // =========================
-  let education: any[] = [];
-
-  try {
-    if (Array.isArray(student.education)) {
-      education = student.education;
-    } else if (typeof student.education === "string") {
-      try {
-        const parsed = JSON.parse(student.education);
-
-        if (Array.isArray(parsed)) {
-          education = parsed;
-        } else {
-          education = [
-            {
-              level: student.education,
-            },
-          ];
-        }
-      } catch {
-        education = [
-          {
-            level: student.education,
-          },
-        ];
-      }
-    }
-  } catch (error) {
-    console.error("Education error:", error);
-    education = [];
-  }
-
-  // =========================
-  // UI
-  // =========================
   return (
     <DashboardLayout activeMenu="Students">
       <div className="min-h-screen bg-muted/40 px-4 py-10">
         <div className="mx-auto w-full max-w-2xl">
           <Card>
-            {/* HEADER */}
             <CardHeader>
               <CardTitle className="text-center text-2xl">
                 Student Details
@@ -162,7 +101,6 @@ export default function StudentDetail() {
             </CardHeader>
 
             <CardContent className="space-y-6">
-              {/* PROFILE */}
               <div className="flex justify-center">
                 {student.profile ? (
                   <img
@@ -177,9 +115,7 @@ export default function StudentDetail() {
                 )}
               </div>
 
-              {/* STUDENT INFORMATION */}
               <div className="grid gap-5 sm:grid-cols-2">
-                {/* FULL NAME */}
                 <div>
                   <p className="text-sm text-muted-foreground">
                     Full Name
@@ -189,7 +125,6 @@ export default function StudentDetail() {
                   </p>
                 </div>
 
-                {/* EMAIL */}
                 <div>
                   <p className="text-sm text-muted-foreground">
                     Email
@@ -199,7 +134,6 @@ export default function StudentDetail() {
                   </p>
                 </div>
 
-                {/* GENDER */}
                 <div>
                   <p className="text-sm text-muted-foreground">
                     Gender
@@ -209,7 +143,6 @@ export default function StudentDetail() {
                   </p>
                 </div>
 
-                {/* PHONE */}
                 <div>
                   <p className="text-sm text-muted-foreground">
                     Phone Number
@@ -219,7 +152,24 @@ export default function StudentDetail() {
                   </p>
                 </div>
 
-                {/* ADDRESS */}
+                <div>
+                  <p className="text-sm text-muted-foreground">
+                    Class
+                  </p>
+                  <p className="text-lg font-medium">
+                    {student.class || "Not assigned"}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-sm text-muted-foreground">
+                    Section
+                  </p>
+                  <p className="text-lg font-medium">
+                    {student.section || "Not assigned"}
+                  </p>
+                </div>
+
                 <div className="sm:col-span-2">
                   <p className="text-sm text-muted-foreground">
                     Address
@@ -230,60 +180,7 @@ export default function StudentDetail() {
                 </div>
               </div>
 
-              {/* EDUCATION */}
-              <div className="border-t pt-6">
-                <h3 className="mb-4 text-lg font-semibold">
-                  Education
-                </h3>
-
-                {education.length > 0 ? (
-                  <div className="space-y-4">
-                    {education.map((item, index) => (
-                      <Card key={index}>
-                        <CardContent className="space-y-4 pt-6">
-                          {/* INSTITUTION */}
-                          <div>
-                            <p className="text-sm text-muted-foreground">
-                              Institution
-                            </p>
-                            <p className="font-medium">
-                              {item.institution || "Not provided"}
-                            </p>
-                          </div>
-
-                          {/* DEGREE */}
-                          <div>
-                            <p className="text-sm text-muted-foreground">
-                              Degree
-                            </p>
-                            <p className="font-medium">
-                              {item.degree || "Not provided"}
-                            </p>
-                          </div>
-
-                          {/* DATE */}
-                          <div>
-                            <p className="text-sm text-muted-foreground">
-                              Date
-                            </p>
-                            <p className="font-medium">
-                              {item.date || "Not provided"}
-                            </p>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">
-                    No education information available.
-                  </p>
-                )}
-              </div>
-
-              {/* BUTTONS */}
               <div className="flex gap-3 pt-4">
-                {/* BACK - EVERYONE */}
                 <Button
                   type="button"
                   variant="outline"
@@ -292,10 +189,8 @@ export default function StudentDetail() {
                   Back
                 </Button>
 
-                {/* ADMIN ONLY */}
                 {isAdmin && (
                   <>
-                    {/* EDIT */}
                     <Button
                       type="button"
                       variant="secondary"
@@ -306,7 +201,6 @@ export default function StudentDetail() {
                       Edit
                     </Button>
 
-                    {/* DELETE */}
                     <Button
                       type="button"
                       variant="destructive"

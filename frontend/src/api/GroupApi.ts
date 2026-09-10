@@ -10,7 +10,7 @@ export const GroupApi = createApi({
   baseQuery,
   refetchOnMountOrArgChange: true,
 
-  tagTypes: ["Group"],
+  tagTypes: ["Group", "GroupReadState"],
 
   endpoints: (builder) => ({
     // List groups (Admin sees all, Teacher sees own/managed)
@@ -146,10 +146,32 @@ export const GroupApi = createApi({
       ],
     }),
 
-    // inside endpoints: (builder) => ({ ... })
     getRecentNotices: builder.query({
       query: () => "/notices",
       providesTags: [{ type: "Group", id: "NOTICES" }],
+    }),
+
+    getGroupLastViewed: builder.query<{ lastViewedAt: string | null }, string>({
+      query: (groupId) => `/${groupId}/last-viewed`,
+      providesTags: (_result, _error, groupId) => [
+        { type: "GroupReadState", id: groupId },
+      ],
+    }),
+
+    markGroupViewed: builder.mutation<{ lastViewedAt: string }, string>({
+      query: (groupId) => ({
+        url: `/${groupId}/mark-viewed`,
+        method: "POST",
+      }),
+      invalidatesTags: (_result, _error, groupId) => [
+        { type: "GroupReadState", id: groupId },
+        "GroupReadState",
+      ],
+    }),
+
+    getAllGroupsLastViewed: builder.query<Record<string, string>, void>({
+      query: () => "/last-viewed",
+      providesTags: ["GroupReadState"],
     }),
   }),
 });
@@ -168,4 +190,7 @@ export const {
   useCreateGroupPostMutation,
   useDeleteGroupPostMutation,
   useGetRecentNoticesQuery,
+  useGetGroupLastViewedQuery,
+  useMarkGroupViewedMutation,
+  useGetAllGroupsLastViewedQuery,
 } = GroupApi;

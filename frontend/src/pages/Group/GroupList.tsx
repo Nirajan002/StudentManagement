@@ -2,13 +2,14 @@ import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Users, Plus, Loader2, ShieldCheck, Bell } from "lucide-react";
-import { useGetGroupsQuery } from "../../api/GroupApi";
+import { useGetGroupsQuery, useGetAllGroupsLastViewedQuery } from "../../api/GroupApi";
 import { useGetCurrentUserQuery } from "../../api/AuthApi";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { hasUnreadActivity } from "@/components/utils/groupActivity";
 
 export default function GroupsList() {
   const { data: groups, isLoading, isError } = useGetGroupsQuery(undefined);
+  const { data: lastViewedMap } = useGetAllGroupsLastViewedQuery();
   const { data: currentUser } = useGetCurrentUserQuery();
   const navigate = useNavigate();
 
@@ -58,7 +59,10 @@ export default function GroupsList() {
 
         <div className="grid gap-3 sm:grid-cols-2">
           {groups?.map((group: any) => {
-            const unread = hasUnreadActivity(group.id, group.lastPostAt);
+            const unread = hasUnreadActivity(
+              group.lastPostAt,
+              lastViewedMap?.[String(group.id)]
+            );
 
             return (
               <Link key={group.id} to={`/groups/${group.id}`}>

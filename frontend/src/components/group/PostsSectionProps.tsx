@@ -21,16 +21,19 @@ import {
 } from "@/components/ui/select";
 import {
   Bell,
+  CalendarClock,
+  ClipboardList,
   Download,
   FileText,
   Image as ImageIcon,
   Loader2,
-  Paperclip,
   Trash2,
   UserPlus,
 } from "lucide-react";
 
 import { isImageFile } from "../utils/initials";
+
+type AutoDeleteOption = "never" | "1d" | "3d" | "1w" | "2w" | "1m" | "custom";
 
 interface PostsSectionProps {
   groupId: string;
@@ -60,10 +63,14 @@ export default function PostsSection({
   onDeletePost,
 }: PostsSectionProps) {
   const [postOpen, setPostOpen] = useState(false);
-  const [postType, setPostType] = useState<"Notice" | "File">("Notice");
+  const [postType, setPostType] = useState<"Notice" | "Assignment">("Notice");
   const [postTitle, setPostTitle] = useState("");
   const [postContent, setPostContent] = useState("");
   const [postFile, setPostFile] = useState<File | null>(null);
+  const [postDueDate, setPostDueDate] = useState("");
+  const [autoDeleteOption, setAutoDeleteOption] =
+    useState<AutoDeleteOption>("never");
+  const [autoDeleteCustom, setAutoDeleteCustom] = useState("");
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -85,8 +92,9 @@ export default function PostsSection({
     [posts, sortOrder]
   );
 
-  const files = useMemo(
-    () => sortPosts((posts ?? []).filter((p: any) => p.type === "File")),
+  const assignments = useMemo(
+    () =>
+      sortPosts((posts ?? []).filter((p: any) => p.type === "Assignment")),
     [posts, sortOrder]
   );
 
@@ -95,7 +103,38 @@ export default function PostsSection({
     setPostTitle("");
     setPostContent("");
     setPostFile(null);
+    setPostDueDate("");
+    setAutoDeleteOption("never");
+    setAutoDeleteCustom("");
     setFormError(null);
+  };
+
+  const computeAutoDeleteAt = (): string | null => {
+    const now = new Date();
+
+    switch (autoDeleteOption) {
+      case "never":
+        return null;
+      case "1d":
+        now.setDate(now.getDate() + 1);
+        return now.toISOString();
+      case "3d":
+        now.setDate(now.getDate() + 3);
+        return now.toISOString();
+      case "1w":
+        now.setDate(now.getDate() + 7);
+        return now.toISOString();
+      case "2w":
+        now.setDate(now.getDate() + 14);
+        return now.toISOString();
+      case "1m":
+        now.setMonth(now.getMonth() + 1);
+        return now.toISOString();
+      case "custom":
+        return autoDeleteCustom ? new Date(autoDeleteCustom).toISOString() : null;
+      default:
+        return null;
+    }
   };
 
   const handleCreatePost = async () => {
@@ -109,8 +148,13 @@ export default function PostsSection({
       return;
     }
 
-    if (postType === "File" && !postFile) {
-      setFormError("Please choose a file to upload.");
+    if (postType === "Assignment" && !postFile) {
+      setFormError("Please attach a file for the assignment.");
+      return;
+    }
+
+    if (autoDeleteOption === "custom" && !autoDeleteCustom) {
+      setFormError("Pick an auto-delete date, or choose a different option.");
       return;
     }
 
@@ -125,6 +169,16 @@ export default function PostsSection({
 
     if (postFile) {
       formData.append("File", postFile);
+    }
+
+    if (postType === "Assignment" && postDueDate) {
+      formData.append("DueDate", new Date(postDueDate).toISOString());
+    }
+
+    const autoDeleteAt = computeAutoDeleteAt();
+
+    if (autoDeleteAt) {
+      formData.append("AutoDeleteAt", autoDeleteAt);
     }
 
     setFormError(null);
@@ -142,6 +196,11 @@ export default function PostsSection({
       currentUserId &&
       (currentUserRole === "Admin" || currentUserId === post.postedById);
 
+    const isOverdue =
+      post.type === "Assignment" &&
+      post.dueDate &&
+      new Date(post.dueDate) < new Date();
+
     return (
       <div
         key={post.id}
@@ -155,7 +214,7 @@ export default function PostsSection({
               ) : isImageFile(post.originalFileName) ? (
                 <ImageIcon className="h-4 w-4 text-blue-500" />
               ) : (
-                <FileText className="h-4 w-4 text-blue-500" />
+                <ClipboardList className="h-4 w-4 text-blue-500" />
               )}
             </div>
 
@@ -170,9 +229,20 @@ export default function PostsSection({
                 </p>
               )}
 
+              {post.type === "Assignment" && post.dueDate && (
+                <p
+                  className={`mt-1 flex items-center gap-1 text-xs font-medium ${
+                    isOverdue ? "text-destructive" : "text-amber-600"
+                  }`}
+                >
+                  <CalendarClock className="h-3 w-3" />
+                  Due {new Date(post.dueDate).toLocaleString()}
+                </p>
+              )}
+
               {post.fileName && (
                 
-                  <a href={`https://localhost:7014/api/Groups/${groupId}/posts/${post.id}/download`}
+                <a  href={`https://localhost:7014/api/Groups/${groupId}/posts/${post.id}/download`}
                   className="mt-2 inline-flex items-center gap-1.5 break-words text-xs font-medium text-primary hover:underline"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -185,6 +255,12 @@ export default function PostsSection({
               <p className="mt-2 text-xs text-muted-foreground">
                 {post.postedByName} · {new Date(post.postedAt).toLocaleString()}
               </p>
+
+              {post.autoDeleteAt && (
+                <p className="mt-0.5 text-[11px] italic text-muted-foreground">
+                  Auto-deletes on {new Date(post.autoDeleteAt).toLocaleDateString()}
+                </p>
+              )}
             </div>
           </div>
 
@@ -214,12 +290,11 @@ export default function PostsSection({
     <div className="mb-6 min-w-0 max-w-full space-y-6">
       {/* =========================
           HEADER + NEW POST + SORT
-          shared across both sections
       ========================= */}
       <div className="flex items-center justify-between gap-2">
         <p className="text-sm font-medium text-muted-foreground">
-          {notices.length + files.length} total post
-          {notices.length + files.length === 1 ? "" : "s"}
+          {notices.length + assignments.length} total post
+          {notices.length + assignments.length === 1 ? "" : "s"}
         </p>
 
         <div className="flex items-center gap-2">
@@ -276,11 +351,11 @@ export default function PostsSection({
                     <Button
                       type="button"
                       size="sm"
-                      variant={postType === "File" ? "default" : "outline"}
-                      onClick={() => setPostType("File")}
+                      variant={postType === "Assignment" ? "default" : "outline"}
+                      onClick={() => setPostType("Assignment")}
                     >
-                      <Paperclip className="mr-1.5 h-3.5 w-3.5" />
-                      File
+                      <ClipboardList className="mr-1.5 h-3.5 w-3.5" />
+                      Assignment
                     </Button>
                   </div>
 
@@ -293,7 +368,7 @@ export default function PostsSection({
                       placeholder={
                         postType === "Notice"
                           ? "e.g. Exam schedule"
-                          : "e.g. Chapter 4 notes"
+                          : "e.g. Chapter 4 worksheet"
                       }
                       className="w-full max-w-full"
                     />
@@ -313,9 +388,41 @@ export default function PostsSection({
                     </div>
                   )}
 
+                  {postType === "Assignment" && (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="post-content">
+                          Instructions (optional)
+                        </Label>
+                        <Textarea
+                          id="post-content"
+                          rows={3}
+                          value={postContent}
+                          onChange={(e) => setPostContent(e.target.value)}
+                          placeholder="Any notes about the assignment..."
+                          className="w-full max-w-full whitespace-pre-wrap break-all"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="post-due-date">
+                          Due date (optional)
+                        </Label>
+                        <Input
+                          id="post-due-date"
+                          type="datetime-local"
+                          value={postDueDate}
+                          onChange={(e) => setPostDueDate(e.target.value)}
+                        />
+                      </div>
+                    </>
+                  )}
+
                   <div className="space-y-2">
                     <Label htmlFor="post-file">
-                      {postType === "File" ? "File" : "Attachment (optional)"}
+                      {postType === "Assignment"
+                        ? "File"
+                        : "Attachment (optional)"}
                     </Label>
                     <input
                       id="post-file"
@@ -325,6 +432,40 @@ export default function PostsSection({
                       }
                       className="block w-full text-sm text-muted-foreground file:mr-3 file:rounded-md file:border file:border-input file:bg-background file:px-3 file:py-1.5 file:text-sm file:font-medium hover:file:bg-muted"
                     />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="post-auto-delete">
+                      Auto-delete
+                    </Label>
+                    <Select
+                      value={autoDeleteOption}
+                      onValueChange={(v) =>
+                        setAutoDeleteOption(v as AutoDeleteOption)
+                      }
+                    >
+                      <SelectTrigger id="post-auto-delete" className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+
+                      <SelectContent>
+                        <SelectItem value="never">Never</SelectItem>
+                        <SelectItem value="1d">After 1 day</SelectItem>
+                        <SelectItem value="3d">After 3 days</SelectItem>
+                        <SelectItem value="1w">After 1 week</SelectItem>
+                        <SelectItem value="2w">After 2 weeks</SelectItem>
+                        <SelectItem value="1m">After 1 month</SelectItem>
+                        <SelectItem value="custom">Custom date</SelectItem>
+                      </SelectContent>
+                    </Select>
+
+                    {autoDeleteOption === "custom" && (
+                      <Input
+                        type="datetime-local"
+                        value={autoDeleteCustom}
+                        onChange={(e) => setAutoDeleteCustom(e.target.value)}
+                      />
+                    )}
                   </div>
 
                   {formError && (
@@ -384,18 +525,20 @@ export default function PostsSection({
           </div>
 
           {/* =========================
-              FILES CONTAINER
+              ASSIGNMENTS CONTAINER
           ========================= */}
           <div className="min-w-0 max-w-full overflow-hidden rounded-lg border p-4">
             <p className="mb-3 flex items-center gap-1.5 text-sm font-medium">
-              <Paperclip className="h-4 w-4" />
-              Files ({files.length})
+              <ClipboardList className="h-4 w-4" />
+              Assignments ({assignments.length})
             </p>
 
-            {files.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No files yet.</p>
+            {assignments.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                No assignments yet.
+              </p>
             ) : (
-              <div className="space-y-2">{files.map(renderPostItem)}</div>
+              <div className="space-y-2">{assignments.map(renderPostItem)}</div>
             )}
           </div>
         </>

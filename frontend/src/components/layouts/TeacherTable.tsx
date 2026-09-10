@@ -145,9 +145,6 @@ export default function TeacherTable({
                 <p className="truncate text-sm text-muted-foreground">
                   {user.email}
                 </p>
-                <p className="text-xs text-muted-foreground">
-                  {user.role}
-                </p>
               </div>
             </div>
 
@@ -187,7 +184,6 @@ export default function TeacherTable({
             <TableRow>
               <TableHead>User</TableHead>
               <TableHead>Email</TableHead>
-              <TableHead>Role</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -215,9 +211,6 @@ export default function TeacherTable({
 
                 {/* EMAIL */}
                 <TableCell>{user.email}</TableCell>
-
-                {/* ROLE */}
-                <TableCell>{user.role}</TableCell>
 
                 {/* ACTIONS */}
                 <TableCell>

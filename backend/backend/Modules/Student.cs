@@ -16,10 +16,14 @@
 
         public long? Number { get; set; }
 
-        public string? Addresh {  get; set; }
+        public string? Addresh { get; set; }
 
-        public string? Education { get; set; }
+        public string? Class { get; set; }
+
+        public string? Section { get; set; }
 
         public string Role { get; set; } = "Student";
+
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

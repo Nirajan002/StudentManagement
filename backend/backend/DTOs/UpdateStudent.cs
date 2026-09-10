@@ -14,6 +14,8 @@
 
         public string Addresh { get; set; }
 
-        public string Education { get; set; }
+        public string? Class { get; set; }
+
+        public string? Section { get; set; }
     }
 }

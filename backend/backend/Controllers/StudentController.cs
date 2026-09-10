@@ -28,7 +28,7 @@ namespace backend.Controllers
             this.configuration = configuration;
             this.passwordHasher = new PasswordHasher<Teacher>();
         }
-        
+
 
         [HttpGet("Students")]
         public IActionResult GetStudent(int page = 1)
@@ -47,7 +47,8 @@ namespace backend.Controllers
                     student.Addresh,
                     student.Email,
                     student.Profile,
-                    student.Education,
+                    student.Class,
+                    student.Section,
                 })
                 .ToList();
 
@@ -71,17 +72,17 @@ namespace backend.Controllers
                 student.FullName,
                 student.Email,
                 student.Profile,
-                student.Education,
+                student.Class,
+                student.Section,
                 student.Gender,
                 student.Number,
                 student.Addresh,
             });
         }
- 
 
         [Authorize(Roles = "Admin")]
         [HttpPut("student/{ID:guid}")]
-        public async Task<IActionResult> UpdateStudent([FromRoute] Guid ID,UpdateStudent updateStudent)
+        public async Task<IActionResult> UpdateStudent([FromRoute] Guid ID, UpdateStudent updateStudent)
         {
             var student = await dbContext.Students.FindAsync(ID);
 
@@ -92,7 +93,8 @@ namespace backend.Controllers
 
             student.FullName = updateStudent.FullName;
             student.Email = updateStudent.Email;
-            student.Education = updateStudent.Education;
+            student.Class = updateStudent.Class;
+            student.Section = updateStudent.Section;
             student.Gender = updateStudent.Gender;
             student.Number = updateStudent.Number;
             student.Addresh = updateStudent.Addresh;
@@ -151,7 +153,8 @@ namespace backend.Controllers
                 student.FullName,
                 student.Email,
                 student.Profile,
-                student.Education,
+                student.Class,
+                student.Section,
                 student.Number,
                 student.Gender,
                 student.Addresh,

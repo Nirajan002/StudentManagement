@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Loader2, ShieldCheck } from "lucide-react";
 
 import { useState, useEffect } from "react";
-import { markGroupViewed } from "@/components/utils/groupActivity";
 
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 
@@ -22,6 +21,7 @@ import {
   useGetGroupPostsQuery,
   useCreateGroupPostMutation,
   useDeleteGroupPostMutation,
+  useMarkGroupViewedMutation,
 } from "../../api/GroupApi";
 
 import { useGetCurrentUserQuery } from "../../api/AuthApi";
@@ -45,11 +45,15 @@ export default function GroupDetail() {
 
   const { data: currentUser } = useGetCurrentUserQuery();
 
+  // LAST VIEWED
+
+  const [markViewed] = useMarkGroupViewedMutation();
+
   useEffect(() => {
     if (groupId) {
-      markGroupViewed(groupId);
+      markViewed(groupId);
     }
-  }, [groupId]);
+  }, [groupId, markViewed]);
 
   // MEMBERS
 
@@ -166,7 +170,7 @@ export default function GroupDetail() {
       await refetchPosts();
       // Push our own "last viewed" timestamp forward so the post we just
       // created never shows up as unread activity for ourselves.
-      markGroupViewed(groupId);
+      markViewed(groupId);
       return true;
     } catch {
       setError("Couldn't publish post. Try again.");

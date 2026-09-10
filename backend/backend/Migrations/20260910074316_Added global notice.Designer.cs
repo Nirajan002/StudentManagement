@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using backend.Data;
 
@@ -11,9 +12,11 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(StudentManagement))]
-    partial class StudentManagementModelSnapshot : ModelSnapshot
+    [Migration("20260910074316_Added global notice")]
+    partial class Addedglobalnotice
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -199,35 +202,6 @@ namespace backend.Migrations
                     b.HasIndex("PostedById");
 
                     b.ToTable("GroupPosts");
-                });
-
-            modelBuilder.Entity("backend.Modules.ReadState", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ChannelType")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("GroupId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("LastReadAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId", "ChannelType", "GroupId")
-                        .IsUnique()
-                        .HasFilter("[GroupId] IS NOT NULL");
-
-                    b.ToTable("ReadStates");
                 });
 
             modelBuilder.Entity("backend.Modules.RefreshToken", b =>

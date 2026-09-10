@@ -1,22 +1,3 @@
-const STORAGE_KEY = "group-last-viewed";
-
-function getUserKey(): string {
-  // scopes the "viewed" state to whoever is currently logged in on this browser
-  return localStorage.getItem("fullName") || "anon";
-}
-
-function readStore(): Record<string, string> {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-  } catch {
-    return {};
-  }
-}
-
-function scopedKey(groupId: string | number): string {
-  return `${getUserKey()}:${groupId}`;
-}
-
 export interface RecentNotice {
   id: number;
   groupId: number;
@@ -26,26 +7,24 @@ export interface RecentNotice {
   postedByName: string;
 }
 
-export function getUnreadNotices(notices: RecentNotice[]): RecentNotice[] {
-  return notices.filter((n) => hasUnreadActivity(n.groupId, n.postedAt));
-}
+export function getUnreadNotices(
+  notices: RecentNotice[],
+  lastViewedMap: Record<string, string> | undefined
+): RecentNotice[] {
+  if (!lastViewedMap) return notices;
 
-export function getLastViewed(groupId: string | number): string | null {
-  return readStore()[scopedKey(groupId)] ?? null;
-}
-
-export function markGroupViewed(groupId: string | number) {
-  const store = readStore();
-  store[scopedKey(groupId)] = new Date().toISOString();
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+  return notices.filter((n) => {
+    const lastViewed = lastViewedMap[String(n.groupId)];
+    if (!lastViewed) return true;
+    return new Date(n.postedAt).getTime() > new Date(lastViewed).getTime();
+  });
 }
 
 export function hasUnreadActivity(
-  groupId: string | number,
-  lastPostAt?: string | null
+  lastPostAt: string | null | undefined,
+  lastViewedAt: string | null | undefined
 ): boolean {
   if (!lastPostAt) return false;
-  const lastViewed = getLastViewed(groupId);
-  if (!lastViewed) return true;
-  return new Date(lastPostAt).getTime() > new Date(lastViewed).getTime();
+  if (!lastViewedAt) return true;
+  return new Date(lastPostAt).getTime() > new Date(lastViewedAt).getTime();
 }

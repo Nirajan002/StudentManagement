@@ -17,6 +17,8 @@ namespace backend.Data
         public DbSet<GroupMember> GroupMembers { get; set; }
         public DbSet<GroupManager> GroupManagers { get; set; }
         public DbSet<GroupPost> GroupPosts { get; set; }
+        public DbSet<GlobalNotice> GlobalNotices { get; set; }
+        public DbSet<ReadState> ReadStates { get; set; }
 
         public DbSet<RefreshToken> RefreshTokens { get; set; }
 
@@ -82,6 +84,24 @@ namespace backend.Data
                 .WithMany()
                 .HasForeignKey(p => p.PostedById)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Teacher>()
+                .Property(t => t.CreatedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+
+            modelBuilder.Entity<Student>()
+                .Property(s => s.CreatedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+
+            modelBuilder.Entity<GlobalNotice>()
+                .HasOne(n => n.PostedBy)
+                .WithMany()
+                .HasForeignKey(n => n.PostedById)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ReadState>()
+                .HasIndex(r => new { r.UserId, r.ChannelType, r.GroupId })
+                .IsUnique();
 
             // as local time, throwing off any client-side date comparisons.
             var utcConverter = new ValueConverter<DateTime, DateTime>(

@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 
 import { getSlideMenuData } from "./utils/SideMenuData";
+import { DashboardApi } from "@/api/DashboardApi";
 
 import { Button } from "@/components/ui/button";
 
@@ -12,6 +13,7 @@ import { GroupApi } from "../api/GroupApi";
 import { StudentApi } from "../api/StudentApi";
 
 import { useLogoutMutation, AuthApi } from "../api/AuthApi";
+import { GlobalNoticeApi } from "../api/GlobalNoticeApi";
 
 interface SideMenuProps {
   activeMenu?: string;
@@ -51,13 +53,12 @@ export default function SideMenu({
         localStorage.removeItem("token");
 
         // Clear every RTK Query cache so the next login starts clean.
-        // NOTE: add a line here whenever a new api slice is created —
-        // otherwise its cache will leak across accounts the same way
-        // GroupApi's did.
         dispatch(AuthApi.util.resetApiState());
         dispatch(TeacherApi.util.resetApiState());
         dispatch(GroupApi.util.resetApiState());
         dispatch(StudentApi.util.resetApiState());
+        dispatch(DashboardApi.util.resetApiState());
+        dispatch(GlobalNoticeApi.util.resetApiState());
 
         // Go to Login
         navigate("/Login", { replace: true });
