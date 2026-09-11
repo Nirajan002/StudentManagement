@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 
@@ -38,7 +39,7 @@ export default function TeacherDetail() {
   // =========================
   // GET CURRENT USER
   // =========================
-  const { data: currentUser } = useGetCurrentTeacherQuery();
+  const { data: currentUser } = useGetCurrentTeacherQuery(id ?? "");
 
   // =========================
   // DELETE

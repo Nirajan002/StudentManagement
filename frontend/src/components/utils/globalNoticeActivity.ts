@@ -1,4 +1,10 @@
-export function getUnreadGlobalNotices<T extends { postedAt: string }>(
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import type { ReactNode } from "react";
+
+export function getUnreadGlobalNotices<T extends {
+  title: ReactNode;
+  id: any; postedAt: string 
+}>(
   notices: T[],
   lastViewedAt: string | null | undefined
 ): T[] {

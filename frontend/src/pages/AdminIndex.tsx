@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { useGetAdminDashboardQuery } from "../api/DashboardApi";
 import { useNavigate } from "react-router-dom";

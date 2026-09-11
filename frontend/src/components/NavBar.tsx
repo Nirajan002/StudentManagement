@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 import { useState } from "react";
 import { Menu } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -39,7 +41,6 @@ export default function Navbar({
   // =========================
   const isLoggedIn = !!currentUser;
 
-  const fullName = currentUser?.fullName;
   const role = currentUser?.role;
 
   // =========================

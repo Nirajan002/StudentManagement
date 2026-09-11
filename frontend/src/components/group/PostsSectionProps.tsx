@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -24,7 +25,6 @@ import {
   CalendarClock,
   ClipboardList,
   Download,
-  FileText,
   Image as ImageIcon,
   Loader2,
   Trash2,

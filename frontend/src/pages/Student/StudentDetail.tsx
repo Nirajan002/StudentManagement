@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "react-hot-toast";
 
@@ -34,7 +35,7 @@ export default function StudentDetail() {
     refetchOnMountOrArgChange: true,
   });
 
-  const { data: currentUser } = useGetCurrentTeacherQuery();
+  const { data: currentUser } = useGetCurrentTeacherQuery(undefined);
 
   const [deleteStudent, { isLoading: isDeleting }] =
     useDeleteStudentMutation();

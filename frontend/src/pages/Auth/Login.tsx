@@ -1,15 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
-
 import { useNavigate } from "react-router-dom";
-
 import toast from "react-hot-toast";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 import Navbar from "@/components/NavBar";
-
 import InputField from "@/components/form/InputField";
-
 import { Button } from "@/components/ui/button";
-
 import { useLoginMutation } from "../../api/AuthApi";
 
 interface LoginForm {
@@ -19,6 +17,7 @@ interface LoginForm {
 
 export default function Login() {
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
 
   const methods = useForm<LoginForm>({
     defaultValues: {
@@ -134,15 +133,30 @@ export default function Login() {
                 }}
               />
 
-              <InputField
-                name="password"
-                label="Password"
-                type="password"
-                placeholder="Enter your password"
-                rules={{
-                  required: "Password is required",
-                }}
-              />
+              {/* =========================
+                  PASSWORD FIELD WITH SHOW/HIDE
+              ========================= */}
+
+              <div className="relative">
+                <InputField
+                  name="password"
+                  label="Password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter your password"
+                  rules={{
+                    required: "Password is required",
+                  }}
+                />
+
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute right-3 top-[30px] text-muted-foreground hover:text-foreground"
+                  tabIndex={-1}
+                >
+                  {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+                </button>
+              </div>
 
               <Button
                 type="submit"

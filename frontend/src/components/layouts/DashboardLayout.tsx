@@ -3,7 +3,7 @@ import React from "react";
 import Navbar from "../NavBar";
 import SideMenu from "../SlideMenu";
 import { useGetCurrentUserQuery } from "../../api/AuthApi";
-import { Menu, X } from "lucide-react";
+import { X } from "lucide-react";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;

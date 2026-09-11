@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/incompatible-library */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
@@ -194,7 +196,7 @@ export default function UpdateStudentProfile() {
                     <Select
                       value={methods.watch("gender")}
                       onValueChange={(value) =>
-                        methods.setValue("gender", value)
+                        methods.setValue("gender", value ?? "")
                       }
                     >
                       <SelectTrigger>

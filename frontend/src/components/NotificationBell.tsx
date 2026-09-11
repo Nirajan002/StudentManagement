@@ -24,7 +24,7 @@ export default function NotificationBell() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
-  const { data: groupNotices = [] } = useGetRecentNoticesQuery();
+  const { data: groupNotices = [] } = useGetRecentNoticesQuery(undefined);
   const { data: groupLastViewedMap } = useGetAllGroupsLastViewedQuery();
 
   const { data: globalNotices = [] } = useGetGlobalNoticesQuery(undefined);

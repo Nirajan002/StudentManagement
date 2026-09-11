@@ -25,7 +25,7 @@ export default function Teachers() {
     data: currentUser,
     isLoading: isUserLoading,
     isError: isUserError,
-  } = useGetCurrentTeacherQuery();
+  } = useGetCurrentTeacherQuery(undefined);
 
   // Role comes from database through /me
   const isAdmin = currentUser?.role === "Admin";
@@ -139,7 +139,6 @@ export default function Teachers() {
             <TeacherTable
               users={users ?? []}
               refetch={refetch}
-              isAdmin={isAdmin}
             />
           </div>
 

@@ -1,5 +1,3 @@
-import React from "react";
-
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { useGetStudentsQuery } from "../../api/StudentApi";
@@ -29,7 +27,7 @@ export default function StudentView() {
     data: currentUser,
     isLoading: isUserLoading,
     isError: isUserError,
-  } = useGetCurrentTeacherQuery();
+  } = useGetCurrentTeacherQuery(undefined);
 
   // Check role from database
   const isAdmin = currentUser?.role === "Admin";
@@ -134,7 +132,6 @@ export default function StudentView() {
           students={students}
           refetch={refetch}
           page={page}
-          isAdmin={isAdmin}
         />
 
         {/* =========================

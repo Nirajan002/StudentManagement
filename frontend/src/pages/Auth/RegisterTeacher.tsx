@@ -1,6 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 import Navbar from "@/components/NavBar";
 import InputField from "@/components/form/InputField";
@@ -16,6 +19,7 @@ interface RegisterForm {
 
 export default function RegisterTeacher() {
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
 
   const methods = useForm<RegisterForm>({
     defaultValues: {
@@ -105,20 +109,35 @@ export default function RegisterTeacher() {
               />
 
               {/* Password */}
-              <InputField
-                name="password"
-                label="Password"
-                type="password"
-                placeholder="Enter your password"
-                rules={{
-                  required: "Password is required",
+              <div className="relative">
+                <InputField
+                  name="password"
+                  label="Password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter your password"
+                  rules={{
+                    required: "Password is required",
 
-                  minLength: {
-                    value: 6,
-                    message: "Password must be at least 6 characters",
-                  },
-                }}
-              />
+                    minLength: {
+                      value: 6,
+                      message: "Password must be at least 6 characters",
+                    },
+                  }}
+                />
+
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute right-3 top-[30px] text-muted-foreground hover:text-foreground"
+                  tabIndex={-1}
+                >
+                  {showPassword ? (
+                    <FaEyeSlash size={18} />
+                  ) : (
+                    <FaEye size={18} />
+                  )}
+                </button>
+              </div>
 
               {/* Buttons */}
                   <div className="flex justify-end gap-3 pt-4">

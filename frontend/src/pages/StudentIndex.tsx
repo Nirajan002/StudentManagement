@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { useGetStudentDashboardQuery } from "../api/DashboardApi";

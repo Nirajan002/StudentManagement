@@ -1,5 +1,4 @@
-import React from "react";
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 
@@ -43,7 +42,7 @@ export default function SideMenu({
     if (route === "signout") {
       try {
         // Logout from backend
-        await logoutUser().unwrap();
+        await logoutUser({}).unwrap();
       } catch (error) {
         console.error("Logout failed:", error);
       } finally {

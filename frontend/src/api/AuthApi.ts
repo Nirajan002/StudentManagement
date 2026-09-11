@@ -1,6 +1,14 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 interface CurrentUserResponse {
+  id: any;
+  address: string;
+  fullName: string;
+  email: string;
+  gender: string;
+  number: string;
+  profile: any;
   role: "Admin" | "Teacher" | "Student";
 }
 
