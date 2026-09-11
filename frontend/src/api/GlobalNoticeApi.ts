@@ -35,10 +35,7 @@ export const GlobalNoticeApi = createApi({
       invalidatesTags: ["GlobalNotice"],
     }),
 
-    getLastViewedGlobalNotices: builder.query<
-      { lastViewedAt: string | null },
-      void
-    >({
+    getLastViewedGlobalNotices: builder.query<{ lastViewedAt: string | null }, void>({
       query: () => "/last-viewed",
       providesTags: ["GlobalNoticeReadState"],
     }),

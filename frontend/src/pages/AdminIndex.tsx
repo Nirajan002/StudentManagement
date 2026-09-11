@@ -10,7 +10,6 @@ import {
   Bell,
   ClipboardList,
   UserPlus,
-  AlertTriangle,
   Loader2,
   CalendarClock,
 } from "lucide-react";

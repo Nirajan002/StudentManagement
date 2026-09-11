@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useFormContext, type RegisterOptions } from "react-hook-form";
 
 import { Label } from "@/components/ui/label";
@@ -28,11 +28,14 @@ export default function FileField({
     defaultPreview || "/default-profile.jpg",
   );
 
-  useEffect(() => {
+  const [prevDefaultPreview, setPrevDefaultPreview] = useState(defaultPreview);
+
+  if (defaultPreview !== prevDefaultPreview) {
+    setPrevDefaultPreview(defaultPreview);
     if (defaultPreview) {
       setPreview(defaultPreview);
     }
-  }, [defaultPreview]);
+  }
 
   const { ref, onChange, ...rest } = register(name, rules);
 

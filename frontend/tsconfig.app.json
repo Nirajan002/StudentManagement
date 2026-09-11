@@ -10,7 +10,6 @@
     "allowArbitraryExtensions": true,
     "skipLibCheck": true,
 
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     },

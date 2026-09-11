@@ -22,7 +22,6 @@ import {
 import { Megaphone, Download, Loader2, Trash2, Plus } from "lucide-react";
 
 import DashboardLayout from "@/components/layouts/DashboardLayout";
-import { isImageFile } from "@/components/utils/initials";
 
 import { useGetCurrentUserQuery } from "../api/AuthApi";
 import {
@@ -33,6 +32,17 @@ import {
 } from "../api/GlobalNoticeApi";
 
 type AutoDeleteOption = "never" | "1d" | "3d" | "1w" | "2w" | "1m" | "custom";
+
+interface GlobalNotice {
+  id: number;
+  title: string;
+  content?: string | null;
+  fileName?: string | null;
+  originalFileName?: string | null;
+  postedByName: string;
+  postedAt: string;
+  autoDeleteAt?: string | null;
+}
 
 export default function GlobalNotices() {
   const { data: currentUser } = useGetCurrentUserQuery();
@@ -52,7 +62,7 @@ export default function GlobalNotices() {
 
   // Mark everything as read the moment this page is visited
   useEffect(() => {
-    markViewed();
+    markViewed(undefined);
   }, [markViewed]);
 
   const [open, setOpen] = useState(false);
@@ -142,7 +152,7 @@ export default function GlobalNotices() {
       await refetch();
       // Push our own "last viewed" timestamp forward so the notice we just
       // posted never shows up as unread activity for ourselves.
-      markViewed();
+      markViewed(undefined);
       setOpen(false);
       resetForm();
     } catch {
@@ -311,7 +321,7 @@ export default function GlobalNotices() {
         )}
 
         <div className="space-y-3">
-          {notices?.map((notice: any) => (
+          {notices?.map((notice: GlobalNotice) => (
             <div
               key={notice.id}
               className="overflow-hidden rounded-lg border bg-muted/30 p-4"

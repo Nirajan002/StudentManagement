@@ -1,5 +1,7 @@
 using backend.Data;
 using backend.Modules;
+using backend.Services;
+using backend.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -28,6 +30,17 @@ builder.Services.AddCors(options =>
             .AllowCredentials();
     });
 });
+
+builder.Services.AddScoped<IFileStorageService, FileStorageService>();
+builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IStudentService, StudentService>();
+builder.Services.AddScoped<ITeacherService, TeacherService>();
+builder.Services.AddScoped<IReadStateService, ReadStateService>();
+builder.Services.AddScoped<IGroupService, GroupService>();
+builder.Services.AddScoped<IGroupPostService, GroupPostService>();
+builder.Services.AddScoped<IGlobalNoticeService, GlobalNoticeService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -75,7 +88,7 @@ using (var scope = app.Services.CreateScope())
             Id = Guid.NewGuid(),
             FullName = "Admin User",
             Email = "admin@example.com",
-            Password = hasher.HashPassword(null, "admin123"),
+            Password = hasher.HashPassword(null!, "admin123"),
             Role = "Admin",
         };
 
@@ -83,7 +96,6 @@ using (var scope = app.Services.CreateScope())
         dbContext.SaveChanges();
     }
 }
-
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

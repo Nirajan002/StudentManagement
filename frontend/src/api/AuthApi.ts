@@ -1,5 +1,9 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
+interface CurrentUserResponse {
+  role: "Admin" | "Teacher" | "Student";
+}
+
 const baseQuery = fetchBaseQuery({
   baseUrl: "https://localhost:7014/api/Auth",
   credentials: "include",
@@ -61,7 +65,7 @@ export const AuthApi = createApi({
     }),
 
     // Unified "who am I" 
-    getCurrentUser: builder.query({
+    getCurrentUser: builder.query<CurrentUserResponse, void>({
       query: () => ({
         url: "/me",
         method: "GET",

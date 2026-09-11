@@ -1,16 +1,8 @@
-﻿using backend.Data;
-using backend.Modules;
+﻿using backend.DTOs;
+using backend.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
-using System.Security.Cryptography;
-using backend.DTOs;
 
 namespace backend.Controllers
 {
@@ -18,279 +10,54 @@ namespace backend.Controllers
     [Route("api/[controller]")]
     public class StudentController : Controller
     {
-        private readonly StudentManagement dbContext;
-        private readonly IConfiguration configuration;
-        private readonly PasswordHasher<Teacher> passwordHasher;
+        private readonly IStudentService studentService;
 
-        public StudentController(StudentManagement dbContext, IConfiguration configuration)
+        public StudentController(IStudentService studentService)
         {
-            this.dbContext = dbContext;
-            this.configuration = configuration;
-            this.passwordHasher = new PasswordHasher<Teacher>();
+            this.studentService = studentService;
         }
-
 
         [HttpGet("Students")]
-        public IActionResult GetStudent(int page = 1)
+        public IActionResult GetStudent(int page = 1) => Ok(studentService.GetPaged(page));
+
+        [HttpGet("{ID:guid}")]
+        public async Task<IActionResult> GetStudent([FromRoute] Guid ID)
         {
-            int pageSize = 10;
-
-            var student = dbContext.Students
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .Select(student => new
-                {
-                    student.Id,
-                    student.FullName,
-                    student.Gender,
-                    student.Number,
-                    student.Addresh,
-                    student.Email,
-                    student.Profile,
-                    student.Class,
-                    student.Section,
-                })
-                .ToList();
-
-            return Ok(student);
-        }
-
-        [HttpGet]
-        [Route("{ID:guid}")]
-        public IActionResult GetStudent([FromRoute] Guid ID)
-        {
-            var student = dbContext.Students.Find(ID);
-
-            if (student == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(new
-            {
-                student.Id,
-                student.FullName,
-                student.Email,
-                student.Profile,
-                student.Class,
-                student.Section,
-                student.Gender,
-                student.Number,
-                student.Addresh,
-            });
+            var result = await studentService.GetByIdAsync(ID);
+            return result == null ? NotFound() : Ok(result);
         }
 
         [Authorize(Roles = "Admin")]
         [HttpPut("student/{ID:guid}")]
-        public async Task<IActionResult> UpdateStudent([FromRoute] Guid ID, UpdateStudent updateStudent)
+        public async Task<IActionResult> UpdateStudent([FromRoute] Guid ID, UpdateStudent request)
         {
-            var student = await dbContext.Students.FindAsync(ID);
-
-            if (student == null)
-            {
-                return NotFound();
-            }
-
-            student.FullName = updateStudent.FullName;
-            student.Email = updateStudent.Email;
-            student.Class = updateStudent.Class;
-            student.Section = updateStudent.Section;
-            student.Gender = updateStudent.Gender;
-            student.Number = updateStudent.Number;
-            student.Addresh = updateStudent.Addresh;
-
-            if (updateStudent.Profile != null)
-            {
-                string uploadPath = Path.Combine(
-                    Directory.GetCurrentDirectory(),
-                    "wwwroot",
-                    "uploads"
-                );
-
-                if (!Directory.Exists(uploadPath))
-                {
-                    Directory.CreateDirectory(uploadPath);
-                }
-
-                if (!string.IsNullOrEmpty(student.Profile))
-                {
-                    string oldFilePath = Path.Combine(
-                        uploadPath,
-                        student.Profile
-                    );
-
-                    if (System.IO.File.Exists(oldFilePath))
-                    {
-                        System.IO.File.Delete(oldFilePath);
-                    }
-                }
-
-                string fileName = Guid.NewGuid().ToString()
-                                  + Path.GetExtension(
-                                      updateStudent.Profile.FileName
-                                  );
-
-                string filePath = Path.Combine(
-                    uploadPath,
-                    fileName
-                );
-
-                using (var stream = new FileStream(
-                    filePath,
-                    FileMode.Create))
-                {
-                    await updateStudent.Profile.CopyToAsync(stream);
-                }
-
-                student.Profile = fileName;
-            }
-
-            await dbContext.SaveChangesAsync();
-
-            return Ok(new
-            {
-                student.Id,
-                student.FullName,
-                student.Email,
-                student.Profile,
-                student.Class,
-                student.Section,
-                student.Number,
-                student.Gender,
-                student.Addresh,
-            });
+            var result = await studentService.UpdateAsync(ID, request);
+            return result == null ? NotFound() : Ok(result);
         }
 
         [Authorize(Roles = "Admin")]
-        [HttpDelete]
-        [Route("{ID:guid}")]
+        [HttpDelete("{ID:guid}")]
         public async Task<IActionResult> DeleteStudents([FromRoute] Guid ID)
         {
-            var student = await dbContext.Students.FindAsync(ID);
-
-            if (student == null)
-            {
-                return NotFound();
-            }
-
-            dbContext.Students.Remove(student);
-
-            await dbContext.SaveChangesAsync();
-
-            return Ok(student);
+            var deleted = await studentService.DeleteAsync(ID);
+            return deleted ? Ok() : NotFound();
         }
 
-        [HttpGet]
-        [Route("search")]
-        public IActionResult SearchStudent(
-            string search = "",
-            int limit = 20)
-        {
-            if (string.IsNullOrWhiteSpace(search))
-            {
-                return Ok(new List<object>());
-            }
-
-            var students = dbContext.Students
-                .Where(s =>
-                    s.FullName != null &&
-                    s.FullName.ToLower().Contains(search.ToLower()))
-                .Take(limit)
-                .Select(student => new
-                {
-                    student.Id,
-                    student.FullName,
-                    student.Profile
-                })
-                .ToList();
-
-            return Ok(students);
-        }
+        [HttpGet("search")]
+        public IActionResult SearchStudent(string search = "", int limit = 20) =>
+            Ok(studentService.Search(search, limit));
 
         [Authorize]
         [HttpPut("profile/{ID:guid}")]
-        public async Task<IActionResult> StudentProfileUpdate(
-    [FromRoute] Guid ID,
-    [FromForm] StudentProfileUpdate studentProfileUpdate)
+        public async Task<IActionResult> StudentProfileUpdate([FromRoute] Guid ID, [FromForm] StudentProfileUpdate request)
         {
             var loggedInId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            if (string.IsNullOrEmpty(loggedInId))
-            {
+            if (string.IsNullOrEmpty(loggedInId) || !Guid.TryParse(loggedInId, out var currentId))
                 return Unauthorized();
-            }
+            if (currentId != ID) return Forbid();
 
-            if (!Guid.TryParse(loggedInId, out var currentId))
-            {
-                return Unauthorized();
-            }
-
-            if (currentId != ID)
-            {
-                return Forbid();
-            }
-
-            var student = await dbContext.Students.FindAsync(ID);
-
-            if (student == null)
-            {
-                return NotFound();
-            }
-
-            student.Gender = studentProfileUpdate.Gender;
-            student.Number = studentProfileUpdate.Number;
-            student.Addresh = studentProfileUpdate.Addresh;
-
-            if (studentProfileUpdate.Profile != null &&
-                studentProfileUpdate.Profile.Length > 0)
-            {
-                string uploadPath = Path.Combine(
-                    Directory.GetCurrentDirectory(),
-                    "wwwroot",
-                    "uploads"
-                );
-
-                if (!Directory.Exists(uploadPath))
-                {
-                    Directory.CreateDirectory(uploadPath);
-                }
-
-                if (!string.IsNullOrEmpty(student.Profile))
-                {
-                    string oldFilePath = Path.Combine(uploadPath, student.Profile);
-
-                    if (System.IO.File.Exists(oldFilePath))
-                    {
-                        System.IO.File.Delete(oldFilePath);
-                    }
-                }
-
-                string fileName = Guid.NewGuid().ToString()
-                    + Path.GetExtension(studentProfileUpdate.Profile.FileName);
-
-                string filePath = Path.Combine(uploadPath, fileName);
-
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await studentProfileUpdate.Profile.CopyToAsync(stream);
-                }
-
-                student.Profile = fileName;
-            }
-
-            await dbContext.SaveChangesAsync();
-
-            return Ok(new
-            {
-                student.Id,
-                student.FullName,
-                student.Email,
-                student.Profile,
-                student.Gender,
-                student.Number,
-                student.Addresh
-            });
+            var result = await studentService.UpdateProfileAsync(ID, request);
+            return result == null ? NotFound() : Ok(result);
         }
-
     }
 }

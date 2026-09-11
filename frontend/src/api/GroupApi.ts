@@ -10,7 +10,7 @@ export const GroupApi = createApi({
   baseQuery,
   refetchOnMountOrArgChange: true,
 
-  tagTypes: ["Group", "GroupReadState"],
+  tagTypes: ["Group", "GroupReadState", "GroupPost"],
 
   endpoints: (builder) => ({
     // List groups (Admin sees all, Teacher sees own/managed)

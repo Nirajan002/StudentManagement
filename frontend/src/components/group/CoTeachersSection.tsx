@@ -15,8 +15,21 @@ import { Loader2, UserMinus, UserPlus, Users2 } from "lucide-react";
 import { TeacherPicker, type PickedTeacher } from "./TeacherPicker";
 import { initials } from "../utils/initials";
 
+interface GroupManager {
+  teacherId: string;
+  fullName: string;
+  email: string;
+  profile?: string | null;
+}
+
+interface Group {
+  name: string;
+  createdById: string;
+  managers?: GroupManager[];
+}
+
 interface CoTeachersSectionProps {
-  group: any;
+  group: Group;
   canManageCoTeachers: boolean;
   isAddingManager: boolean;
   removingManagerId: string | null;
@@ -87,7 +100,7 @@ export default function CoTeachersSection({
                 onChange={setTeachersToAdd}
                 excludeIds={[
                   group.createdById,
-                  ...(group.managers ?? []).map((m: any) => m.teacherId),
+                  ...(group.managers ?? []).map((m) => m.teacherId),
                 ]}
               />
 
@@ -118,7 +131,7 @@ export default function CoTeachersSection({
 
       {group.managers && group.managers.length > 0 ? (
         <div className="space-y-2">
-          {group.managers.map((manager: any) => (
+          {group.managers.map((manager) => (
             <div
               key={manager.teacherId}
               className="flex items-center justify-between rounded-md bg-muted/40 px-3 py-2"

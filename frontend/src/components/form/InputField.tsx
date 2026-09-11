@@ -1,4 +1,3 @@
-import React from "react";
 import { useFormContext, type RegisterOptions } from "react-hook-form";
 
 import { Input } from "@/components/ui/input";
