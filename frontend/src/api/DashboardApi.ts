@@ -1,9 +1,7 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { createBaseQueryWithReauth } from "./baseQueryWithReauth";
 
-const baseQuery = fetchBaseQuery({
-  baseUrl: "https://localhost:7014/api/Dashboard",
-  credentials: "include",
-});
+const baseQuery = createBaseQueryWithReauth("Dashboard");
 
 export const DashboardApi = createApi({
   reducerPath: "Admin",

@@ -1,9 +1,7 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { createBaseQueryWithReauth } from "./baseQueryWithReauth";
 
-const baseQuery = fetchBaseQuery({
-  baseUrl: "https://localhost:7014/api/Groups",
-  credentials: "include",
-});
+const baseQuery = createBaseQueryWithReauth("Groups");
 
 export const GroupApi = createApi({
   reducerPath: "Group",
