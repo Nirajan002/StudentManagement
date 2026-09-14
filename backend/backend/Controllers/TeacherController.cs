@@ -55,9 +55,11 @@ namespace backend.Controllers
             }
         }
 
+        [Authorize]
         [HttpGet("Teachers")]
         public IActionResult GetTeachers(int page = 1) => Ok(teacherService.GetPaged(page));
 
+        [Authorize]
         [HttpGet("Teacher/{ID:guid}")]
         public IActionResult GetTeacher([FromRoute] Guid ID)
         {
@@ -100,6 +102,7 @@ namespace backend.Controllers
             }
         }
 
+        [Authorize]
         [HttpGet("searchTeacher")]
         public IActionResult SearchTeacher(string search = "", int limit = 20) =>
             Ok(teacherService.Search(search, limit));

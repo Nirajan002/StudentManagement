@@ -60,7 +60,7 @@
             if (request.Profile != null)
             {
                 fileStorage.Delete(student.Profile);
-                student.Profile = await fileStorage.SaveAsync(request.Profile);
+                student.Profile = await fileStorage.SaveAsync(request.Profile, FileCategory.Image);
             }
 
             await dbContext.SaveChangesAsync();
@@ -101,7 +101,7 @@
             if (request.Profile is { Length: > 0 })
             {
                 fileStorage.Delete(student.Profile);
-                student.Profile = await fileStorage.SaveAsync(request.Profile);
+                student.Profile = await fileStorage.SaveAsync(request.Profile, FileCategory.Image);
             }
 
             await dbContext.SaveChangesAsync();

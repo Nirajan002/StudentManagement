@@ -177,7 +177,7 @@ export default function AdminIndex() {
               </Card>
 
               {/* =========================
-                  UPCOMING ASSIGNMENTS
+                  ASSIGNMENTS
               ========================= */}
               <Card>
                 <CardHeader>

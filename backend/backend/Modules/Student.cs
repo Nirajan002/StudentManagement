@@ -24,6 +24,9 @@
 
         public string Role { get; set; } = "Student";
 
+        public bool EmailVerified { get; set; } = false;
+        public string? PendingEmail { get; set; }
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

@@ -44,6 +44,9 @@ import GroupsList from "./pages/Group/GroupList";
 import CreateGroup from "./pages/Group/CreateGroups";
 import GroupDetail from "./pages/Group/GroupDetail";
 
+import VerifyEmail from "./pages/Auth/VerifyEmail";
+import ForgotPassword from "./pages/Auth/ForgotPassword";
+
 function App() {
   return (
     <Routes>
@@ -56,6 +59,8 @@ function App() {
           AUTHENTICATION
           ========================= */}
       <Route path="/Login" element={<Login />} />
+      <Route path="/VerifyEmail" element={<VerifyEmail />} />
+      <Route path="/ForgotPassword" element={<ForgotPassword />} />
 
       {/* =========================
           COMMON ROUTES
@@ -151,7 +156,10 @@ function App() {
           ========================= */}
       <Route path="/ViewYourProfile" element={<ViewYourProfile />} />
 
-      <Route path="/UpdateTeacherProfile/:id" element={<UpdateTeacherProfile />} />
+      <Route
+        path="/UpdateTeacherProfile/:id"
+        element={<UpdateTeacherProfile />}
+      />
 
       <Route
         path="/UpdateStudentProfile/:id"

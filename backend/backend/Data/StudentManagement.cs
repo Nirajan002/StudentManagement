@@ -19,6 +19,7 @@ namespace backend.Data
         public DbSet<GroupPost> GroupPosts { get; set; }
         public DbSet<GlobalNotice> GlobalNotices { get; set; }
         public DbSet<ReadState> ReadStates { get; set; }
+        public DbSet<OtpCode> OtpCodes { get; set; }
 
         public DbSet<RefreshToken> RefreshTokens { get; set; }
 
@@ -102,6 +103,9 @@ namespace backend.Data
             modelBuilder.Entity<ReadState>()
                 .HasIndex(r => new { r.UserId, r.ChannelType, r.GroupId })
                 .IsUnique();
+
+            modelBuilder.Entity<OtpCode>()
+                .HasIndex(o => new { o.UserId, o.UserType, o.Purpose });
 
             // as local time, throwing off any client-side date comparisons.
             var utcConverter = new ValueConverter<DateTime, DateTime>(

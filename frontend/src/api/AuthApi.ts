@@ -11,6 +11,7 @@ interface CurrentUserResponse {
   number: string;
   profile: any;
   role: "Admin" | "Teacher" | "Student";
+  emailVerifies: boolean;
 }
 
 const baseQuery = createBaseQueryWithReauth("Auth");
@@ -70,13 +71,46 @@ export const AuthApi = createApi({
       }),
     }),
 
-    // Unified "who am I" 
+    // Unified "who am I"
     getCurrentUser: builder.query<CurrentUserResponse, void>({
       query: () => ({
         url: "/me",
         method: "GET",
       }),
       providesTags: ["CurrentUser"],
+    }),
+
+    sendVerificationEmail: builder.mutation({
+      query: () => ({ url: "/verification/send", method: "POST" }),
+    }),
+    changePendingEmail: builder.mutation({
+      query: (data: { newEmail: string }) => ({
+        url: "/verification/change-email",
+        method: "POST",
+        body: data,
+      }),
+    }),
+    confirmEmailVerification: builder.mutation({
+      query: (data: { code: string }) => ({
+        url: "/verification/confirm",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["CurrentUser"],
+    }),
+    forgotPassword: builder.mutation({
+      query: (data: { email: string }) => ({
+        url: "/password/forgot",
+        method: "POST",
+        body: data,
+      }),
+    }),
+    resetPassword: builder.mutation({
+      query: (data: { email: string; code: string; newPassword: string }) => ({
+        url: "/password/reset",
+        method: "POST",
+        body: data,
+      }),
     }),
   }),
 });
@@ -88,4 +122,9 @@ export const {
   useLogoutMutation,
   useRefreshTokenMutation,
   useGetCurrentUserQuery,
+  useSendVerificationEmailMutation,
+  useChangePendingEmailMutation,
+  useConfirmEmailVerificationMutation,
+  useForgotPasswordMutation,
+  useResetPasswordMutation,
 } = AuthApi;

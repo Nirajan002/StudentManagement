@@ -12,5 +12,10 @@
         Task<LoginResult> LoginAsync(TeacherLogin request);
         Task LogoutAsync(string? refreshToken);
         Task<RefreshResult> RefreshAsync(string? refreshToken);
+        Task<object> SendEmailVerificationAsync(Guid userId, string role);
+        Task<object> ChangePendingEmailAsync(Guid userId, string role, string newEmail);
+        Task<(bool Success, string Error)> ConfirmEmailVerificationAsync(Guid userId, string role, string code);
+        Task RequestPasswordResetAsync(string email);
+        Task<(bool Success, string Error)> ResetPasswordAsync(string email, string code, string newPassword);
     }
 }

@@ -34,14 +34,14 @@ namespace backend.Controllers
             {
                 var teacher = await dbContext.Teachers.FindAsync(id);
                 if (teacher == null) return Unauthorized();
-                return Ok(new { teacher.Id, teacher.FullName, teacher.Email, teacher.Profile, teacher.Role, teacher.Gender, teacher.Number, teacher.Address });
+                return Ok(new { teacher.Id, teacher.FullName, teacher.Email, teacher.Profile, teacher.Role, teacher.Gender, teacher.Number, teacher.Address, teacher.EmailVerified });
             }
 
             if (role == "Student")
             {
                 var student = await dbContext.Students.FindAsync(id);
                 if (student == null) return Unauthorized();
-                return Ok(new { student.Id, student.FullName, student.Email, student.Profile, student.Role, student.Gender, student.Number, Address = student.Addresh });
+                return Ok(new { student.Id, student.FullName, student.Email, student.Profile, student.Role, student.Gender, student.Number, Address = student.Addresh, student.EmailVerified });
             }
 
             return Unauthorized();
@@ -113,6 +113,61 @@ namespace backend.Controllers
                 Expires = DateTimeOffset.UtcNow.AddHours(1),
                 Path = "/"
             });
+        }
+
+        [HttpPost("verification/send")]
+        [Authorize]
+        public async Task<IActionResult> SendVerification()
+        {
+            var (userId, role) = GetCurrentUserIdAndRole();
+            if (userId == null) return Unauthorized();
+
+            try { return Ok(await authService.SendEmailVerificationAsync(userId.Value, role!)); }
+            catch (InvalidOperationException ex) { return BadRequest(new { message = ex.Message }); }
+        }
+
+        [HttpPost("verification/change-email")]
+        [Authorize]
+        public async Task<IActionResult> ChangePendingEmail(ChangePendingEmailRequest request)
+        {
+            var (userId, role) = GetCurrentUserIdAndRole();
+            if (userId == null) return Unauthorized();
+
+            try { return Ok(await authService.ChangePendingEmailAsync(userId.Value, role!, request.NewEmail)); }
+            catch (InvalidOperationException ex) { return BadRequest(new { message = ex.Message }); }
+        }
+
+        [HttpPost("verification/confirm")]
+        [Authorize]
+        public async Task<IActionResult> ConfirmVerification(VerifyEmailCodeRequest request)
+        {
+            var (userId, role) = GetCurrentUserIdAndRole();
+            if (userId == null) return Unauthorized();
+
+            var (success, error) = await authService.ConfirmEmailVerificationAsync(userId.Value, role!, request.Code);
+            return success ? Ok(new { message = "Email verified successfully." }) : BadRequest(new { message = error });
+        }
+
+        [HttpPost("password/forgot")]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordRequest request)
+        {
+            await authService.RequestPasswordResetAsync(request.Email);
+            return Ok(new { message = "If an account with that email exists and is verified, a reset code has been sent." });
+        }
+
+        [HttpPost("password/reset")]
+        public async Task<IActionResult> ResetPassword(ResetPasswordRequest request)
+        {
+            var (success, error) = await authService.ResetPasswordAsync(request.Email, request.Code, request.NewPassword);
+            return success ? Ok(new { message = "Password reset successfully." }) : BadRequest(new { message = error });
+        }
+
+        private (Guid? Id, string? Role) GetCurrentUserIdAndRole()
+        {
+            var idStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var role = User.FindFirstValue(ClaimTypes.Role);
+            if (idStr == null || !Guid.TryParse(idStr, out var id)) return (null, null);
+            return (id, role);
         }
     }
 }

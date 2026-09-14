@@ -20,6 +20,9 @@
 
         public string Role { get; set; } = "Teacher";
 
+        public bool EmailVerified { get; set; } = false;
+        public string? PendingEmail { get; set; }
+
         public string? RefreshToken { get; set; }
         public DateTime? RefreshTokenExpiry { get; set; }
 

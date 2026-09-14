@@ -11,8 +11,9 @@
             uploadPath = Path.Combine(env.ContentRootPath, "wwwroot", "uploads");
         }
 
-        public async Task<string> SaveAsync(IFormFile file)
+        public async Task<string> SaveAsync(IFormFile file, FileCategory category = FileCategory.Document)
         {
+            await FileValidation.ValidateAsync(file, category);
             if (!Directory.Exists(uploadPath))
             {
                 Directory.CreateDirectory(uploadPath);
@@ -44,6 +45,11 @@
             if (!File.Exists(filePath)) return null;
 
             return await File.ReadAllBytesAsync(filePath);
+        }
+
+        public Task<string> SaveAsync(IFormFile file)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -50,6 +50,12 @@ export default function Login() {
       localStorage.setItem("fullName", user.fullName);
       localStorage.setItem("role", user.role);
 
+      if (!user.emailVerified) {
+        toast("Please verify your email to continue.");
+        navigate("/VerifyEmail");
+        return;
+      }
+
       toast.success("Login successful!");
 
       // =========================
@@ -61,30 +67,21 @@ export default function Login() {
       if (role === "admin") {
         console.log("Redirecting to AdminView");
         navigate("/AdminIndex");
-      } 
-      
-      else if (role === "teacher") {
+      } else if (role === "teacher") {
         console.log("Redirecting to TeacherView");
         navigate("/TeacherIndex");
-      } 
-      
-      else if (role === "student") {
+      } else if (role === "student") {
         console.log("Redirecting to StudentView");
         navigate("/StudentIndex");
-      } 
-      
-      else {
+      } else {
         console.log("Unknown role:", user.role);
 
         toast.error("Invalid user role.");
       }
-
     } catch (error: any) {
       console.error("Login error:", error);
 
-      toast.error(
-        error?.data?.message || "Invalid email or password"
-      );
+      toast.error(error?.data?.message || "Invalid email or password");
     }
   };
 
@@ -94,15 +91,12 @@ export default function Login() {
 
       <div className="flex min-h-screen items-center justify-center bg-muted/40 px-4">
         <div className="w-full max-w-md rounded-xl border bg-background p-6 shadow-sm">
-
           {/* =========================
               HEADER
           ========================= */}
 
           <div className="mb-6 text-center">
-            <h1 className="text-2xl font-bold">
-              Welcome Back
-            </h1>
+            <h1 className="text-2xl font-bold">Welcome Back</h1>
 
             <p className="mt-2 text-sm text-muted-foreground">
               Login to your account
@@ -118,7 +112,6 @@ export default function Login() {
               onSubmit={methods.handleSubmit(onSubmit)}
               className="space-y-5"
             >
-
               <InputField
                 name="email"
                 label="Email"
@@ -154,21 +147,29 @@ export default function Login() {
                   className="absolute right-3 top-[30px] text-muted-foreground hover:text-foreground"
                   tabIndex={-1}
                 >
-                  {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+                  {showPassword ? (
+                    <FaEyeSlash size={18} />
+                  ) : (
+                    <FaEye size={18} />
+                  )}
                 </button>
               </div>
 
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isLoading}
-              >
+              <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? "Logging in..." : "Login"}
               </Button>
 
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={() => navigate("/ForgotPassword")}
+                  className="text-sm text-primary underline"
+                >
+                  Forgot password?
+                </button>
+              </div>
             </form>
           </FormProvider>
-
         </div>
       </div>
     </div>

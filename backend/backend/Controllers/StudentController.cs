@@ -17,6 +17,7 @@ namespace backend.Controllers
             this.studentService = studentService;
         }
 
+        [Authorize]
         [HttpGet("Students")]
         public IActionResult GetStudent(int page = 1) => Ok(studentService.GetPaged(page));
 
@@ -43,6 +44,7 @@ namespace backend.Controllers
             return deleted ? Ok() : NotFound();
         }
 
+        [Authorize]
         [HttpGet("search")]
         public IActionResult SearchStudent(string search = "", int limit = 20) =>
             Ok(studentService.Search(search, limit));

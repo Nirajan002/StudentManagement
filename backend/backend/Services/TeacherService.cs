@@ -38,7 +38,7 @@
             if (request.Profile is { Length: > 0 })
             {
                 fileStorage.Delete(teacher.Profile);
-                teacher.Profile = await fileStorage.SaveAsync(request.Profile);
+                teacher.Profile = await fileStorage.SaveAsync(request.Profile, FileCategory.Image);
             }
 
             await dbContext.SaveChangesAsync();
@@ -83,7 +83,7 @@
             if (request.Profile is { Length: > 0 })
             {
                 fileStorage.Delete(teacher.Profile);
-                teacher.Profile = await fileStorage.SaveAsync(request.Profile);
+                teacher.Profile = await fileStorage.SaveAsync(request.Profile, FileCategory.Image);
             }
 
             await dbContext.SaveChangesAsync();
