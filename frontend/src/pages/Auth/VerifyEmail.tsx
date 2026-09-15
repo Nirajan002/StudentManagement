@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import Navbar from "@/components/NavBar";
@@ -11,6 +11,20 @@ import {
   useChangePendingEmailMutation,
   useConfirmEmailVerificationMutation,
 } from "../../api/AuthApi";
+
+type ApiError = {
+  data?: {
+    message?: string;
+  };
+};
+
+const getErrorMessage = (error: unknown, fallback: string) => {
+  if (typeof error === "object" && error !== null && "data" in error) {
+    const message = (error as ApiError).data?.message;
+    if (message) return message;
+  }
+  return fallback;
+};
 
 export default function VerifyEmail() {
   const navigate = useNavigate();
@@ -27,16 +41,16 @@ export default function VerifyEmail() {
   const [showChangeEmail, setShowChangeEmail] = useState(false);
   const [newEmail, setNewEmail] = useState("");
   const [cooldown, setCooldown] = useState(0);
-  const [sentOnce, setSentOnce] = useState(false);
+  const sentOnce = useRef(false);
 
   useEffect(() => {
-    if (sentOnce) return;
+    if (sentOnce.current) return;
+    sentOnce.current = true;
     sendVerification({})
       .unwrap()
       .then(() => toast.success("Verification code sent to your email."))
       .catch(() => toast.error("Couldn't send verification code."));
-    setSentOnce(true);
-  }, [sentOnce, sendVerification]);
+  }, [sendVerification]);
 
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -46,25 +60,25 @@ export default function VerifyEmail() {
 
   const handleResend = async () => {
     try {
-      const res: any = await sendVerification({}).unwrap();
+      const res = await sendVerification({}).unwrap();
       toast.success(res?.message || "Code sent.");
       setCooldown(60);
-    } catch (err: any) {
-      toast.error(err?.data?.message || "Couldn't send code.");
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, "Couldn't send code."));
     }
   };
 
   const handleChangeEmail = async () => {
     if (!newEmail.trim()) return toast.error("Enter a new email address.");
     try {
-      const res: any = await changeEmail({
+      const res = await changeEmail({
         newEmail: newEmail.trim(),
       }).unwrap();
       toast.success(res?.message || "Code sent to new email.");
       setShowChangeEmail(false);
       setCooldown(60);
-    } catch (err: any) {
-      toast.error(err?.data?.message || "Couldn't update email.");
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, "Couldn't update email."));
     }
   };
 
@@ -77,8 +91,8 @@ export default function VerifyEmail() {
       if (role === "admin") navigate("/AdminIndex");
       else if (role === "teacher") navigate("/TeacherIndex");
       else navigate("/StudentIndex");
-    } catch (err: any) {
-      toast.error(err?.data?.message || "Incorrect code.");
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, "Incorrect code."));
     }
   };
 

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "react-hot-toast";
 
@@ -61,12 +60,21 @@ export default function StudentDetail() {
       setTimeout(() => {
         navigate(`/Result?page=${page}`);
       }, 500);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Delete student error:", error);
 
-      toast.error(
-        error?.data?.message || "Failed to delete student"
-      );
+      const message =
+        typeof error === "object" &&
+        error !== null &&
+        "data" in error &&
+        typeof error.data === "object" &&
+        error.data !== null &&
+        "message" in error.data &&
+        typeof error.data.message === "string"
+          ? error.data.message
+          : "Failed to delete student";
+
+      toast.error(message);
     }
   };
 

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { useGetStudentDashboardQuery } from "../api/DashboardApi";
@@ -107,7 +106,15 @@ export default function StudentIndex() {
                     </p>
                   ) : (
                     <div className="space-y-2">
-                      {data.recentActivity.map((item: any) => (
+                      {data.recentActivity.map((item: {
+                        id: string | number;
+                        groupId: string | number;
+                        type: string;
+                        title: string;
+                        groupName: string;
+                        postedByName: string;
+                        postedAt: string;
+                      }) => (
                         <div
                           key={item.id}
                           onClick={() => navigate(`/groups/${item.groupId}`)}
@@ -154,7 +161,13 @@ export default function StudentIndex() {
                     </p>
                   ) : (
                     <div className="space-y-2">
-                      {data.upcomingAssignments.map((item: any) => (
+                      {data.upcomingAssignments.map((item: {
+                        id: string | number;
+                        groupId: string | number;
+                        title: string;
+                        groupName: string;
+                        dueDate: string;
+                      }) => (
                         <div
                           key={item.id}
                           onClick={() => navigate(`/groups/${item.groupId}`)}
@@ -203,7 +216,11 @@ export default function StudentIndex() {
                   </p>
                 ) : (
                   <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                    {data.myGroups.map((group: any) => (
+                    {data.myGroups.map((group: {
+                      id: string | number;
+                      name: string;
+                      memberCount: number;
+                    }) => (
                       <div
                         key={group.id}
                         onClick={() => navigate(`/groups/${group.id}`)}

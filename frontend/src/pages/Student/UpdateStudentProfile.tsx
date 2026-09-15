@@ -1,7 +1,5 @@
-/* eslint-disable react-hooks/incompatible-library */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect } from "react";
-import { useForm, FormProvider } from "react-hook-form";
+import { useForm, FormProvider, useWatch } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 
@@ -51,6 +49,8 @@ export default function UpdateStudentProfile() {
     },
   });
 
+  const gender = useWatch({ control: methods.control, name: "gender" });
+
   useEffect(() => {
     if (!user) return;
 
@@ -96,11 +96,24 @@ export default function UpdateStudentProfile() {
       setTimeout(() => {
         navigate("/ViewYourProfile");
       }, 500);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("PROFILE UPDATE ERROR:", error);
-      console.error("SERVER RESPONSE:", error?.data);
 
-      toast.error(error?.data?.message || "Failed to update profile");
+      const errorData =
+        typeof error === "object" && error !== null && "data" in error
+          ? error.data
+          : undefined;
+      const errorMessage =
+        typeof errorData === "object" &&
+        errorData !== null &&
+        "message" in errorData &&
+        typeof errorData.message === "string"
+          ? errorData.message
+          : undefined;
+
+      console.error("SERVER RESPONSE:", errorData);
+
+      toast.error(errorMessage || "Failed to update profile");
     }
   };
 
@@ -194,7 +207,7 @@ export default function UpdateStudentProfile() {
                     <label className="text-sm font-medium">Gender</label>
 
                     <Select
-                      value={methods.watch("gender")}
+                      value={gender}
                       onValueChange={(value) =>
                         methods.setValue("gender", value ?? "")
                       }

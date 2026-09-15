@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -52,19 +51,24 @@ export default function AddStudents() {
       reset();
 
       navigate(-1);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Add student error:", error);
 
-      if (error?.status === 409) {
+      const apiError = error as {
+        status?: number;
+        data?: { message?: string };
+      };
+
+      if (apiError.status === 409) {
         toast.error(
-          error?.data?.message ||
+          apiError.data?.message ||
             "A student with this email already exists."
         );
         return;
       }
 
       toast.error(
-        error?.data?.message || "Failed to add student."
+        apiError.data?.message || "Failed to add student."
       );
     }
   };

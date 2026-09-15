@@ -38,7 +38,7 @@ export function createBaseQueryWithReauth(
     if (result.error && result.error.status === 401) {
       const url = typeof args === "string" ? args : args.url;
       const isAuthEndpoint =
-        url?.includes("/login") || url?.includes("/refresh");
+        url?.includes("/login") || url?.includes("/refresh") || url?.includes("/me");
 
       if (!isAuthEndpoint) {
         const refreshed = await refreshAccessToken();

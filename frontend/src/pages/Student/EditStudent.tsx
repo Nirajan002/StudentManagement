@@ -1,7 +1,5 @@
-/* eslint-disable react-hooks/incompatible-library */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
-import { useForm, FormProvider } from "react-hook-form";
+import { useForm, FormProvider, useWatch } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 
 import InputField from "@/components/form/InputField";
@@ -24,6 +22,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
+
+type EditStudentFormData = {
+  profile: FileList | null;
+  fullName: string;
+  email: string;
+  gender: string;
+  number: string;
+  addresh: string;
+  studentClass: string;
+  section: string;
+};
 
 export default function EditStudent() {
   const { id } = useParams();
@@ -48,7 +57,7 @@ export default function EditStudent() {
   // FORM
   // =========================
 
-  const methods = useForm({
+  const methods = useForm<EditStudentFormData>({
     defaultValues: {
       profile: null,
       fullName: "",
@@ -59,6 +68,11 @@ export default function EditStudent() {
       studentClass: "",
       section: "",
     },
+  });
+
+  const gender = useWatch({
+    control: methods.control,
+    name: "gender",
   });
 
   // =========================
@@ -84,7 +98,7 @@ export default function EditStudent() {
   // SUBMIT
   // =========================
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: EditStudentFormData) => {
     if (!id) {
       toast.error("Student ID is missing");
       return;
@@ -127,10 +141,21 @@ export default function EditStudent() {
       setTimeout(() => {
         navigate(-1);
       }, 500);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("UPDATE ERROR:", error);
 
-      toast.error(error?.data?.message || "Failed to update student");
+      const message =
+        typeof error === "object" &&
+        error !== null &&
+        "data" in error &&
+        typeof error.data === "object" &&
+        error.data !== null &&
+        "message" in error.data &&
+        typeof error.data.message === "string"
+          ? error.data.message
+          : "Failed to update student";
+
+      toast.error(message);
     }
   };
 
@@ -212,7 +237,7 @@ export default function EditStudent() {
                 <label className="text-sm font-medium">Gender</label>
 
                 <Select
-                  value={methods.watch("gender")}
+                  value={gender}
                   onValueChange={(value) => methods.setValue("gender", value ?? "")}
                 >
                   <SelectTrigger>

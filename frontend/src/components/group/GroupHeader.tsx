@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -14,8 +13,18 @@ import { Loader2, UserPlus } from "lucide-react";
 
 import { StudentPicker, type PickedStudent } from "./StudentPicker";
 
+interface GroupMember {
+  studentId: string;
+}
+
+interface Group {
+  name: string;
+  description?: string | null;
+  members: GroupMember[];
+}
+
 interface GroupHeaderProps {
-  group: any;
+  group: Group;
   canManageStudents: boolean;
   isAdding: boolean;
   onAddMembers: (studentIds: string[]) => Promise<boolean>;
@@ -84,9 +93,7 @@ export default function GroupHeader({
             <StudentPicker
               selected={studentsToAdd}
               onChange={setStudentsToAdd}
-              excludeIds={group.members.map(
-                (member: any) => member.studentId
-              )}
+              excludeIds={group.members.map((member) => member.studentId)}
             />
 
             <DialogFooter>

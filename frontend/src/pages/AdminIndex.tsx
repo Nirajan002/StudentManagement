@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { useGetAdminDashboardQuery } from "../api/DashboardApi";
 import { useNavigate } from "react-router-dom";
@@ -146,7 +145,16 @@ export default function AdminIndex() {
                     </p>
                   ) : (
                     <div className="space-y-2">
-                      {data.recentActivity.map((item: any) => (
+                      {data.recentActivity.map(
+                        (item: {
+                          id: string | number;
+                          groupId: string | number;
+                          type: string;
+                          title: string;
+                          groupName: string;
+                          postedByName: string;
+                          postedAt: string | number | Date;
+                        }) => (
                         <div
                           key={item.id}
                           onClick={() => navigate(`/groups/${item.groupId}`)}
@@ -170,7 +178,8 @@ export default function AdminIndex() {
                             </p>
                           </div>
                         </div>
-                      ))}
+                      ),
+                      )}
                     </div>
                   )}
                 </CardContent>
@@ -193,7 +202,14 @@ export default function AdminIndex() {
                     </p>
                   ) : (
                     <div className="space-y-2">
-                      {data.upcomingAssignments.map((item: any) => (
+                      {data.upcomingAssignments.map(
+                        (item: {
+                          id: string | number;
+                          groupId: string | number;
+                          title: string;
+                          groupName: string;
+                          dueDate: string | number | Date;
+                        }) => (
                         <div
                           key={item.id}
                           onClick={() => navigate(`/groups/${item.groupId}`)}
@@ -211,7 +227,8 @@ export default function AdminIndex() {
                             </p>
                           </div>
                         </div>
-                      ))}
+                      ),
+                      )}
                     </div>
                   )}
                 </CardContent>
@@ -235,7 +252,8 @@ export default function AdminIndex() {
                   </p>
                 ) : (
                   <div className="space-y-3">
-                    {data.genderBreakdown.map((g: any) => {
+                    {data.genderBreakdown.map(
+                      (g: { gender: string; count: number }) => {
                       const percent =
                         data.totalStudents > 0
                           ? Math.round((g.count / data.totalStudents) * 100)
@@ -257,7 +275,8 @@ export default function AdminIndex() {
                           </div>
                         </div>
                       );
-                    })}
+                      },
+                    )}
                   </div>
                 )}
               </CardContent>

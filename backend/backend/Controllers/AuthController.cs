@@ -12,7 +12,7 @@ namespace backend.Controllers
     public class AuthController : Controller
     {
         private readonly IAuthService authService;
-        private readonly StudentManagement dbContext; // only for GET /me lookups
+        private readonly StudentManagement dbContext;
 
         public AuthController(IAuthService authService, StudentManagement dbContext)
         {

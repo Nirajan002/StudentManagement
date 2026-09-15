@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { ReactNode } from "react";
 
 export function getUnreadGlobalNotices<T extends {
   title: ReactNode;
-  id: any; postedAt: string 
+  id: unknown; postedAt: string 
 }>(
   notices: T[],
   lastViewedAt: string | null | undefined

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useNavigate } from "react-router-dom";
 
 import { toast } from "react-hot-toast";
@@ -27,6 +26,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 import { Button } from "@/components/ui/button";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 interface Student {
   id: string;
@@ -41,7 +41,7 @@ interface Student {
 
 interface StudentTableProps {
   students: Student[];
-  refetch: () => void | Promise<any>;
+  refetch: () => void | Promise<unknown>;
   page: number;
 }
 
@@ -58,9 +58,7 @@ export default function StudentTable({
   // CHECK USER ROLE
   // =========================
 
-  const role = localStorage.getItem("role");
-
-  const isAdmin = role?.toLowerCase() === "admin";
+  const { isAdmin } = useCurrentUser();
 
   // =========================
   // DELETE STUDENT

@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,10 +34,24 @@ import { isImageFile } from "../utils/initials";
 
 type AutoDeleteOption = "never" | "1d" | "3d" | "1w" | "2w" | "1m" | "custom";
 
+interface GroupPost {
+  id: number;
+  type: "Notice" | "Assignment";
+  title: string;
+  content?: string | null;
+  postedAt: string;
+  postedById: string;
+  postedByName: string;
+  dueDate?: string | null;
+  fileName?: string | null;
+  originalFileName?: string | null;
+  autoDeleteAt?: string | null;
+}
+
 interface PostsSectionProps {
   groupId: string;
   groupName: string;
-  posts: any[] | undefined;
+  posts: GroupPost[] | undefined;
   isLoadingPosts: boolean;
   canPost: boolean;
   isPosting: boolean;
@@ -74,28 +87,31 @@ export default function PostsSection({
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
   const [formError, setFormError] = useState<string | null>(null);
 
-  const sortPosts = (list: any[]) => {
-    const copy = [...list];
+  const sortPosts = useCallback(
+    (list: GroupPost[]) => {
+      const copy = [...list];
 
-    copy.sort((a: any, b: any) => {
-      const diff =
-        new Date(a.postedAt).getTime() - new Date(b.postedAt).getTime();
+      copy.sort((a, b) => {
+        const diff =
+          new Date(a.postedAt).getTime() - new Date(b.postedAt).getTime();
 
-      return sortOrder === "newest" ? -diff : diff;
-    });
+        return sortOrder === "newest" ? -diff : diff;
+      });
 
-    return copy;
-  };
+      return copy;
+    },
+    [sortOrder]
+  );
 
   const notices = useMemo(
-    () => sortPosts((posts ?? []).filter((p: any) => p.type === "Notice")),
-    [posts, sortOrder]
+    () => sortPosts((posts ?? []).filter((p) => p.type === "Notice")),
+    [posts, sortPosts]
   );
 
   const assignments = useMemo(
     () =>
-      sortPosts((posts ?? []).filter((p: any) => p.type === "Assignment")),
-    [posts, sortOrder]
+      sortPosts((posts ?? []).filter((p) => p.type === "Assignment")),
+    [posts, sortPosts]
   );
 
   const resetPostForm = () => {
@@ -191,7 +207,7 @@ export default function PostsSection({
     }
   };
 
-  const renderPostItem = (post: any) => {
+  const renderPostItem = (post: GroupPost) => {
     const canDeletePost =
       currentUserId &&
       (currentUserRole === "Admin" || currentUserId === post.postedById);

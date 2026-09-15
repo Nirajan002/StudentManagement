@@ -1,15 +1,14 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { createBaseQueryWithReauth } from "./baseQueryWithReauth";
 
 interface CurrentUserResponse {
-  id: any;
+  id: string | number;
   address: string;
   fullName: string;
   email: string;
   gender: string;
   number: string;
-  profile: any;
+  profile: unknown;
   role: "Admin" | "Teacher" | "Student";
   emailVerifies: boolean;
 }
@@ -77,7 +76,7 @@ export const AuthApi = createApi({
         url: "/me",
         method: "GET",
       }),
-      providesTags: ["CurrentUser"],
+      providesTags: ["CurrentUser", "User"],
     }),
 
     sendVerificationEmail: builder.mutation({

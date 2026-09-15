@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
- 
 import { useState } from "react";
 import { Menu } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -21,6 +19,12 @@ interface NavbarProps {
   showMenuButton?: boolean; 
 }
 
+interface SearchEntity {
+  id: string;
+  fullName?: string;
+  profile?: string;
+}
+
 export default function Navbar({
   onMenuButtonClick,
   showMenuButton,
@@ -30,11 +34,7 @@ export default function Navbar({
   // =========================
   // CURRENT USER
   // =========================
-  const roleFromStorage = localStorage.getItem("role");
-
-  const { data: currentUser } = useGetCurrentUserQuery(undefined, {
-    skip: !roleFromStorage,
-  });
+  const { data: currentUser } = useGetCurrentUserQuery();
 
   // =========================
   // LOGIN STATUS
@@ -82,11 +82,11 @@ export default function Navbar({
   // COMBINE SEARCH RESULTS
   // =========================
   const searchResults = [
-    ...students.map((student: any) => ({
+    ...students.map((student: SearchEntity) => ({
       ...student,
       resultType: "student",
     })),
-    ...teachers.map((teacher: any) => ({
+    ...teachers.map((teacher: SearchEntity) => ({
       ...teacher,
       resultType: "teacher",
     })),
@@ -177,7 +177,7 @@ export default function Navbar({
                 </p>
               ) : searchResults.length > 0 ? (
                 /* RESULTS */
-                searchResults.map((result: any) => (
+                searchResults.map((result) => (
                   <div
                     key={`${result.resultType}-${result.id}`}
                     onClick={() =>

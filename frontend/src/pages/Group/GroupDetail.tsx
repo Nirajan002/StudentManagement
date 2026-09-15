@@ -28,7 +28,7 @@ import { useGetCurrentUserQuery } from "../../api/AuthApi";
 
 export default function GroupDetail() {
   const { id } = useParams<{ id: string }>();
-  const groupId = id as string;
+  const groupId = id ? Number(id) : 0;
 
   const navigate = useNavigate();
 
@@ -51,7 +51,7 @@ export default function GroupDetail() {
 
   useEffect(() => {
     if (groupId) {
-      markViewed(groupId);
+      markViewed(String(groupId));
     }
   }, [groupId, markViewed]);
 
@@ -80,7 +80,7 @@ export default function GroupDetail() {
     data: posts,
     isLoading: isLoadingPosts,
     refetch: refetchPosts,
-  } = useGetGroupPostsQuery(groupId, { skip: !groupId });
+  } = useGetGroupPostsQuery(String(groupId), { skip: !groupId });
 
   const [createPost, { isLoading: isPosting }] = useCreateGroupPostMutation();
   const [deletePost] = useDeleteGroupPostMutation();
@@ -107,7 +107,9 @@ export default function GroupDetail() {
     !isStudent &&
     (currentUser.role === "Admin" ||
       currentUser.id === group.createdById ||
-      (group.managers ?? []).some((m: any) => m.teacherId === currentUser.id));
+      (group.managers ?? []).some(
+        (m: { teacherId: number }) => m.teacherId === currentUser.id,
+      ));
 
   // HANDLERS
 
@@ -170,7 +172,7 @@ export default function GroupDetail() {
       await refetchPosts();
       // Push our own "last viewed" timestamp forward so the post we just
       // created never shows up as unread activity for ourselves.
-      markViewed(groupId);
+      markViewed(String(groupId));
       return true;
     } catch {
       setError("Couldn't publish post. Try again.");
@@ -241,14 +243,14 @@ export default function GroupDetail() {
               {/* LEFT COLUMN — scrolling div #1 */}
               <div className="thin-scrollbar lg:col-span-2 lg:h-full lg:overflow-y-auto lg:pr-1">
                 <PostsSection
-                  groupId={groupId}
+                  groupId={String(groupId)}
                   groupName={group.name}
                   posts={posts}
                   isLoadingPosts={isLoadingPosts}
                   canPost={canPost}
                   isPosting={isPosting}
                   deletingPostId={deletingPostId}
-                  currentUserId={currentUser?.id}
+                  currentUserId={currentUser?.id?.toString()}
                   currentUserRole={currentUser?.role}
                   onCreatePost={handleCreatePost}
                   onDeletePost={handleDeletePost}

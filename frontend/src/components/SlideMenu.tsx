@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 
@@ -16,7 +15,11 @@ import { GlobalNoticeApi } from "../api/GlobalNoticeApi";
 
 interface SideMenuProps {
   activeMenu?: string;
-  user: any;
+  user: {
+    profile?: string;
+    fullName?: string;
+    role?: string;
+  };
   onNavigate?: () => void;
 }
 
@@ -49,7 +52,6 @@ export default function SideMenu({
         // Clear local storage
         localStorage.removeItem("fullName");
         localStorage.removeItem("role");
-        localStorage.removeItem("token");
 
         // Clear every RTK Query cache so the next login starts clean.
         dispatch(AuthApi.util.resetApiState());

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -44,10 +43,18 @@ export default function RegisterTeacher() {
       toast.success("Registration successful!");
 
       navigate("/Teachers");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.log("Registration error:", error);
 
-      if (error?.status === 409) {
+      const responseError =
+        typeof error === "object" && error !== null
+          ? (error as {
+              status?: number;
+              data?: { message?: string };
+            })
+          : undefined;
+
+      if (responseError?.status === 409) {
         methods.setError("email", {
           type: "server",
           message: "An account with this email already exists.",
@@ -56,7 +63,8 @@ export default function RegisterTeacher() {
       }
 
       toast.error(
-        error?.data?.message || "Registration failed. Please try again.",
+        responseError?.data?.message ||
+          "Registration failed. Please try again.",
       );
     }
   };

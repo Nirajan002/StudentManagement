@@ -20,7 +20,7 @@ export default function ForgotPassword() {
   const handleSendCode = async () => {
     if (!email.trim()) return toast.error("Enter your email.");
     try {
-      const res: any = await forgotPassword({ email: email.trim() }).unwrap();
+      const res = await forgotPassword({ email: email.trim() }).unwrap();
       toast.success(res?.message || "If that account exists, a code was sent.");
       setStep(2);
     } catch {
@@ -36,8 +36,9 @@ export default function ForgotPassword() {
       await resetPassword({ email: email.trim(), code: code.trim(), newPassword }).unwrap();
       toast.success("Password reset! You can now log in.");
       navigate("/Login");
-    } catch (err: any) {
-      toast.error(err?.data?.message || "Couldn't reset password.");
+    } catch (err: unknown) {
+      const error = err as { data?: { message?: string } };
+      toast.error(error.data?.message || "Couldn't reset password.");
     }
   };
 

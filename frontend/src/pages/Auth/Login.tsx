@@ -1,14 +1,16 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import type { UnknownAction } from "redux";
+import type { ThunkDispatch } from "redux-thunk";
 import toast from "react-hot-toast";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 import Navbar from "@/components/NavBar";
 import InputField from "@/components/form/InputField";
 import { Button } from "@/components/ui/button";
-import { useLoginMutation } from "../../api/AuthApi";
+import { AuthApi, useLoginMutation } from "../../api/AuthApi";
 
 interface LoginForm {
   email: string;
@@ -17,6 +19,11 @@ interface LoginForm {
 
 export default function Login() {
   const navigate = useNavigate();
+  // Use the thunk-aware dispatch type so RTK Query's initiate action can be
+  // dispatched and its promise can be unwrapped.
+  const dispatch = useDispatch<
+    ThunkDispatch<unknown, unknown, UnknownAction>
+  >();
   const [showPassword, setShowPassword] = useState(false);
 
   const methods = useForm<LoginForm>({
@@ -44,11 +51,17 @@ export default function Login() {
       console.log("Role:", user.role);
 
       // =========================
-      // SAVE LOGIN INFORMATION
+      // REFRESH "WHO AM I" CACHE
       // =========================
-
-      localStorage.setItem("fullName", user.fullName);
-      localStorage.setItem("role", user.role);
+      try {
+        await dispatch(
+          AuthApi.endpoints.getCurrentUser.initiate(undefined, {
+            forceRefetch: true,
+          })
+        ).unwrap();
+      } catch (refetchError) {
+        console.error("Failed to refresh current user:", refetchError);
+      }
 
       if (!user.emailVerified) {
         toast("Please verify your email to continue.");
@@ -78,10 +91,21 @@ export default function Login() {
 
         toast.error("Invalid user role.");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Login error:", error);
 
-      toast.error(error?.data?.message || "Invalid email or password");
+      const message =
+        typeof error === "object" &&
+        error !== null &&
+        "data" in error &&
+        typeof error.data === "object" &&
+        error.data !== null &&
+        "message" in error.data &&
+        typeof error.data.message === "string"
+          ? error.data.message
+          : "Invalid email or password";
+
+      toast.error(message);
     }
   };
 

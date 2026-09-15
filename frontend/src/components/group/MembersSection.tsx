@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
@@ -7,8 +6,15 @@ import { Loader2, UserMinus } from "lucide-react";
 
 import { initials } from "../utils/initials";
 
+interface Member {
+  studentId: string;
+  profile?: string | null;
+  fullName: string;
+  email: string;
+}
+
 interface MembersSectionProps {
-  members: any[];
+  members: Member[];
   canManageStudents: boolean;
   removingId: string | null;
   onRemove: (studentId: string) => void;
@@ -29,7 +35,7 @@ export default function MembersSection({
       </p>
 
       <div className="space-y-2">
-        {members.map((member: any) => (
+        {members.map((member) => (
           <Card key={member.studentId}>
             <CardContent className="flex items-center justify-between p-3">
               <div
