@@ -6,6 +6,7 @@ import {
   LogOut,
   Group,
   Megaphone,
+  ClipboardList,
 } from "lucide-react";
 
 export const getSlideMenuData = (role?: string) => {
@@ -67,6 +68,11 @@ export const getSlideMenuData = (role?: string) => {
       label: "Groups",
       path: "/GroupsList",
       icon: Group,
+    },
+    {
+      label: "Assignments",
+      path: "/MyAssignments",
+      icon: ClipboardList,
     },
     {
       label: "Announcements",

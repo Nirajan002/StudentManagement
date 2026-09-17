@@ -8,31 +8,52 @@
 
         public FileStorageService(IWebHostEnvironment env)
         {
-            uploadPath = Path.Combine(env.ContentRootPath, "wwwroot", "uploads");
+            uploadPath = Path.Combine(
+                env.ContentRootPath,
+                "wwwroot",
+                "uploads"
+            );
         }
 
-        public async Task<string> SaveAsync(IFormFile file, FileCategory category = FileCategory.Document)
+        public async Task<string> SaveAsync(
+            IFormFile file,
+            FileCategory category = FileCategory.Document)
         {
             await FileValidation.ValidateAsync(file, category);
+
             if (!Directory.Exists(uploadPath))
             {
                 Directory.CreateDirectory(uploadPath);
             }
 
-            string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+            string fileName =
+                Guid.NewGuid().ToString() +
+                Path.GetExtension(file.FileName);
+
             string filePath = Path.Combine(uploadPath, fileName);
 
-            using var stream = new FileStream(filePath, FileMode.Create);
+            await using var stream = new FileStream(
+                filePath,
+                FileMode.Create
+            );
+
             await file.CopyToAsync(stream);
 
             return fileName;
         }
 
+        public Task<string> SaveAsync(IFormFile file)
+        {
+            return SaveAsync(file, FileCategory.Document);
+        }
+
         public void Delete(string? storedFileName)
         {
-            if (string.IsNullOrEmpty(storedFileName)) return;
+            if (string.IsNullOrEmpty(storedFileName))
+                return;
 
             string filePath = Path.Combine(uploadPath, storedFileName);
+
             if (File.Exists(filePath))
             {
                 File.Delete(filePath);
@@ -42,14 +63,11 @@
         public async Task<byte[]?> ReadAsync(string storedFileName)
         {
             string filePath = Path.Combine(uploadPath, storedFileName);
-            if (!File.Exists(filePath)) return null;
+
+            if (!File.Exists(filePath))
+                return null;
 
             return await File.ReadAllBytesAsync(filePath);
-        }
-
-        public Task<string> SaveAsync(IFormFile file)
-        {
-            throw new NotImplementedException();
         }
     }
 }

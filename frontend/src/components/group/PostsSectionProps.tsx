@@ -22,17 +22,26 @@ import {
 import {
   Bell,
   CalendarClock,
+  CheckSquare,
+  ChevronDown,
+  ChevronRight,
   ClipboardList,
   Download,
   Image as ImageIcon,
   Loader2,
+  Square,
   Trash2,
   UserPlus,
 } from "lucide-react";
 
 import { isImageFile } from "../utils/initials";
+import { useGetMySubmissionQuery } from "../../api/GroupApi";
+import SubmissionTracker from "./SubmissionTracker";
+import OnlineSubmissionsViewer from "./OnlineSubmissionsViewer";
+import OnlineSubmissionUpload from "./OnlineSubmissionUpload";
 
 type AutoDeleteOption = "never" | "1d" | "3d" | "1w" | "2w" | "1m" | "custom";
+type SubmissionModeOption = "Physical" | "Online" | "Both";
 
 interface GroupPost {
   id: number;
@@ -46,6 +55,11 @@ interface GroupPost {
   fileName?: string | null;
   originalFileName?: string | null;
   autoDeleteAt?: string | null;
+  submissionMode?: SubmissionModeOption | null;
+
+  // Set by the API for the requesting user. Always false for teachers,
+  // admins and notices.
+  hasSubmitted?: boolean;
 }
 
 interface PostsSectionProps {
@@ -60,6 +74,51 @@ interface PostsSectionProps {
   currentUserRole: string | undefined;
   onCreatePost: (formData: FormData) => Promise<boolean>;
   onDeletePost: (postId: number) => void;
+}
+
+// Read-only physical status shown to a student. Hidden for Online-only
+// assignments, since a physical tick doesn't apply there.
+function MySubmissionStatus({
+  groupId,
+  postId,
+}: {
+  groupId: string;
+  postId: number;
+}) {
+  const { data, isLoading } = useGetMySubmissionQuery({
+    groupId,
+    postId: String(postId),
+  });
+
+  if (isLoading || !data) return null;
+
+  const isSubmitted = data.status === "Submitted";
+
+  return (
+    <p
+      className={`mt-1 flex items-center gap-1 text-xs font-medium ${
+        isSubmitted ? "text-green-600" : "text-muted-foreground"
+      }`}
+    >
+      {isSubmitted ? (
+        <CheckSquare className="h-3 w-3" />
+      ) : (
+        <Square className="h-3 w-3" />
+      )}
+      Status: {isSubmitted ? "Submitted" : "Not Submitted"}
+    </p>
+  );
+}
+
+function ModeBadge({ mode }: { mode: SubmissionModeOption }) {
+  const label =
+    mode === "Both" ? "Physical + Online" : mode === "Online" ? "Online" : "Physical";
+
+  return (
+    <span className="mt-1 inline-block rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+      {label}
+    </span>
+  );
 }
 
 export default function PostsSection({
@@ -81,11 +140,16 @@ export default function PostsSection({
   const [postContent, setPostContent] = useState("");
   const [postFile, setPostFile] = useState<File | null>(null);
   const [postDueDate, setPostDueDate] = useState("");
+  const [postSubmissionMode, setPostSubmissionMode] =
+    useState<SubmissionModeOption>("Physical");
   const [autoDeleteOption, setAutoDeleteOption] =
     useState<AutoDeleteOption>("never");
   const [autoDeleteCustom, setAutoDeleteCustom] = useState("");
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
+  const [showSubmitted, setShowSubmitted] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+
+  const isStudent = currentUserRole === "Student";
 
   const sortPosts = useCallback(
     (list: GroupPost[]) => {
@@ -109,9 +173,21 @@ export default function PostsSection({
   );
 
   const assignments = useMemo(
-    () =>
-      sortPosts((posts ?? []).filter((p) => p.type === "Assignment")),
+    () => sortPosts((posts ?? []).filter((p) => p.type === "Assignment")),
     [posts, sortPosts]
+  );
+
+  // Students see only what's still outstanding in the main list; anything
+  // they've already handed in moves to a collapsed section below, so it
+  // doesn't read as "still to do" but stays reachable for replacing a file.
+  const openAssignments = useMemo(
+    () => (isStudent ? assignments.filter((a) => !a.hasSubmitted) : assignments),
+    [assignments, isStudent]
+  );
+
+  const submittedAssignments = useMemo(
+    () => (isStudent ? assignments.filter((a) => a.hasSubmitted) : []),
+    [assignments, isStudent]
   );
 
   const resetPostForm = () => {
@@ -120,6 +196,7 @@ export default function PostsSection({
     setPostContent("");
     setPostFile(null);
     setPostDueDate("");
+    setPostSubmissionMode("Physical");
     setAutoDeleteOption("never");
     setAutoDeleteCustom("");
     setFormError(null);
@@ -187,8 +264,12 @@ export default function PostsSection({
       formData.append("File", postFile);
     }
 
-    if (postType === "Assignment" && postDueDate) {
-      formData.append("DueDate", new Date(postDueDate).toISOString());
+    if (postType === "Assignment") {
+      if (postDueDate) {
+        formData.append("DueDate", new Date(postDueDate).toISOString());
+      }
+
+      formData.append("SubmissionMode", postSubmissionMode);
     }
 
     const autoDeleteAt = computeAutoDeleteAt();
@@ -217,6 +298,11 @@ export default function PostsSection({
       post.dueDate &&
       new Date(post.dueDate) < new Date();
 
+    // Legacy assignments (created before this feature) have no mode saved —
+    // treat them as Physical-only, matching their original behaviour.
+    const mode: SubmissionModeOption = post.submissionMode ?? "Physical";
+    const isOwnPost = !!currentUserId && currentUserId === post.postedById;
+
     return (
       <div
         key={post.id}
@@ -239,6 +325,8 @@ export default function PostsSection({
                 {post.title}
               </p>
 
+              {post.type === "Assignment" && <ModeBadge mode={mode} />}
+
               {post.content && (
                 <p className="mt-1 whitespace-pre-wrap break-all text-sm text-muted-foreground">
                   {post.content}
@@ -256,9 +344,19 @@ export default function PostsSection({
                 </p>
               )}
 
+              {/* Student — physical status, hidden for Online-only assignments */}
+              {post.type === "Assignment" && isStudent && mode !== "Online" && (
+                <MySubmissionStatus groupId={groupId} postId={post.id} />
+              )}
+
+              {/* Student — online upload, shown for Online or Both */}
+              {post.type === "Assignment" && isStudent && mode !== "Physical" && (
+                <OnlineSubmissionUpload groupId={groupId} postId={post.id} />
+              )}
+
               {post.fileName && (
-                
-                <a  href={`https://localhost:7014/api/Groups/${groupId}/posts/${post.id}/download`}
+                <a
+                  href={`https://localhost:7014/api/Groups/${groupId}/posts/${post.id}/download`}
                   className="mt-2 inline-flex items-center gap-1.5 break-words text-xs font-medium text-primary hover:underline"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -276,6 +374,28 @@ export default function PostsSection({
                 <p className="mt-0.5 text-[11px] italic text-muted-foreground">
                   Auto-deletes on {new Date(post.autoDeleteAt).toLocaleDateString()}
                 </p>
+              )}
+
+              {/* Teacher — physical tracker, for Physical or Both */}
+              {post.type === "Assignment" && canPost && mode !== "Online" && (
+                <div className="mt-2 inline-block">
+                  <SubmissionTracker
+                    groupId={groupId}
+                    postId={post.id}
+                    postTitle={post.title}
+                  />
+                </div>
+              )}
+
+              {/* Teacher — online viewer, only the posting teacher, for Online or Both */}
+              {post.type === "Assignment" && isOwnPost && mode !== "Physical" && (
+                <div className="mt-2 ml-2 inline-block">
+                  <OnlineSubmissionsViewer
+                    groupId={groupId}
+                    postId={post.id}
+                    postTitle={post.title}
+                  />
+                </div>
               )}
             </div>
           </div>
@@ -431,6 +551,32 @@ export default function PostsSection({
                           onChange={(e) => setPostDueDate(e.target.value)}
                         />
                       </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="post-submission-mode">
+                          Submission method
+                        </Label>
+                        <Select
+                          value={postSubmissionMode}
+                          onValueChange={(v) =>
+                            setPostSubmissionMode(v as SubmissionModeOption)
+                          }
+                        >
+                          <SelectTrigger id="post-submission-mode" className="w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+
+                          <SelectContent>
+                            <SelectItem value="Physical">
+                              Physical (in notebook/copy)
+                            </SelectItem>
+                            <SelectItem value="Online">Online only</SelectItem>
+                            <SelectItem value="Both">
+                              Physical or online
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </>
                   )}
 
@@ -524,9 +670,6 @@ export default function PostsSection({
 
       {!isLoadingPosts && (
         <>
-          {/* =========================
-              NOTICES CONTAINER
-          ========================= */}
           <div className="min-w-0 max-w-full overflow-hidden rounded-lg border p-4">
             <p className="mb-3 flex items-center gap-1.5 text-sm font-medium">
               <Bell className="h-4 w-4" />
@@ -540,21 +683,47 @@ export default function PostsSection({
             )}
           </div>
 
-          {/* =========================
-              ASSIGNMENTS CONTAINER
-          ========================= */}
           <div className="min-w-0 max-w-full overflow-hidden rounded-lg border p-4">
             <p className="mb-3 flex items-center gap-1.5 text-sm font-medium">
               <ClipboardList className="h-4 w-4" />
-              Assignments ({assignments.length})
+              Assignments ({openAssignments.length})
             </p>
 
-            {assignments.length === 0 ? (
+            {openAssignments.length === 0 ? (
               <p className="text-sm text-muted-foreground">
-                No assignments yet.
+                {isStudent && assignments.length > 0
+                  ? "You're all caught up — nothing left to submit."
+                  : "No assignments yet."}
               </p>
             ) : (
-              <div className="space-y-2">{assignments.map(renderPostItem)}</div>
+              <div className="space-y-2">
+                {openAssignments.map(renderPostItem)}
+              </div>
+            )}
+
+            {submittedAssignments.length > 0 && (
+              <div className="mt-4 border-t pt-3">
+                <button
+                  type="button"
+                  onClick={() => setShowSubmitted((v) => !v)}
+                  aria-expanded={showSubmitted}
+                  className="flex items-center gap-1.5 rounded-md text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  {showSubmitted ? (
+                    <ChevronDown className="h-4 w-4" />
+                  ) : (
+                    <ChevronRight className="h-4 w-4" />
+                  )}
+                  <CheckSquare className="h-4 w-4 text-green-600" />
+                  Submitted ({submittedAssignments.length})
+                </button>
+
+                {showSubmitted && (
+                  <div className="mt-2 space-y-2 opacity-75">
+                    {submittedAssignments.map(renderPostItem)}
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </>

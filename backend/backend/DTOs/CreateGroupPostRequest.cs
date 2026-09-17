@@ -13,5 +13,8 @@
 
         public DateTime? DueDate { get; set; }
         public DateTime? AutoDeleteAt { get; set; }
+
+        // "Physical", "Online", or "Both" — only read when Type == "Assignment".
+        public string? SubmissionMode { get; set; }
     }
 }

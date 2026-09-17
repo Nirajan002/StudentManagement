@@ -20,6 +20,7 @@ namespace backend.Data
         public DbSet<GlobalNotice> GlobalNotices { get; set; }
         public DbSet<ReadState> ReadStates { get; set; }
         public DbSet<OtpCode> OtpCodes { get; set; }
+        public DbSet<AssignmentSubmission> AssignmentSubmissions { get; set; }
 
         public DbSet<RefreshToken> RefreshTokens { get; set; }
 
@@ -106,6 +107,22 @@ namespace backend.Data
 
             modelBuilder.Entity<OtpCode>()
                 .HasIndex(o => new { o.UserId, o.UserType, o.Purpose });
+
+            modelBuilder.Entity<AssignmentSubmission>()
+                .HasIndex(s => new { s.GroupPostId, s.StudentId })
+                .IsUnique();
+
+            modelBuilder.Entity<AssignmentSubmission>()
+                .HasOne(s => s.GroupPost)
+                .WithMany()
+                .HasForeignKey(s => s.GroupPostId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<AssignmentSubmission>()
+                .HasOne(s => s.Student)
+                .WithMany()
+                .HasForeignKey(s => s.StudentId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // as local time, throwing off any client-side date comparisons.
             var utcConverter = new ValueConverter<DateTime, DateTime>(

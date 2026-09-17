@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using backend.Data;
 
@@ -11,9 +12,11 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(StudentManagement))]
-    partial class StudentManagementModelSnapshot : ModelSnapshot
+    [Migration("20260917044102_Assignment submission adding")]
+    partial class Assignmentsubmissionadding
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -33,17 +36,14 @@ namespace backend.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("FileName")
+                    b.Property<string>("Feedback")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("GroupPostId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime?>("OnlineSubmittedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("OriginalFileName")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int?>("Marks")
+                        .HasColumnType("int");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -228,9 +228,6 @@ namespace backend.Migrations
 
                     b.Property<Guid>("PostedById")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<int?>("SubmissionMode")
-                        .HasColumnType("int");
 
                     b.Property<string>("Title")
                         .IsRequired()

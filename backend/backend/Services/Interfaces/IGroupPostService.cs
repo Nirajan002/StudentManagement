@@ -11,5 +11,6 @@
         Task DeletePostAsync(int groupId, int postId, Guid actingUserId, bool isAdmin);
         Task<FileDownloadResult> DownloadPostAsync(int groupId, int postId, Guid userId, bool isAdmin, bool isStudent);
         Task<IEnumerable<object>> GetRecentNoticesAsync(Guid userId, bool isAdmin);
+        Task<IEnumerable<object>> GetMyAssignmentsAsync(Guid userId);
     }
 }

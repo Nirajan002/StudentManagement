@@ -44,6 +44,8 @@ import GroupsList from "./pages/Group/GroupList";
 import CreateGroup from "./pages/Group/CreateGroups";
 import GroupDetail from "./pages/Group/GroupDetail";
 
+import MyAssignments from "./pages/Assignment/MyAssignments";
+
 import VerifyEmail from "./pages/Auth/VerifyEmail";
 import ForgotPassword from "./pages/Auth/ForgotPassword";
 
@@ -180,6 +182,15 @@ function App() {
         element={
           <RoleRoute allowedRoles={["Admin", "Teacher"]}>
             <CreateGroup />
+          </RoleRoute>
+        }
+      />
+
+      <Route
+        path="/MyAssignments"
+        element={
+          <RoleRoute allowedRoles={["Admin", "Teacher"]}>
+            <MyAssignments />
           </RoleRoute>
         }
       />

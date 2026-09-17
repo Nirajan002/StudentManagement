@@ -1,6 +1,7 @@
 ﻿namespace backend.Services
 {
     using backend.Data;
+    using backend.Modules;
     using backend.Services.Interfaces;
     using Microsoft.EntityFrameworkCore;
 
@@ -151,16 +152,30 @@
             var totalGroups = await dbContext.GroupMembers
                 .CountAsync(m => m.StudentId == studentId && m.RemovedAt == null && m.Group.IsActive);
 
+            // An assignment drops off the student's dashboard once it's past due OR
+            // they've submitted it — physically (teacher ticked it) or online (file uploaded).
             var totalAssignments = await dbContext.GroupPosts
                 .CountAsync(p => p.Type == "Assignment" && p.Group.IsActive &&
-                    p.Group.Members.Any(m => m.StudentId == studentId && m.RemovedAt == null));
+                    (p.DueDate == null || p.DueDate >= now) &&
+                    p.Group.Members.Any(m => m.StudentId == studentId && m.RemovedAt == null) &&
+                    !dbContext.AssignmentSubmissions.Any(s =>
+                        s.GroupPostId == p.Id &&
+                        s.StudentId == studentId &&
+                        (s.Status == SubmissionStatus.Submitted || s.FileName != null)));
 
             var totalNotices = await dbContext.GroupPosts
                 .CountAsync(p => p.Type == "Notice" && p.Group.IsActive &&
                     p.Group.Members.Any(m => m.StudentId == studentId && m.RemovedAt == null));
 
             var recentActivity = await dbContext.GroupPosts
-                .Where(p => p.Group.IsActive && p.Group.Members.Any(m => m.StudentId == studentId && m.RemovedAt == null))
+                .Where(p => p.Group.IsActive &&
+                    p.Group.Members.Any(m => m.StudentId == studentId && m.RemovedAt == null) &&
+                    (p.Type != "Assignment" ||
+                        ((p.DueDate == null || p.DueDate >= now) &&
+                         !dbContext.AssignmentSubmissions.Any(s =>
+                             s.GroupPostId == p.Id &&
+                             s.StudentId == studentId &&
+                             (s.Status == SubmissionStatus.Submitted || s.FileName != null)))))
                 .OrderByDescending(p => p.PostedAt)
                 .Take(8)
                 .Select(p => new { p.Id, p.GroupId, GroupName = p.Group.Name, p.Type, p.Title, PostedByName = p.PostedBy.FullName, p.PostedAt })
@@ -168,7 +183,12 @@
 
             var upcomingAssignments = await dbContext.GroupPosts
                 .Where(p => p.Type == "Assignment" && p.DueDate != null && p.DueDate >= now &&
-                    p.Group.IsActive && p.Group.Members.Any(m => m.StudentId == studentId && m.RemovedAt == null))
+                    p.Group.IsActive &&
+                    p.Group.Members.Any(m => m.StudentId == studentId && m.RemovedAt == null) &&
+                    !dbContext.AssignmentSubmissions.Any(s =>
+                        s.GroupPostId == p.Id &&
+                        s.StudentId == studentId &&
+                        (s.Status == SubmissionStatus.Submitted || s.FileName != null)))
                 .OrderBy(p => p.DueDate)
                 .Take(5)
                 .Select(p => new { p.Id, p.GroupId, GroupName = p.Group.Name, p.Title, p.DueDate })

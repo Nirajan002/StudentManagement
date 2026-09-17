@@ -16,12 +16,14 @@ namespace backend.Controllers
         private readonly IGroupService groupService;
         private readonly IGroupPostService groupPostService;
         private readonly IReadStateService readStateService;
+        private readonly IAssignmentSubmissionService submissionService;
 
-        public GroupsController(IGroupService groupService, IGroupPostService groupPostService, IReadStateService readStateService)
+        public GroupsController(IGroupService groupService, IGroupPostService groupPostService, IReadStateService readStateService, IAssignmentSubmissionService submissionService)
         {
             this.groupService = groupService;
             this.groupPostService = groupPostService;
             this.readStateService = readStateService;
+            this.submissionService = submissionService;
         }
 
         private Guid CurrentUserId => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
@@ -210,5 +212,87 @@ namespace backend.Controllers
         [HttpGet("last-viewed")]
         public async Task<IActionResult> GetAllGroupsLastViewed() =>
             Ok(await readStateService.GetAllGroupLastViewedAsync(CurrentUserId));
+
+
+        [Authorize(Roles = "Admin,Teacher")]
+        [HttpGet("{id}/posts/{postId}/submissions")]
+        public async Task<IActionResult> GetSubmissions(int id, int postId)
+        {
+            try { return Ok(await submissionService.GetSubmissionsAsync(postId, CurrentUserId, IsAdmin)); }
+            catch (ForbiddenException) { return Forbid(); }
+            catch (NotFoundException ex) { return NotFound(new { message = ex.Message }); }
+            catch (ValidationException ex) { return BadRequest(new { message = ex.Message }); }
+        }
+
+        [Authorize(Roles = "Admin,Teacher")]
+        [HttpPut("{id}/posts/{postId}/submissions/{studentId}")]
+        public async Task<IActionResult> SetSubmissionStatus(int id, int postId, Guid studentId, SetSubmissionStatusRequest request)
+        {
+            try { return Ok(await submissionService.SetSubmissionStatusAsync(postId, studentId, CurrentUserId, IsAdmin, request.Submitted)); }
+            catch (ForbiddenException) { return Forbid(); }
+            catch (NotFoundException ex) { return NotFound(new { message = ex.Message }); }
+            catch (ValidationException ex) { return BadRequest(new { message = ex.Message }); }
+        }
+
+        [Authorize(Roles = "Student")]
+        [HttpGet("{id}/posts/{postId}/submissions/me")]
+        public async Task<IActionResult> GetMySubmission(int id, int postId)
+        {
+            try { return Ok(await submissionService.GetMySubmissionAsync(postId, CurrentUserId)); }
+            catch (ForbiddenException) { return Forbid(); }
+            catch (NotFoundException ex) { return NotFound(new { message = ex.Message }); }
+            catch (ValidationException ex) { return BadRequest(new { message = ex.Message }); }
+        }
+
+        [Authorize(Roles = "Student")]
+        [HttpPost("{id}/posts/{postId}/submissions/online")]
+        public async Task<IActionResult> SubmitOnlineWork(int id, int postId, [FromForm] SubmitOnlineWorkRequest request)
+        {
+            try { return Ok(await submissionService.SubmitOnlineWorkAsync(postId, CurrentUserId, request.File)); }
+            catch (ForbiddenException) { return Forbid(); }
+            catch (NotFoundException ex) { return NotFound(new { message = ex.Message }); }
+            catch (ValidationException ex) { return BadRequest(new { message = ex.Message }); }
+        }
+
+        [Authorize(Roles = "Student")]
+        [HttpGet("{id}/posts/{postId}/submissions/online/download")]
+        public async Task<IActionResult> DownloadMyOnlineSubmission(int id, int postId)
+        {
+            try
+            {
+                var result = await submissionService.DownloadMyOnlineSubmissionAsync(postId, CurrentUserId);
+                return File(result.Bytes, "application/octet-stream", result.FileName);
+            }
+            catch (ForbiddenException) { return Forbid(); }
+            catch (NotFoundException) { return NotFound(); }
+        }
+
+        [Authorize(Roles = "Admin,Teacher")]
+        [HttpGet("{id}/posts/{postId}/online-submissions")]
+        public async Task<IActionResult> GetOnlineSubmissions(int id, int postId)
+        {
+            try { return Ok(await submissionService.GetOnlineSubmissionsAsync(postId, CurrentUserId)); }
+            catch (ForbiddenException) { return Forbid(); }
+            catch (NotFoundException ex) { return NotFound(new { message = ex.Message }); }
+            catch (ValidationException ex) { return BadRequest(new { message = ex.Message }); }
+        }
+
+        [Authorize(Roles = "Admin,Teacher")]
+        [HttpGet("{id}/posts/{postId}/online-submissions/{studentId}/download")]
+        public async Task<IActionResult> DownloadOnlineSubmission(int id, int postId, Guid studentId)
+        {
+            try
+            {
+                var result = await submissionService.DownloadOnlineSubmissionAsync(postId, studentId, CurrentUserId);
+                return File(result.Bytes, "application/octet-stream", result.FileName);
+            }
+            catch (ForbiddenException) { return Forbid(); }
+            catch (NotFoundException) { return NotFound(); }
+        }
+
+        [Authorize(Roles = "Admin,Teacher")]
+        [HttpGet("my-assignments")]
+        public async Task<IActionResult> GetMyAssignments() =>
+            Ok(await groupPostService.GetMyAssignmentsAsync(CurrentUserId));
     }
 }

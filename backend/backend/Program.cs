@@ -56,6 +56,7 @@ builder.Services.AddScoped<IGroupPostService, GroupPostService>();
 builder.Services.AddScoped<IGlobalNoticeService, GlobalNoticeService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IAssignmentSubmissionService, AssignmentSubmissionService>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>

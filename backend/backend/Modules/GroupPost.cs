@@ -1,5 +1,12 @@
 ﻿namespace backend.Modules
 {
+    public enum AssignmentSubmissionMode
+    {
+        Physical = 0,
+        Online = 1,
+        Both = 2
+    }
+
     public class GroupPost
     {
         public int Id { get; set; }
@@ -26,7 +33,11 @@
 
         public DateTime PostedAt { get; set; } = DateTime.UtcNow;
 
-        public DateTime? DueDate { get; set; }      
+        public DateTime? DueDate { get; set; }
         public DateTime? AutoDeleteAt { get; set; }
+
+        // Only meaningful when Type == "Assignment". Null means this
+        // assignment predates the feature and behaves as Physical-only.
+        public AssignmentSubmissionMode? SubmissionMode { get; set; }
     }
 }

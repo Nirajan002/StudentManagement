@@ -8,7 +8,13 @@ export const GroupApi = createApi({
   baseQuery,
   refetchOnMountOrArgChange: true,
 
-  tagTypes: ["Group", "GroupReadState", "GroupPost"],
+  tagTypes: [
+    "Group",
+    "GroupReadState",
+    "GroupPost",
+    "Submission",
+    "OnlineSubmission",
+  ],
 
   endpoints: (builder) => ({
     // List groups (Admin sees all, Teacher sees own/managed)
@@ -130,6 +136,7 @@ export const GroupApi = createApi({
       invalidatesTags: (_result, _error, { groupId }) => [
         { type: "GroupPost", id: groupId },
         { type: "Group", id: "NOTICES" },
+        { type: "GroupPost", id: "MY_ASSIGNMENTS" },
       ],
     }),
 
@@ -141,6 +148,7 @@ export const GroupApi = createApi({
       invalidatesTags: (_result, _error, { groupId }) => [
         { type: "GroupPost", id: groupId },
         { type: "Group", id: "NOTICES" },
+        { type: "GroupPost", id: "MY_ASSIGNMENTS" },
       ],
     }),
 
@@ -171,6 +179,71 @@ export const GroupApi = createApi({
       query: () => "/last-viewed",
       providesTags: ["GroupReadState"],
     }),
+
+    getSubmissions: builder.query({
+      query: ({ groupId, postId }: { groupId: string; postId: string }) =>
+        `/${groupId}/posts/${postId}/submissions`,
+      providesTags: (_r, _e, { postId }) => [
+        { type: "Submission", id: postId },
+      ],
+    }),
+
+    setSubmissionStatus: builder.mutation({
+      query: ({ groupId, postId, studentId, submitted }) => ({
+        url: `/${groupId}/posts/${postId}/submissions/${studentId}`,
+        method: "PUT",
+        body: { submitted },
+      }),
+      invalidatesTags: (_r, _e, { postId }) => [
+        { type: "Submission", id: postId },
+        { type: "GroupPost", id: "MY_ASSIGNMENTS" },
+      ],
+    }),
+
+    submitOnlineWork: builder.mutation({
+      query: ({
+        groupId,
+        postId,
+        file,
+      }: {
+        groupId: string;
+        postId: string;
+        file: File;
+      }) => {
+        const formData = new FormData();
+        formData.append("File", file);
+        return {
+          url: `/${groupId}/posts/${postId}/submissions/online`,
+          method: "POST",
+          body: formData,
+        };
+      },
+      invalidatesTags: (_r, _e, { postId }) => [
+        { type: "Submission", id: postId },
+        { type: "OnlineSubmission", id: postId },
+      ],
+    }),
+
+    getOnlineSubmissions: builder.query({
+      query: ({ groupId, postId }: { groupId: string; postId: string }) =>
+        `/${groupId}/posts/${postId}/online-submissions`,
+      providesTags: (_r, _e, { postId }) => [
+        { type: "OnlineSubmission", id: postId },
+      ],
+    }),
+
+    getMySubmission: builder.query({
+      query: ({ groupId, postId }: { groupId: string; postId: string }) =>
+        `/${groupId}/posts/${postId}/submissions/me`,
+      providesTags: (_r, _e, { postId }) => [
+        { type: "Submission", id: postId },
+      ],
+    }),
+
+    getMyAssignments: builder.query({
+      query: () => "/my-assignments",
+      providesTags: [{ type: "GroupPost", id: "MY_ASSIGNMENTS" }],
+    }),
   }),
 });
 
@@ -191,4 +264,10 @@ export const {
   useGetGroupLastViewedQuery,
   useMarkGroupViewedMutation,
   useGetAllGroupsLastViewedQuery,
+  useGetSubmissionsQuery,
+  useSetSubmissionStatusMutation,
+  useGetMySubmissionQuery,
+  useGetMyAssignmentsQuery,
+  useSubmitOnlineWorkMutation, 
+  useGetOnlineSubmissionsQuery,
 } = GroupApi;
