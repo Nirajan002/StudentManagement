@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/popover";
 
 import { useGetTeachersQuery } from "../../api/TeacherApi";
+import { getUploadUrl } from "@/lib/config";
 
 export interface PickedTeacher {
   id: string;
@@ -121,9 +122,9 @@ export function TeacherPicker({
                           onSelect={() => toggleTeacher(teacher)}
                         >
                           <div className="flex items-center gap-2">
-                            {teacher.profile ? (
+                            {getUploadUrl(teacher.profile) ? (
                               <img
-                                src={`https://localhost:7014/uploads/${teacher.profile}`}
+                                src={getUploadUrl(teacher.profile)!}
                                 alt={teacher.fullName}
                                 className="h-6 w-6 rounded-full object-cover"
                               />

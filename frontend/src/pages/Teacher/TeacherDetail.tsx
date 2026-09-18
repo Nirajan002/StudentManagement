@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/card";
 
 import DashboardLayout from "@/components/layouts/DashboardLayout";
+import { getUploadUrl } from "@/lib/config";
 
 export default function TeacherDetail() {
   const { id } = useParams();
@@ -137,9 +138,9 @@ export default function TeacherDetail() {
             <CardContent className="space-y-6">
               {/* PROFILE */}
               <div className="flex justify-center">
-                {user.profile ? (
+                {getUploadUrl(user.profile) ? (
                   <img
-                    src={`https://localhost:7014/uploads/${user.profile}`}
+                    src={getUploadUrl(user.profile)!}
                     alt={user.fullName}
                     className="h-32 w-32 rounded-full border object-cover"
                   />

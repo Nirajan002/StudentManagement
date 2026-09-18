@@ -5,13 +5,13 @@ import {
   fetchBaseQuery,
 } from "@reduxjs/toolkit/query/react";
 
-const BASE_URL = "https://localhost:7014/api";
+import { API_BASE_URL, API_URL } from "@/lib/config";
 
 let refreshPromise: Promise<boolean> | null = null;
 
 function refreshAccessToken(): Promise<boolean> {
   if (!refreshPromise) {
-    refreshPromise = fetch(`${BASE_URL}/Auth/refresh`, {
+    refreshPromise = fetch(`${API_BASE_URL}/api/Auth/refresh`, {
       method: "POST",
       credentials: "include",
     })
@@ -28,7 +28,7 @@ export function createBaseQueryWithReauth(
   apiPath: string,
 ): BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError> {
   const rawBaseQuery = fetchBaseQuery({
-    baseUrl: `${BASE_URL}/${apiPath}`,
+    baseUrl: `${API_URL}/${apiPath}`,
     credentials: "include",
   });
 

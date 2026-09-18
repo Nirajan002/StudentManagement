@@ -10,11 +10,19 @@ import {
 } from "@/components/ui/dialog";
 import { Download, FileText, Loader2 } from "lucide-react";
 import { useGetOnlineSubmissionsQuery } from "../../api/GroupApi";
+import { API_URL } from "@/lib/config";
 
 interface OnlineSubmissionsViewerProps {
   groupId: string;
   postId: number;
   postTitle: string;
+}
+
+interface OnlineSubmissionStudent {
+  studentId: string | number;
+  fullName: string;
+  hasSubmitted: boolean;
+  originalFileName?: string;
 }
 
 export default function OnlineSubmissionsViewer({
@@ -64,7 +72,7 @@ export default function OnlineSubmissionsViewer({
             </p>
 
             <div className="max-h-80 space-y-1 overflow-y-auto">
-              {data.students.map((s: any) => (
+              {data.students.map((s: OnlineSubmissionStudent) => (
                 <div
                   key={s.studentId}
                   className="flex items-center justify-between gap-2 rounded-md border p-2 text-sm"
@@ -73,7 +81,7 @@ export default function OnlineSubmissionsViewer({
 
                   {s.hasSubmitted ? (
                     
-                    <a  href={`https://localhost:7014/api/Groups/${groupId}/posts/${postId}/online-submissions/${s.studentId}/download`}
+                    <a  href={`${API_URL}/Groups/${groupId}/posts/${postId}/online-submissions/${s.studentId}/download`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"

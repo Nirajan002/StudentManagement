@@ -12,6 +12,7 @@ import { StudentApi } from "../api/StudentApi";
 
 import { useLogoutMutation, AuthApi } from "../api/AuthApi";
 import { GlobalNoticeApi } from "../api/GlobalNoticeApi";
+import { getUploadUrl } from "@/lib/config";
 
 interface SideMenuProps {
   activeMenu?: string;
@@ -80,9 +81,9 @@ export default function SideMenu({
       ========================= */}
       <div className="flex flex-col items-center border-b px-4 py-6">
 
-        {user?.profile ? (
+        {getUploadUrl(user?.profile) ? (
           <img
-            src={`https://localhost:7014/uploads/${user.profile}`}
+            src={getUploadUrl(user?.profile)!}
             alt={user.fullName || "Profile"}
             className="mb-3 h-20 w-20 rounded-full object-cover"
           />

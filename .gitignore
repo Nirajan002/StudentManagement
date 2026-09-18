@@ -58,6 +58,7 @@ backend/**/*.pfx
 backend/**/*.user
 backend/**/wwwroot/uploads/*
 !backend/**/wwwroot/uploads/.gitkeep
+backend/**/secrets.json
 
 # Test results
 backend/**/[Tt]est[Rr]esult*/
@@ -115,3 +116,6 @@ frontend/.vscode/*
 *.zip
 *.rar
 *.7z
+
+frontend/.env.local
+frontend/.env.*.local

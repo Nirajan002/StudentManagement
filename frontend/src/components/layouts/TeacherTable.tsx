@@ -27,6 +27,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { getUploadUrl } from "@/lib/config";
 
 interface User {
   id: string;
@@ -126,9 +127,9 @@ export default function TeacherTable({
             className="rounded-lg border p-4 shadow-sm"
           >
             <div className="flex items-center gap-3">
-              {user.profile ? (
+              {getUploadUrl(user.profile) ? (
                 <img
-                  src={`https://localhost:7014/uploads/${user.profile}`}
+                  src={getUploadUrl(user.profile)!}
                   alt={user.fullName}
                   className="h-12 w-12 shrink-0 rounded-full border object-cover"
                 />
@@ -194,9 +195,9 @@ export default function TeacherTable({
                 {/* USER */}
                 <TableCell>
                   <div className="flex items-center gap-3">
-                    {user.profile ? (
+                    {getUploadUrl(user.profile) ? (
                       <img
-                        src={`https://localhost:7014/uploads/${user.profile}`}
+                        src={getUploadUrl(user.profile)!}
                         alt={user.fullName}
                         className="h-10 w-10 rounded-full border object-cover"
                       />

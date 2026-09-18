@@ -27,6 +27,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { getUploadUrl } from "@/lib/config";
 
 interface Student {
   id: string;
@@ -85,9 +86,9 @@ export default function StudentTable({
           students.map((student) => (
             <div key={student.id} className="rounded-lg border p-4">
               <div className="flex items-center gap-3">
-                {student.profile ? (
+                {getUploadUrl(student.profile) ? (
                   <img
-                    src={`https://localhost:7014/uploads/${student.profile}`}
+                    src={getUploadUrl(student.profile)!}
                     alt={student.fullName}
                     className="h-12 w-12 rounded-full border object-cover"
                   />
@@ -191,9 +192,9 @@ export default function StudentTable({
                   {/* Student */}
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      {student.profile ? (
+                      {getUploadUrl(student.profile) ? (
                         <img
-                          src={`https://localhost:7014/uploads/${student.profile}`}
+                          src={getUploadUrl(student.profile)!}
                           alt={student.fullName}
                           className="h-10 w-10 rounded-full border object-cover"
                         />

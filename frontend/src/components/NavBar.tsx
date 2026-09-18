@@ -12,11 +12,12 @@ import { useSearchTeachersQuery } from "../api/TeacherApi";
 import { useGetCurrentUserQuery } from "../api/AuthApi";
 
 import NotificationBell from "./NotificationBell";
+import { getUploadUrl } from "@/lib/config";
 
 interface NavbarProps {
   activeMenu?: string;
-  onMenuButtonClick?: () => void; 
-  showMenuButton?: boolean; 
+  onMenuButtonClick?: () => void;
+  showMenuButton?: boolean;
 }
 
 interface SearchEntity {
@@ -129,7 +130,7 @@ export default function Navbar({
 
   return (
     <nav className="sticky top-0 z-50 flex h-16 items-center gap-2 border-b bg-background px-3 sm:px-6">
-      
+
       {showMenuButton && (
         <button
           onClick={onMenuButtonClick}
@@ -186,9 +187,9 @@ export default function Navbar({
                     className="flex cursor-pointer items-center gap-3 px-4 py-2 hover:bg-muted"
                   >
                     {/* PROFILE IMAGE */}
-                    {result.profile ? (
+                    {getUploadUrl(result.profile) ? (
                       <img
-                        src={`https://localhost:7014/uploads/${result.profile}`}
+                        src={getUploadUrl(result.profile)!}
                         alt={result.fullName}
                         className="h-8 w-8 rounded-full object-cover"
                       />

@@ -4,6 +4,7 @@ import {
   useGetMySubmissionQuery,
   useSubmitOnlineWorkMutation,
 } from "../../api/GroupApi";
+import { API_URL } from "@/lib/config";
 
 interface OnlineSubmissionUploadProps {
   groupId: string;
@@ -53,7 +54,7 @@ export default function OnlineSubmissionUpload({
           </p>
 
           
-        <a href={`https://localhost:7014/api/Groups/${groupId}/posts/${postId}/submissions/online/download`}
+          <a  href={`${API_URL}/Groups/${groupId}/posts/${postId}/submissions/online/download`}
             target="_blank"
             rel="noopener noreferrer"
             className="text-xs text-primary hover:underline"

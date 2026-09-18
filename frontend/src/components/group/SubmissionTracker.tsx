@@ -20,6 +20,12 @@ interface SubmissionTrackerProps {
   postTitle: string;
 }
 
+interface SubmissionStudent {
+  studentId: string;
+  fullName: string;
+  status: string;
+}
+
 export default function SubmissionTracker({
   groupId,
   postId,
@@ -72,7 +78,7 @@ export default function SubmissionTracker({
             </p>
 
             <div className="max-h-80 space-y-1 overflow-y-auto">
-              {data.students.map((s: any) => {
+              {data.students.map((s: SubmissionStudent) => {
                 const isSubmitted = s.status === "Submitted";
 
                 return (

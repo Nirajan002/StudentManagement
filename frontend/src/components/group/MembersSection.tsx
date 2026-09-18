@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, UserMinus } from "lucide-react";
 
 import { initials } from "../utils/initials";
+import { getUploadUrl } from "@/lib/config";
 
 interface Member {
   studentId: string;
@@ -42,9 +43,9 @@ export default function MembersSection({
                 className="-m-1 flex flex-1 cursor-pointer items-center gap-3 rounded-md p-1 transition-colors hover:bg-muted/50"
                 onClick={() => navigate(`/Student/${member.studentId}`)}
               >
-                {member.profile ? (
+                {getUploadUrl(member.profile) ? (
                   <img
-                    src={`https://localhost:7014/uploads/${member.profile}`}
+                    src={getUploadUrl(member.profile)!}
                     alt={member.fullName}
                     className="h-9 w-9 rounded-full object-cover"
                   />

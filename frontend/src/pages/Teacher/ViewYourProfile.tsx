@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/card";
 
 import DashboardLayout from "@/components/layouts/DashboardLayout";
+import { getUploadUrl } from "@/lib/config";
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -75,6 +76,8 @@ export default function Profile() {
   // =========================
 
   const isStudent = user.role?.toLowerCase() === "student";
+  const profileUrl =
+    typeof user.profile === "string" ? getUploadUrl(user.profile) : undefined;
 
   // =========================
   // PROFILE
@@ -92,9 +95,9 @@ export default function Profile() {
             <CardHeader className="flex flex-col items-center gap-4 border-b bg-background py-8">
 
               {/* PROFILE IMAGE */}
-              {user.profile ? (
+              {profileUrl ? (
                 <img
-                  src={`https://localhost:7014/uploads/${user.profile}`}
+                  src={profileUrl}
                   alt={user.fullName}
                   className="h-28 w-28 rounded-full border-4 border-background object-cover shadow-md"
                 />

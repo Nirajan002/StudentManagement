@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/card";
 
 import DashboardLayout from "@/components/layouts/DashboardLayout";
+import { getUploadUrl } from "@/lib/config";
 
 interface EditTeacherForm {
   fullName: string;
@@ -162,9 +163,7 @@ export default function EditTeacher() {
                   label="Profile Image"
                   accept="image/*"
                   defaultPreview={
-                    teacher.profile
-                      ? `https://localhost:7014/uploads/${teacher.profile}`
-                      : "/default-profile.jpg"
+                    getUploadUrl(teacher.profile) ?? "/default-profile.jpg"
                   }
                 />
 

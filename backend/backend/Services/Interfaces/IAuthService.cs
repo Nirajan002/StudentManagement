@@ -3,7 +3,7 @@
     using backend.DTOs;
 
     public record LoginResult(bool Success, string? ErrorMessage, string? AccessToken, string? RefreshToken, object? User);
-    public record RefreshResult(bool Success, string? AccessToken);
+    public record RefreshResult(bool Success, string? AccessToken, string? RefreshToken);
 
     public interface IAuthService
     {

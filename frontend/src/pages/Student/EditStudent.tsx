@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
+import { getUploadUrl } from "@/lib/config";
 
 type EditStudentFormData = {
   profile: FileList | null;
@@ -211,9 +212,7 @@ export default function EditStudent() {
                 label="Profile"
                 accept="image/*"
                 defaultPreview={
-                  student.profile
-                    ? `https://localhost:7014/uploads/${student.profile}`
-                    : "/default-profile.jpg"
+                  getUploadUrl(student.profile) ?? "/default-profile.jpg"
                 }
               />
 

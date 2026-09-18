@@ -14,6 +14,7 @@ import { Loader2, UserMinus, UserPlus, Users2 } from "lucide-react";
 
 import { TeacherPicker, type PickedTeacher } from "./TeacherPicker";
 import { initials } from "../utils/initials";
+import { getUploadUrl } from "@/lib/config";
 
 interface GroupManager {
   teacherId: string;
@@ -140,9 +141,9 @@ export default function CoTeachersSection({
                 className="flex flex-1 cursor-pointer items-center gap-2"
                 onClick={() => navigate(`/Teacher/${manager.teacherId}`)}
               >
-                {manager.profile ? (
+                {getUploadUrl(manager.profile) ? (
                   <img
-                    src={`https://localhost:7014/uploads/${manager.profile}`}
+                    src={getUploadUrl(manager.profile)!}
                     alt={manager.fullName}
                     className="h-7 w-7 rounded-full object-cover"
                   />

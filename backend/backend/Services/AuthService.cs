@@ -17,6 +17,11 @@
         private readonly IPasswordHasher<Student> studentPasswordHasher;
         private readonly IEmailService emailService;
 
+        // Access tokens stay short-lived (1 hour); refresh tokens live much
+        // longer so the user doesn't have to log in again every hour, but
+        // each one is single-use (see RefreshAsync) so a leaked token has a
+        // limited window before it's rotated out from under an attacker.
+        private static readonly TimeSpan RefreshTokenLifetime = TimeSpan.FromDays(7);
 
         public AuthService(StudentManagement dbContext, IJwtTokenService jwtTokenService, IEmailService emailService)
         {
@@ -91,7 +96,7 @@
                     Id = Guid.NewGuid(),
                     Token = refreshToken,
                     TeacherId = teacher.Id,
-                    ExpiresAt = DateTime.UtcNow.AddHours(1)
+                    ExpiresAt = DateTime.UtcNow.Add(RefreshTokenLifetime)
                 });
                 await dbContext.SaveChangesAsync();
 
@@ -123,7 +128,7 @@
                     Id = Guid.NewGuid(),
                     Token = refreshToken,
                     StudentId = student.Id,
-                    ExpiresAt = DateTime.UtcNow.AddHours(1)
+                    ExpiresAt = DateTime.UtcNow.Add(RefreshTokenLifetime)
                 });
                 await dbContext.SaveChangesAsync();
 
@@ -155,7 +160,7 @@
 
         public async Task<RefreshResult> RefreshAsync(string? refreshToken)
         {
-            if (string.IsNullOrEmpty(refreshToken)) return new RefreshResult(false, null);
+            if (string.IsNullOrEmpty(refreshToken)) return new RefreshResult(false, null, null);
 
             var stored = await dbContext.RefreshTokens
                 .Include(r => r.Teacher)
@@ -163,15 +168,47 @@
                 .FirstOrDefaultAsync(r => r.Token == refreshToken);
 
             if (stored == null || stored.ExpiresAt < DateTime.UtcNow)
-                return new RefreshResult(false, null);
+                return new RefreshResult(false, null, null);
+
+            // Rotate: issue a brand-new refresh token and remove the old one,
+            // so this exact token string can never be used a second time —
+            // whether by the legitimate client or someone who copied it.
+            var newRefreshToken = jwtTokenService.GenerateRefreshTokenValue();
+            var newExpiry = DateTime.UtcNow.Add(RefreshTokenLifetime);
+
+            string? newAccessToken = null;
 
             if (stored.Teacher != null)
-                return new RefreshResult(true, jwtTokenService.GenerateAccessToken(stored.Teacher));
+            {
+                newAccessToken = jwtTokenService.GenerateAccessToken(stored.Teacher);
+                dbContext.RefreshTokens.Add(new RefreshToken
+                {
+                    Id = Guid.NewGuid(),
+                    Token = newRefreshToken,
+                    TeacherId = stored.Teacher.Id,
+                    ExpiresAt = newExpiry
+                });
+            }
+            else if (stored.Student != null)
+            {
+                newAccessToken = jwtTokenService.GenerateAccessToken(stored.Student);
+                dbContext.RefreshTokens.Add(new RefreshToken
+                {
+                    Id = Guid.NewGuid(),
+                    Token = newRefreshToken,
+                    StudentId = stored.Student.Id,
+                    ExpiresAt = newExpiry
+                });
+            }
+            else
+            {
+                return new RefreshResult(false, null, null);
+            }
 
-            if (stored.Student != null)
-                return new RefreshResult(true, jwtTokenService.GenerateAccessToken(stored.Student));
+            dbContext.RefreshTokens.Remove(stored);
+            await dbContext.SaveChangesAsync();
 
-            return new RefreshResult(false, null);
+            return new RefreshResult(true, newAccessToken, newRefreshToken);
         }
 
         private static string HashCode(string code)

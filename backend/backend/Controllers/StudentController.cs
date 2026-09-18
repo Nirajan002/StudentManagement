@@ -21,6 +21,7 @@ namespace backend.Controllers
         [HttpGet("Students")]
         public IActionResult GetStudent(int page = 1) => Ok(studentService.GetPaged(page));
 
+        [Authorize]
         [HttpGet("{ID:guid}")]
         public async Task<IActionResult> GetStudent([FromRoute] Guid ID)
         {

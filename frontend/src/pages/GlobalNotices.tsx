@@ -30,6 +30,7 @@ import {
   useDeleteGlobalNoticeMutation,
   useMarkGlobalNoticesViewedMutation,
 } from "../api/GlobalNoticeApi";
+import { API_URL } from "@/lib/config";
 
 type AutoDeleteOption = "never" | "1d" | "3d" | "1w" | "2w" | "1m" | "custom";
 
@@ -344,8 +345,8 @@ export default function GlobalNotices() {
                     )}
 
                     {notice.fileName && (
-                      <a
-                        href={`https://localhost:7014/api/GlobalNotices/${notice.id}/download`}
+                      
+                      <a  href={`${API_URL}/GlobalNotices/${notice.id}/download`}
                         className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
                         target="_blank"
                         rel="noopener noreferrer"

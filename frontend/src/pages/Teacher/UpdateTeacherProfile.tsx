@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
+import { getUploadUrl } from "@/lib/config";
 
 interface ProfileForm {
   profile: FileList | null;
@@ -126,16 +127,6 @@ export default function UpdateTeacherProfile() {
     formData.append("Gender", data.gender);
     formData.append("Number", data.number);
     formData.append("Address", data.address);
-
-    // =======================================================
-    // DEBUG
-    // =======================================================
-
-    console.log("Updating user:", id);
-
-    for (const [key, value] of formData.entries()) {
-      console.log(key, value);
-    }
 
     // =======================================================
     // UPDATE
@@ -254,9 +245,9 @@ export default function UpdateTeacherProfile() {
                     label="Profile"
                     accept="image/*"
                     defaultPreview={
-                      user.profile
-                        ? `https://localhost:7014/uploads/${user.profile}`
-                        : "/default-profile.jpg"
+                      (typeof user.profile === "string"
+                        ? getUploadUrl(user.profile)
+                        : undefined) ?? "/default-profile.jpg"
                     }
                   />
 

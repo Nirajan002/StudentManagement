@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/select";
 
 import DashboardLayout from "@/components/layouts/DashboardLayout";
+import { getUploadUrl } from "@/lib/config";
 
 interface ProfileForm {
   profile: FileList | null;
@@ -167,9 +168,9 @@ export default function UpdateStudentProfile() {
                     label="Profile"
                     accept="image/*"
                     defaultPreview={
-                      user.profile
-                        ? `https://localhost:7014/uploads/${user.profile}`
-                        : "/default-profile.jpg"
+                      getUploadUrl(
+                        typeof user.profile === "string" ? user.profile : null,
+                      ) ?? "/default-profile.jpg"
                     }
                   />
 

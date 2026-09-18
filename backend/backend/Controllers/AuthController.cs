@@ -2,6 +2,7 @@
 using backend.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using backend.Data;
 using System.Security.Claims;
 
@@ -47,6 +48,7 @@ namespace backend.Controllers
             return Unauthorized();
         }
 
+        [EnableRateLimiting("auth")]
         [HttpPost("TeacherRegister")]
         public async Task<IActionResult> RegisterTeacher(TeacherRegister request)
         {
@@ -69,14 +71,15 @@ namespace backend.Controllers
             return Ok(result);
         }
 
+        [EnableRateLimiting("auth")]
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] TeacherLogin request)
         {
             var result = await authService.LoginAsync(request);
             if (!result.Success) return Unauthorized(result.ErrorMessage);
 
-            SetCookie("token", result.AccessToken!);
-            SetCookie("refreshToken", result.RefreshToken!);
+            SetCookie("token", result.AccessToken!, TimeSpan.FromHours(1));
+            SetCookie("refreshToken", result.RefreshToken!, TimeSpan.FromDays(7));
 
             return Ok(new { user = result.User });
         }
@@ -93,24 +96,27 @@ namespace backend.Controllers
             return Ok();
         }
 
+        [EnableRateLimiting("auth")]
         [HttpPost("refresh")]
         public async Task<IActionResult> Refresh()
         {
             var result = await authService.RefreshAsync(Request.Cookies["refreshToken"]);
             if (!result.Success) return Unauthorized();
 
-            SetCookie("token", result.AccessToken!);
+            SetCookie("token", result.AccessToken!, TimeSpan.FromHours(1));
+            SetCookie("refreshToken", result.RefreshToken!, TimeSpan.FromDays(7));
+
             return Ok();
         }
 
-        private void SetCookie(string name, string value)
+        private void SetCookie(string name, string value, TimeSpan lifetime)
         {
             Response.Cookies.Append(name, value, new CookieOptions
             {
                 HttpOnly = true,
                 Secure = true,
                 SameSite = SameSiteMode.None,
-                Expires = DateTimeOffset.UtcNow.AddHours(1),
+                Expires = DateTimeOffset.UtcNow.Add(lifetime),
                 Path = "/"
             });
         }
@@ -148,6 +154,7 @@ namespace backend.Controllers
             return success ? Ok(new { message = "Email verified successfully." }) : BadRequest(new { message = error });
         }
 
+        [EnableRateLimiting("auth")]
         [HttpPost("password/forgot")]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordRequest request)
         {
@@ -155,6 +162,7 @@ namespace backend.Controllers
             return Ok(new { message = "If an account with that email exists and is verified, a reset code has been sent." });
         }
 
+        [EnableRateLimiting("auth")]
         [HttpPost("password/reset")]
         public async Task<IActionResult> ResetPassword(ResetPasswordRequest request)
         {

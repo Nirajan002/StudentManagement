@@ -1,4 +1,4 @@
-import { combineReducers, configureStore } from "@reduxjs/toolkit";
+import { combineReducers, configureStore, type UnknownAction } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query";
 import { AuthApi } from "./api/AuthApi";
 import { GroupApi } from "./api/GroupApi";
@@ -16,7 +16,10 @@ const appReducer = combineReducers({
   [GlobalNoticeApi.reducerPath]: GlobalNoticeApi.reducer,
 });
 
-const rootReducer = (state: ReturnType<typeof appReducer> | undefined, action: any) => {
+const rootReducer = (
+  state: ReturnType<typeof appReducer> | undefined,
+  action: UnknownAction,
+) => {
   if (action.type === "auth/resetStore") {
     state = undefined;
   }
