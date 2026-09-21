@@ -6,18 +6,19 @@ import { Toaster } from "react-hot-toast";
 
 import App from "./App";
 import { store } from "./store";
+import { ThemeProvider } from "./components/ThemeProvider";
 
 import "./index.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <Provider store={store}>
-      <BrowserRouter>
-        <App />
-
-        {/* Toast notifications */}
-        <Toaster position="top-right" />
-      </BrowserRouter>
-    </Provider>
+    <ThemeProvider>
+      <Provider store={store}>
+        <BrowserRouter>
+          <App />
+          <Toaster position="top-right" />
+        </BrowserRouter>
+      </Provider>
+    </ThemeProvider>
   </StrictMode>
 );

@@ -14,6 +14,8 @@ import { useGetCurrentUserQuery } from "../api/AuthApi";
 import NotificationBell from "./NotificationBell";
 import { getUploadUrl } from "@/lib/config";
 
+import ThemeToggle from "./ThemeToggle";
+
 interface NavbarProps {
   activeMenu?: string;
   onMenuButtonClick?: () => void;
@@ -130,7 +132,6 @@ export default function Navbar({
 
   return (
     <nav className="sticky top-0 z-50 flex h-16 items-center gap-2 border-b bg-background px-3 sm:px-6">
-
       {showMenuButton && (
         <button
           onClick={onMenuButtonClick}
@@ -147,10 +148,11 @@ export default function Navbar({
       <div className="flex flex-1 items-center">
         <div
           onClick={handleHomeClick}
-          className="cursor-pointer text-2xl font-bold tracking-tight"
+          className="flex cursor-pointer items-baseline gap-0.5 text-2xl tracking-tight transition-opacity hover:opacity-80"
         >
-          Student
-          <span className="text-green-500">Grid</span>
+          <span className="font-medium text-foreground">Student</span>
+          <span className="font-extrabold text-green-500">Grid</span>
+          <span className="ml-1 h-1.5 w-1.5 rounded-full bg-green-500" />
         </div>
       </div>
 
@@ -224,9 +226,11 @@ export default function Navbar({
       )}
 
       {/* =========================
-        RIGHT - NOTIFICATIONS + LOGIN
+        RIGHT - NOTIFICATIONS + LOGIN + Toggle
         ========================= */}
+
       <div className="flex flex-1 items-center justify-end gap-2">
+        <ThemeToggle />
         {isLoggedIn && <NotificationBell />}
 
         {!isLoggedIn && (

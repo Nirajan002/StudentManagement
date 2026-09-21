@@ -1,9 +1,15 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
 import { toast } from "react-hot-toast";
+import {
+  MoreHorizontal,
+  Eye,
+  Edit2,
+  Trash2,
+  GraduationCap,
+} from "lucide-react";
 
 import { useDeleteStudentMutation } from "../../api/StudentApi";
-
 import {
   Table,
   TableBody,
@@ -12,7 +18,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,10 +34,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { getUploadUrl } from "@/lib/config";
 
@@ -52,237 +63,316 @@ export default function StudentTable({
   page,
 }: StudentTableProps) {
   const navigate = useNavigate();
-
+  const { isAdmin } = useCurrentUser();
   const [deleteStudent, { isLoading: isDeleting }] = useDeleteStudentMutation();
 
-  // =========================
-  // CHECK USER ROLE
-  // =========================
-
-  const { isAdmin } = useCurrentUser();
-
-  // =========================
-  // DELETE STUDENT
-  // =========================
+  // Selected student for delete confirmation
+  const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
 
   const handleDelete = async (id: string) => {
     try {
       await deleteStudent(id).unwrap();
-
       await refetch();
-
       toast.success("Student deleted successfully!");
     } catch (error) {
       console.error("Delete student error:", error);
-
       toast.error("Failed to delete student");
+    } finally {
+      setStudentToDelete(null);
     }
+  };
+
+  const getGenderBadge = (gender: string) => {
+    const g = gender?.toLowerCase() || "";
+    if (g === "male") {
+      return (
+        <Badge variant="outline" className="border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-blue-400">
+          Male
+        </Badge>
+      );
+    }
+    if (g === "female") {
+      return (
+        <Badge variant="outline" className="border-rose-500/30 bg-rose-500/10 text-rose-600 dark:text-rose-400">
+          Female
+        </Badge>
+      );
+    }
+    return (
+      <Badge variant="outline" className="text-muted-foreground">
+        {gender || "N/A"}
+      </Badge>
+    );
   };
 
   return (
     <>
+      {/* =========================
+          MOBILE VIEW (Cards)
+      ========================== */}
       <div className="space-y-3 md:hidden">
         {students?.length > 0 ? (
           students.map((student) => (
-            <div key={student.id} className="rounded-lg border p-4">
-              <div className="flex items-center gap-3">
-                {getUploadUrl(student.profile) ? (
-                  <img
-                    src={getUploadUrl(student.profile)!}
-                    alt={student.fullName}
-                    className="h-12 w-12 rounded-full border object-cover"
-                  />
-                ) : (
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-sm font-medium">
-                    {student.fullName?.charAt(0).toUpperCase()}
+            <div
+              key={student.id}
+              className="rounded-xl border border-border/80 bg-card p-4 shadow-xs transition-colors hover:border-foreground/20"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  {getUploadUrl(student.profile) ? (
+                    <img
+                      src={getUploadUrl(student.profile)!}
+                      alt={student.fullName}
+                      className="h-12 w-12 rounded-full border border-border object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-muted text-base font-semibold text-foreground">
+                      {student.fullName?.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+
+                  <div className="min-w-0">
+                    <p className="truncate font-semibold text-foreground">
+                      {student.fullName}
+                    </p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {student.email}
+                    </p>
+                    <div className="mt-1.5 flex items-center gap-2">
+                      {getGenderBadge(student.gender)}
+                      {student.education && (
+                        <span className="text-xs text-muted-foreground">
+                          {student.education}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                )}
-
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-medium">{student.fullName}</p>
-                  <p className="truncate text-sm text-muted-foreground">
-                    {student.email}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {student.gender}
-                  </p>
                 </div>
-              </div>
 
-              <div className="mt-3 flex flex-wrap gap-2">
-                {/* View More - Everyone can see */}
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() =>
-                    navigate(`/Student/${student.id}?page=${page}`)
-                  }
-                >
-                  View More
-                </Button>
+                {/* Dropdown Menu for Mobile */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 shrink-0 text-muted-foreground"
+                    >
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
 
-                {/* Edit - ADMIN ONLY */}
-                {isAdmin && (
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    onClick={() => navigate(`/EditStudent/${student.id}`)}
-                  >
-                    Edit
-                  </Button>
-                )}
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      onClick={() =>
+                        navigate(`/Student/${student.id}?page=${page}`)
+                      }
+                    >
+                      <Eye className="mr-2 h-4 w-4" />
+                      View Details
+                    </DropdownMenuItem>
 
-                {/* Delete - ADMIN ONLY */}
-                {isAdmin && (
-                  <AlertDialog>
-                    <AlertDialogTrigger className="inline-flex h-9 items-center justify-center rounded-md bg-destructive/80 px-4 py-2 text-sm font-medium text-destructive-foreground shadow-xs transition-colors hover:bg-destructive focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
-                      {isDeleting ? "Deleting..." : "Delete"}
-                    </AlertDialogTrigger>
-
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Student?</AlertDialogTitle>
-
-                        <AlertDialogDescription>
-                          Are you sure you want to delete{" "}
-                          <strong>{student.fullName}</strong>? This action
-                          cannot be undone and will permanently remove the
-                          student's data.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-
-                        <AlertDialogAction
-                          onClick={() => handleDelete(student.id)}
-                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    {isAdmin && (
+                      <>
+                        <DropdownMenuItem
+                          onClick={() => navigate(`/EditStudent/${student.id}`)}
                         >
+                          <Edit2 className="mr-2 h-4 w-4" />
+                          Edit Student
+                        </DropdownMenuItem>
+
+                        <DropdownMenuSeparator />
+
+                        <DropdownMenuItem
+                          className="text-destructive focus:bg-destructive/10 focus:text-destructive"
+                          onClick={() => setStudentToDelete(student)}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
                           Delete
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                )}
+                        </DropdownMenuItem>
+                      </>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
           ))
         ) : (
-          <p className="py-8 text-center text-sm text-muted-foreground">
-            No students found.
-          </p>
+          <div className="flex flex-col items-center justify-center rounded-xl border border-dashed p-10 text-center">
+            <GraduationCap className="h-10 w-10 text-muted-foreground/60" />
+            <h3 className="mt-3 text-sm font-semibold text-foreground">
+              No students found
+            </h3>
+            <p className="mt-1 text-xs text-muted-foreground">
+              No student records match your criteria.
+            </p>
+          </div>
         )}
       </div>
 
-      <div className="hidden md:block">
+      {/* =========================
+          DESKTOP TABLE VIEW
+      ========================== */}
+      <div className="hidden rounded-xl border border-border/80 bg-card shadow-xs md:block overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>Student</TableHead>
+            <TableRow className="bg-muted/30 hover:bg-muted/30">
+              <TableHead className="w-[320px]">Student</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Gender</TableHead>
-              <TableHead>Actions</TableHead>
+              <TableHead className="w-[80px] text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
 
           <TableBody>
             {students?.length > 0 ? (
               students.map((student) => (
-                <TableRow key={student.id}>
-                  {/* Student */}
+                <TableRow
+                  key={student.id}
+                  className="transition-colors hover:bg-muted/40"
+                >
+                  {/* Student Info */}
                   <TableCell>
                     <div className="flex items-center gap-3">
                       {getUploadUrl(student.profile) ? (
                         <img
                           src={getUploadUrl(student.profile)!}
                           alt={student.fullName}
-                          className="h-10 w-10 rounded-full border object-cover"
+                          className="h-10 w-10 rounded-full border border-border object-cover"
                         />
                       ) : (
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-sm font-medium">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-semibold text-foreground">
                           {student.fullName?.charAt(0).toUpperCase()}
                         </div>
                       )}
 
-                      <span className="font-medium">{student.fullName}</span>
+                      <div className="min-w-0">
+                        <span
+                          onClick={() =>
+                            navigate(`/Student/${student.id}?page=${page}`)
+                          }
+                          className="cursor-pointer font-medium text-foreground hover:underline"
+                        >
+                          {student.fullName}
+                        </span>
+                        {student.number && (
+                          <p className="text-xs text-muted-foreground">
+                            {student.number}
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </TableCell>
 
                   {/* Email */}
-                  <TableCell>{student.email}</TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {student.email}
+                  </TableCell>
 
                   {/* Gender */}
-                  <TableCell>{student.gender}</TableCell>
+                  <TableCell>{getGenderBadge(student.gender)}</TableCell>
 
-                  {/* Actions */}
-                  <TableCell>
-                    <div className="flex gap-2">
-                      {/* View More - Everyone can see */}
-                      <Button
-                        variant="outline"
-                        onClick={() =>
-                          navigate(`/Student/${student.id}?page=${page}`)
-                        }
-                      >
-                        View More
-                      </Button>
-
-                      {/* Edit - ADMIN ONLY */}
-                      {isAdmin && (
+                  {/* Actions Dropdown */}
+                  <TableCell className="text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger>
                         <Button
-                          variant="secondary"
-                          onClick={() => navigate(`/EditStudent/${student.id}`)}
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-muted-foreground hover:text-foreground"
                         >
-                          Edit
+                          <MoreHorizontal className="h-4 w-4" />
+                          <span className="sr-only">Open menu</span>
                         </Button>
-                      )}
+                      </DropdownMenuTrigger>
 
-                      {/* Delete - ADMIN ONLY */}
-                      {isAdmin && (
-                        <AlertDialog>
-                          <AlertDialogTrigger className="inline-flex h-9 items-center justify-center rounded-md bg-destructive/80 px-4 py-2 text-sm font-medium text-destructive-foreground shadow-xs transition-colors hover:bg-destructive focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
-                            {isDeleting ? "Deleting..." : "Delete"}
-                          </AlertDialogTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onClick={() =>
+                            navigate(`/Student/${student.id}?page=${page}`)
+                          }
+                        >
+                          <Eye className="mr-2 h-4 w-4" />
+                          View Details
+                        </DropdownMenuItem>
 
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Delete Student?</AlertDialogTitle>
+                        {isAdmin && (
+                          <>
+                            <DropdownMenuItem
+                              onClick={() =>
+                                navigate(`/EditStudent/${student.id}`)
+                              }
+                            >
+                              <Edit2 className="mr-2 h-4 w-4" />
+                              Edit Student
+                            </DropdownMenuItem>
 
-                              <AlertDialogDescription>
-                                Are you sure you want to delete{" "}
-                                <strong>{student.fullName}</strong>? This action
-                                cannot be undone and will permanently remove the
-                                student's data.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
+                            <DropdownMenuSeparator />
 
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-
-                              <AlertDialogAction
-                                onClick={() => handleDelete(student.id)}
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                              >
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      )}
-                    </div>
+                            <DropdownMenuItem
+                              className="text-destructive focus:bg-destructive/10 focus:text-destructive"
+                              onClick={() => setStudentToDelete(student)}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete
+                            </DropdownMenuItem>
+                          </>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </TableCell>
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center">
-                  No students found.
+                <TableCell colSpan={5} className="h-40 text-center">
+                  <div className="flex flex-col items-center justify-center text-center">
+                    <GraduationCap className="h-10 w-10 text-muted-foreground/60" />
+                    <h3 className="mt-2 text-sm font-semibold text-foreground">
+                      No students found
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      There are no student records to display.
+                    </p>
+                  </div>
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
       </div>
+
+      {/* =========================
+          CONFIRM DELETE DIALOG
+      ========================== */}
+      <AlertDialog
+        open={!!studentToDelete}
+        onOpenChange={(open) => !open && setStudentToDelete(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Student?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete{" "}
+              <strong className="text-foreground">
+                {studentToDelete?.fullName}
+              </strong>
+              ? This action cannot be undone and will permanently remove their
+              records.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={isDeleting}
+              onClick={() => studentToDelete && handleDelete(studentToDelete.id)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

@@ -197,7 +197,7 @@ export default function GroupDetail() {
     // RENDER
 
   return (
-    <DashboardLayout>
+    <DashboardLayout activeMenu="Groups">
       <div className="mx-auto flex h-[calc(100vh-4rem)] max-w-5xl flex-col p-6">
         <Button
           variant="ghost"

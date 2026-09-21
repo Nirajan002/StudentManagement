@@ -21,7 +21,7 @@ const rootReducer = (
   action: UnknownAction,
 ) => {
   if (action.type === "auth/resetStore") {
-    state = undefined;
+    state = undefined;  
   }
   return appReducer(state, action);
 };

@@ -1,41 +1,28 @@
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { Plus, AlertCircle, RefreshCw } from "lucide-react";
 
 import { useGetStudentsQuery } from "../../api/StudentApi";
 import { useGetCurrentTeacherQuery } from "../../api/TeacherApi";
 
 import StudentTable from "@/components/layouts/StudentTable";
-
+import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { Button } from "@/components/ui/button";
-
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 
 export default function StudentView() {
-  // =========================
-  // PAGE
-  // =========================
-
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
 
   const page = Number(searchParams.get("page")) || 1;
 
-  // =========================
-  // GET CURRENT USER
-  // =========================
-
+  // CURRENT USER
   const {
     data: currentUser,
-    isLoading: isUserLoading,
-    isError: isUserError,
   } = useGetCurrentTeacherQuery(undefined);
 
-  // Check role from database
   const isAdmin = currentUser?.role === "Admin";
 
-  // =========================
   // GET STUDENTS
-  // =========================
-
   const {
     data: students = [],
     isLoading: isStudentsLoading,
@@ -46,34 +33,7 @@ export default function StudentView() {
     refetchOnMountOrArgChange: true,
   });
 
-  // =========================
-  // LOADING
-  // =========================
-
-  if (isUserLoading || isStudentsLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <h2>Loading students...</h2>
-      </div>
-    );
-  }
-
-  // =========================
-  // ERROR
-  // =========================
-
-  if (isUserError || isStudentsError) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <h2>Failed to load students</h2>
-      </div>
-    );
-  }
-
-  // =========================
   // PAGE CHANGE
-  // =========================
-
   const goToPreviousPage = () => {
     if (page > 1) {
       setSearchParams({
@@ -90,76 +50,104 @@ export default function StudentView() {
     }
   };
 
-  // =========================
-  // UI
-  // =========================
-
   return (
     <DashboardLayout activeMenu="Students">
       <div className="p-6">
-
         {/* =========================
-            HEADER
+            PAGE HEADER
         ========================= */}
-
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold">
-              Student Management
-            </h1>
-
+            <h1 className="text-2xl font-bold tracking-tight">Student Management</h1>
             <p className="text-sm text-muted-foreground">
-              Manage all students
+              Manage student profiles, enrollments, and details.
             </p>
           </div>
 
-          {/* =========================
-              ADD STUDENT - ADMIN ONLY
-          ========================= */}
+          <div className="flex items-center gap-2">
+            {isAdmin && (
+              <Button onClick={() => navigate("/AddStudents")}>
+                <Plus className="mr-2 h-4 w-4" />
+                Add Student
+              </Button>
+            )}
+          </div>
+        </div>
 
-          {isAdmin && (
-            <Button onClick={() => navigate("/AddStudents")}>
-              Add Student
+        {/* =========================
+            LOADING SKELETON STATE
+        ========================= */}
+        {isStudentsLoading && (
+          <TableSkeleton rows={8} />
+        )}
+
+        {/* =========================
+            ERROR STATE
+        ========================= */}
+        {!isStudentsLoading && isStudentsError && (
+          <div className="flex flex-col items-center justify-center rounded-xl border border-destructive/20 bg-destructive/5 p-12 text-center">
+            <AlertCircle className="h-10 w-10 text-destructive" />
+            <h3 className="mt-3 text-base font-semibold text-foreground">
+              Failed to load students
+            </h3>
+            <p className="mt-1 text-sm text-muted-foreground max-w-sm">
+              We encountered an issue fetching student records. Please try again.
+            </p>
+            <Button
+              onClick={() => refetch()}
+              variant="outline"
+              className="mt-4"
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Try Again
             </Button>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* =========================
-            STUDENT TABLE
+            TABLE & PAGINATION
         ========================= */}
+        {!isStudentsLoading && !isStudentsError && (
+          <>
+            <StudentTable
+              students={students}
+              refetch={refetch}
+              page={page}
+            />
 
-        <StudentTable
-          students={students}
-          refetch={refetch}
-          page={page}
-        />
+            {/* PAGINATION */}
+            <div className="mt-6 flex items-center justify-between border-t border-border/60 pt-4">
+              <p className="text-xs text-muted-foreground">
+                Showing page <span className="font-semibold text-foreground">{page}</span>
+                {isFetching && (
+                  <span className="ml-2 inline-flex items-center text-xs text-muted-foreground">
+                    (Updating...)
+                  </span>
+                )}
+              </p>
 
-        {/* =========================
-            PAGINATION
-        ========================= */}
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={goToPreviousPage}
+                  disabled={page === 1 || isFetching}
+                >
+                  Previous
+                </Button>
 
-        <div className="flex items-center justify-center gap-4 p-6">
-          <Button
-            variant="outline"
-            onClick={goToPreviousPage}
-            disabled={page === 1 || isFetching}
-          >
-            Previous
-          </Button>
-
-          <span className="text-sm font-medium">
-            Page {page}
-          </span>
-
-          <Button
-            variant="outline"
-            onClick={goToNextPage}
-            disabled={students.length < 10 || isFetching}
-          >
-            Next
-          </Button>
-        </div>
-
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={goToNextPage}
+                  disabled={students.length < 10 || isFetching}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </DashboardLayout>
   );

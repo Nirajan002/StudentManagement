@@ -42,7 +42,7 @@ export default function CreateGroup() {
   };
 
   return (
-    <DashboardLayout>
+    <DashboardLayout activeMenu="Groups">
       <div className="mx-auto max-w-lg p-6">
         <Button
           variant="ghost"

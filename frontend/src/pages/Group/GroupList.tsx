@@ -16,7 +16,7 @@ export default function GroupsList() {
   const isStudent = currentUser?.role?.toLowerCase() === "student";
 
   return (
-    <DashboardLayout>
+    <DashboardLayout activeMenu="Groups">
       <div className="mx-auto max-w-4xl p-6">
         <div className="mb-6 flex items-center justify-between">
           <div>
