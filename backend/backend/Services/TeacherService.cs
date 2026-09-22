@@ -59,7 +59,7 @@
         public object GetById(Guid id)
         {
             var teacher = dbContext.Teachers.Find(id) ?? throw new NotFoundException();
-            return new { teacher.Id, teacher.FullName, teacher.Email, teacher.Profile, teacher.Gender, teacher.Number, teacher.Address, teacher.Role };
+            return new { teacher.Id, teacher.FullName, teacher.Email, teacher.Profile, teacher.Gender, teacher.Number, teacher.Address, teacher.Role, teacher.EmailVerified };
         }
 
         public async Task DeleteAsync(Guid id)

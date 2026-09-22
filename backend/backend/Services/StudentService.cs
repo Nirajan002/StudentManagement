@@ -41,7 +41,7 @@
         {
             var s = await dbContext.Students.FindAsync(id);
             if (s == null) return null;
-            return new { s.Id, s.FullName, s.Email, s.Profile, s.Class, s.Section, s.Gender, s.Number, s.Addresh };
+            return new { s.Id, s.FullName, s.Email, s.Profile, s.Class, s.Section, s.Gender, s.Number, s.Addresh, s.EmailVerified };
         }
 
         public async Task<object?> UpdateAsync(Guid id, UpdateStudent request)

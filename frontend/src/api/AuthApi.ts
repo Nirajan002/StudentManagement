@@ -10,9 +10,8 @@ interface CurrentUserResponse {
   number: string;
   profile: unknown;
   role: "Admin" | "Teacher" | "Student";
-  emailVerifies: boolean;
+  emailVerified: boolean;
 }
-
 const baseQuery = createBaseQueryWithReauth("Auth");
 
 export const AuthApi = createApi({

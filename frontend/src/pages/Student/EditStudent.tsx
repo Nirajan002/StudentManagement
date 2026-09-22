@@ -1,31 +1,29 @@
-import React from "react";
-import { useForm, FormProvider, useWatch } from "react-hook-form";
+import { useEffect, useState } from "react";
+import { useForm, FormProvider } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
-
-import InputField from "@/components/form/InputField";
-import FileField from "@/components/form/FileField";
-
-import {
-  useGetStudentQuery,
-  useUpdateStudentMutation,
-} from "../../api/StudentApi";
-
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { toast } from "react-hot-toast";
-
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  GraduationCap,
+  BookOpen,
+  Loader2,
+  CheckCircle2,
+} from "lucide-react";
+
+import { useGetStudentQuery, useUpdateStudentMutation } from "../../api/StudentApi";
+
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import InputField from "@/components/form/InputField";
+import SelectField from "@/components/form/SelectField";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
+import { ProfilePhotoUploadCard, ProfileEditTopBar } from "@/components/profile";
 import { getUploadUrl } from "@/lib/config";
 
 type EditStudentFormData = {
-  profile: FileList | null;
   fullName: string;
   email: string;
   gender: string;
@@ -39,28 +37,19 @@ export default function EditStudent() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  // =========================
-  // GET STUDENT
-  // =========================
-
   const {
     data: student,
     isLoading,
     isError,
-  } = useGetStudentQuery(id, {
-    skip: !id,
-    refetchOnMountOrArgChange: true,
-  });
+  } = useGetStudentQuery(id, { skip: !id, refetchOnMountOrArgChange: true });
 
   const [updateStudent, { isLoading: isUpdating }] = useUpdateStudentMutation();
 
-  // =========================
-  // FORM
-  // =========================
+  const [profileFile, setProfileFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const methods = useForm<EditStudentFormData>({
     defaultValues: {
-      profile: null,
       fullName: "",
       email: "",
       gender: "",
@@ -70,21 +59,11 @@ export default function EditStudent() {
       section: "",
     },
   });
+  const { handleSubmit, reset, formState: { isDirty } } = methods;
 
-  const gender = useWatch({
-    control: methods.control,
-    name: "gender",
-  });
-
-  // =========================
-  // LOAD STUDENT
-  // =========================
-
-  React.useEffect(() => {
+  useEffect(() => {
     if (!student) return;
-
-    methods.reset({
-      profile: null,
+    reset({
       fullName: student.fullName || "",
       email: student.email || "",
       gender: student.gender || "",
@@ -93,32 +72,19 @@ export default function EditStudent() {
       studentClass: student.class || "",
       section: student.section || "",
     });
-  }, [student, methods]);
+  }, [student, reset]);
 
-  // =========================
-  // SUBMIT
-  // =========================
+  const handleDiscard = () => {
+    reset();
+    setProfileFile(null);
+    setPreviewUrl(null);
+  };
 
   const onSubmit = async (data: EditStudentFormData) => {
-    if (!id) {
-      toast.error("Student ID is missing");
-      return;
-    }
+    if (!id) return toast.error("Student ID is missing");
 
     const formData = new FormData();
-
-    // =========================
-    // PROFILE
-    // =========================
-
-    if (data.profile?.[0]) {
-      formData.append("Profile", data.profile[0]);
-    }
-
-    // =========================
-    // OTHER FIELDS
-    // =========================
-
+    if (profileFile) formData.append("Profile", profileFile);
     formData.append("FullName", data.fullName);
     formData.append("Email", data.email);
     formData.append("Gender", data.gender);
@@ -127,24 +93,11 @@ export default function EditStudent() {
     formData.append("Class", data.studentClass || "");
     formData.append("Section", data.section || "");
 
-    // =========================
-    // UPDATE
-    // =========================
-
     try {
-      await updateStudent({
-        id,
-        data: formData,
-      }).unwrap();
-
+      await updateStudent({ id, data: formData }).unwrap();
       toast.success("Student updated successfully!");
-
-      setTimeout(() => {
-        navigate(-1);
-      }, 500);
+      setTimeout(() => navigate(-1), 500);
     } catch (error: unknown) {
-      console.error("UPDATE ERROR:", error);
-
       const message =
         typeof error === "object" &&
         error !== null &&
@@ -160,156 +113,140 @@ export default function EditStudent() {
     }
   };
 
-  // =========================
-  // LOADING
-  // =========================
-
   if (isLoading) {
     return (
       <DashboardLayout activeMenu="Students">
-        <div className="flex min-h-screen items-center justify-center">
-          <h2>Loading...</h2>
+        <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
         </div>
       </DashboardLayout>
     );
   }
 
-  // =========================
-  // ERROR
-  // =========================
-
   if (isError || !student) {
     return (
       <DashboardLayout activeMenu="Students">
-        <div className="flex min-h-screen items-center justify-center">
+        <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
           <h2>Failed to load student</h2>
         </div>
       </DashboardLayout>
     );
   }
 
-  // =========================
-  // UI
-  // =========================
+  const dirty = isDirty || !!profileFile;
 
   return (
     <DashboardLayout activeMenu="Students">
-      <div className="flex min-h-screen items-center justify-center bg-muted/40 p-6">
-        <Card className="w-full max-w-2xl p-6">
-          <h2 className="mb-6 text-center text-2xl font-bold">Edit Student</h2>
+      <div className="min-h-[calc(100vh-4rem)] bg-muted/20 pb-12">
+        <ProfileEditTopBar
+          onBack={() => navigate(-1)}
+          onDiscard={handleDiscard}
+          onSave={handleSubmit(onSubmit)}
+          isSaving={isUpdating}
+          canDiscard={dirty}
+          saveLabel="Update Student"
+        />
 
-          <FormProvider {...methods}>
-            <form
-              onSubmit={methods.handleSubmit(onSubmit)}
-              className="space-y-6"
-            >
-              {/* =========================
-                  PROFILE
-              ========================= */}
+        <div className="mx-auto max-w-5xl px-4 pt-6 sm:px-8">
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold tracking-tight">Edit Student</h1>
+            <p className="text-sm text-muted-foreground">
+              Update this student's photo, contact information, and class details.
+            </p>
+          </div>
 
-              <FileField
-                name="profile"
-                label="Profile"
-                accept="image/*"
-                defaultPreview={
-                  getUploadUrl(student.profile) ?? "/default-profile.jpg"
-                }
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <div className="lg:col-span-1">
+              <ProfilePhotoUploadCard
+                photoUrl={previewUrl || getUploadUrl(student.profile) || "/default-profile.jpg"}
+                fullName={student.fullName}
+                roleLabel="Student"
+                roleBadgeClassName="bg-sky-50 text-sky-700 border-sky-200"
+                hasPendingChange={!!profileFile}
+                onFileChange={(file) => {
+                  setProfileFile(file);
+                  setPreviewUrl(URL.createObjectURL(file));
+                }}
+                onReset={() => {
+                  setProfileFile(null);
+                  setPreviewUrl(null);
+                }}
               />
+            </div>
 
-              {/* =========================
-                  FULL NAME
-              ========================= */}
+            <div className="lg:col-span-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Student Information</CardTitle>
+                  <CardDescription>These details are visible on the student's record.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <FormProvider {...methods}>
+                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+                      <InputField
+                        name="fullName"
+                        label="Full Name"
+                        icon={User}
+                        rules={{ required: "Full name is required" }}
+                      />
 
-              <InputField name="fullName" label="Full Name" type="text" />
+                      <InputField
+                        name="email"
+                        label="Email"
+                        type="email"
+                        icon={Mail}
+                        rules={{ required: "Email is required" }}
+                      />
 
-              {/* =========================
-                  EMAIL
-              ========================= */}
+                      <SelectField
+                        name="gender"
+                        label="Gender"
+                        placeholder="Select gender"
+                        options={[
+                          { value: "Male", label: "Male" },
+                          { value: "Female", label: "Female" },
+                          { value: "Other", label: "Other" },
+                        ]}
+                      />
 
-              <InputField name="email" label="Email" type="email" />
+                      <InputField name="number" label="Phone Number" type="tel" icon={Phone} />
 
-              {/* =========================
-                  GENDER
-              ========================= */}
+                      <InputField name="addresh" label="Address" icon={MapPin} />
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Gender</label>
+                      <div className="grid grid-cols-2 gap-4">
+                        <InputField name="studentClass" label="Class" icon={GraduationCap} placeholder="e.g. 10" />
+                        <InputField name="section" label="Section" icon={BookOpen} placeholder="e.g. A" />
+                      </div>
 
-                <Select
-                  value={gender}
-                  onValueChange={(value) => methods.setValue("gender", value ?? "")}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select gender" />
-                  </SelectTrigger>
-
-                  <SelectContent>
-                    <SelectItem value="Male">Male</SelectItem>
-
-                    <SelectItem value="Female">Female</SelectItem>
-
-                    <SelectItem value="Other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* =========================
-                  PHONE
-              ========================= */}
-
-              <InputField name="number" label="Phone Number" type="tel" />
-
-              {/* =========================
-                  ADDRESS
-              ========================= */}
-
-              <InputField name="addresh" label="Address" type="text" />
-
-              {/* =========================
-                  CLASS & SECTION
-              ========================= */}
-
-              <div className="grid grid-cols-2 gap-4">
-                <InputField
-                  name="studentClass"
-                  label="Class"
-                  type="text"
-                  placeholder="e.g. 10"
-                />
-
-                <InputField
-                  name="section"
-                  label="Section"
-                  type="text"
-                  placeholder="e.g. A"
-                />
-              </div>
-
-              {/* =========================
-                  BUTTONS
-              ========================= */}
-
-              <div className="flex justify-end gap-3">
-                {/* CANCEL */}
-
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => navigate(-1)}
-                  disabled={isUpdating}
-                >
-                  Cancel
-                </Button>
-
-                {/* UPDATE */}
-
-                <Button type="submit" disabled={isUpdating}>
-                  {isUpdating ? "Updating..." : "Update Student"}
-                </Button>
-              </div>
-            </form>
-          </FormProvider>
-        </Card>
+                      <div className="flex items-center justify-between border-t pt-5">
+                        <Button type="button" variant="outline" onClick={() => navigate(-1)} disabled={isUpdating}>
+                          Cancel
+                        </Button>
+                        <Button
+                          type="submit"
+                          disabled={isUpdating}
+                          className="gap-2 bg-emerald-600 text-white hover:bg-emerald-700"
+                        >
+                          {isUpdating ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                              Updating...
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle2 className="h-4 w-4" />
+                              Update Student
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </form>
+                  </FormProvider>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
       </div>
     </DashboardLayout>
   );

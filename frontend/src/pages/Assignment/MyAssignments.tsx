@@ -1,186 +1,156 @@
-import { useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { ClipboardList, Users2 } from "lucide-react";
 
 import DashboardLayout from "@/components/layouts/DashboardLayout";
-import SubmissionTracker from "@/components/group/SubmissionTracker";
-import { Card, CardContent } from "@/components/ui/card";
-import { CalendarClock, ClipboardList, Loader2, Users2 } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+
+import AssignmentCard from "@/components/assignments/AssignmentCard";
+import AssignmentStatsBar from "@/components/assignments/AssignmentStatsBar";
+import AssignmentFilterBar, { type AssignmentTab } from "@/components/assignments/AssignmentFilterBar";
+import { NoAssignmentsState, NoMatchingAssignmentsState } from "@/components/assignments/AssignmentEmptyStates";
+import type { MyAssignment } from "@/components/assignments/types";
 
 import { useGetMyAssignmentsQuery } from "../../api/GroupApi";
-import OnlineSubmissionsViewer from "@/components/group/OnlineSubmissionsViewer";
-
-interface MyAssignment {
-  id: number;
-  groupId: number;
-  groupName: string;
-  title: string;
-  originalFileName?: string | null;
-  submissionMode?: string;
-  dueDate?: string | null;
-  postedAt: string;
-  isPast: boolean;
-  totalStudents: number;
-  submittedCount: number;
-}
-
-function AssignmentRow({ item }: { item: MyAssignment }) {
-  const navigate = useNavigate();
-
-  const percent =
-    item.totalStudents > 0
-      ? Math.round((item.submittedCount / item.totalStudents) * 100)
-      : 0;
-
-  return (
-    <Card>
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            <p className="break-words text-sm font-medium leading-tight">
-              {item.title}
-            </p>
-
-            <button
-              type="button"
-              onClick={() => navigate(`/groups/${item.groupId}`)}
-              className="mt-1 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
-            >
-              <Users2 className="h-3 w-3" />
-              {item.groupName}
-            </button>
-
-            {item.dueDate && (
-              <p
-                className={`mt-1 flex items-center gap-1 text-xs font-medium ${
-                  item.isPast ? "text-destructive" : "text-amber-600"
-                }`}
-              >
-                <CalendarClock className="h-3 w-3" />
-                Due {new Date(item.dueDate).toLocaleString()}
-              </p>
-            )}
-          </div>
-
-          <SubmissionTracker
-            groupId={String(item.groupId)}
-            postId={item.id}
-            postTitle={item.title}
-          />
-        </div>
-        {item.submissionMode !== "Physical" && (
-          <OnlineSubmissionsViewer
-            groupId={String(item.groupId)}
-            postId={item.id}
-            postTitle={item.title}
-          />
-        )}
-
-        <div className="mt-3">
-          <div className="mb-1 flex justify-between text-xs">
-            <span className="font-medium">
-              {item.submittedCount} / {item.totalStudents} Submitted
-            </span>
-            <span className="text-muted-foreground">{percent}%</span>
-          </div>
-
-          <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-            <div
-              className="h-full rounded-full bg-primary"
-              style={{ width: `${percent}%` }}
-            />
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
 
 export default function MyAssignments() {
+  const navigate = useNavigate();
   const { data, isLoading, isError } = useGetMyAssignmentsQuery(undefined);
 
-  const current = useMemo(
-    () => (data ?? []).filter((a: MyAssignment) => !a.isPast),
-    [data],
-  );
+  const [activeTab, setActiveTab] = useState<AssignmentTab>("active");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedGroup, setSelectedGroup] = useState<string>("all");
 
-  const past = useMemo(
-    () => (data ?? []).filter((a: MyAssignment) => a.isPast),
-    [data],
-  );
+  const uniqueGroups = useMemo(() => {
+    if (!data) return [];
+    const groupMap = new Map<number, string>();
+    data.forEach((a: MyAssignment) => {
+      if (a.groupId && a.groupName) groupMap.set(a.groupId, a.groupName);
+    });
+    return Array.from(groupMap.entries()).map(([id, name]) => ({ id, name }));
+  }, [data]);
+
+  const stats = useMemo(() => {
+    if (!data || data.length === 0) {
+      return { activeCount: 0, pastCount: 0, rate: 0 };
+    }
+    const active = data.filter((a: MyAssignment) => !a.isPast);
+    const past = data.filter((a: MyAssignment) => a.isPast);
+    const totalStudents = data.reduce((sum: number, a: MyAssignment) => sum + (a.totalStudents || 0), 0);
+    const submitted = data.reduce((sum: number, a: MyAssignment) => sum + (a.submittedCount || 0), 0);
+    const rate = totalStudents > 0 ? Math.round((submitted / totalStudents) * 100) : 0;
+
+    return { activeCount: active.length, pastCount: past.length, rate };
+  }, [data]);
+
+  const filteredAssignments = useMemo(() => {
+    if (!data) return [];
+    return data.filter((a: MyAssignment) => {
+      if (activeTab === "active" && a.isPast) return false;
+      if (activeTab === "past" && !a.isPast) return false;
+      if (selectedGroup !== "all" && String(a.groupId) !== selectedGroup) return false;
+
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase();
+        const matchesTitle = a.title.toLowerCase().includes(query);
+        const matchesGroup = a.groupName.toLowerCase().includes(query);
+        if (!matchesTitle && !matchesGroup) return false;
+      }
+
+      return true;
+    });
+  }, [data, activeTab, selectedGroup, searchQuery]);
 
   return (
     <DashboardLayout activeMenu="Assignments">
-      <div className="mx-auto max-w-3xl p-6">
-        <div className="mb-6">
-          <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
-            <ClipboardList className="h-6 w-6 text-blue-500" />
-            My Assignments
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Assignments you posted, with physical submission progress.
-          </p>
+      <div className="mx-auto max-w-5xl p-4 sm:p-8">
+        <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="flex items-center gap-2.5 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600 dark:bg-blue-500/20">
+                <ClipboardList className="h-5 w-5" />
+              </span>
+              Assignment Manager
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Monitor submissions, grade student work, and manage coursework across all your classes.
+            </p>
+          </div>
+
+          <Button
+            onClick={() => navigate("/GroupsList")}
+            variant="outline"
+            className="self-start sm:self-auto gap-2 text-xs"
+          >
+            <Users2 className="h-4 w-4" />
+            Go to Groups to Post
+          </Button>
         </div>
 
+        {!isLoading && data && data.length > 0 && (
+          <AssignmentStatsBar
+            activeCount={stats.activeCount}
+            pastCount={stats.pastCount}
+            rate={stats.rate}
+          />
+        )}
+
+        <AssignmentFilterBar
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          activeCount={stats.activeCount}
+          pastCount={stats.pastCount}
+          totalCount={data?.length || 0}
+          groups={uniqueGroups}
+          selectedGroup={selectedGroup}
+          onGroupChange={setSelectedGroup}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+        />
+
         {isLoading && (
-          <div className="flex items-center justify-center py-16 text-muted-foreground">
-            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-            Loading assignments...
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <Card key={i} className="p-5 space-y-3">
+                <div className="flex justify-between">
+                  <Skeleton className="h-5 w-48" />
+                  <Skeleton className="h-5 w-24" />
+                </div>
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-3 w-full rounded-full" />
+              </Card>
+            ))}
           </div>
         )}
 
         {isError && (
-          <p className="text-sm text-destructive">
-            Couldn't load your assignments.
-          </p>
-        )}
-
-        {data && data.length === 0 && (
-          <div className="rounded-lg border border-dashed py-16 text-center">
-            <ClipboardList className="mx-auto mb-3 h-8 w-8 text-muted-foreground" />
-            <p className="font-medium">No assignments yet</p>
-            <p className="text-sm text-muted-foreground">
-              Post an assignment from any of your groups to see it here.
+          <div className="rounded-xl border border-destructive/20 bg-destructive/10 p-6 text-center">
+            <p className="text-sm font-medium text-destructive">
+              Couldn't load assignments. Please refresh or try again later.
             </p>
           </div>
         )}
 
-        {data && data.length > 0 && (
-          <div className="space-y-8">
-            <section>
-              <h2 className="mb-3 text-sm font-medium text-muted-foreground">
-                Current Assignments ({current.length})
-              </h2>
+        {!isLoading && data && data.length === 0 && (
+          <NoAssignmentsState onGoToGroups={() => navigate("/GroupsList")} />
+        )}
 
-              {current.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  Nothing currently open.
-                </p>
-              ) : (
-                <div className="space-y-3">
-                  {current.map((a: MyAssignment) => (
-                    <AssignmentRow key={a.id} item={a} />
-                  ))}
-                </div>
-              )}
-            </section>
+        {!isLoading && data && data.length > 0 && filteredAssignments.length === 0 && (
+          <NoMatchingAssignmentsState
+            onReset={() => {
+              setSearchQuery("");
+              setSelectedGroup("all");
+            }}
+          />
+        )}
 
-            <section>
-              <h2 className="mb-3 text-sm font-medium text-muted-foreground">
-                Past Assignments ({past.length})
-              </h2>
-
-              {past.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  No past assignments.
-                </p>
-              ) : (
-                <div className="space-y-3">
-                  {past.map((a: MyAssignment) => (
-                    <AssignmentRow key={a.id} item={a} />
-                  ))}
-                </div>
-              )}
-            </section>
+        {!isLoading && filteredAssignments.length > 0 && (
+          <div className="space-y-4">
+            {filteredAssignments.map((assignment: MyAssignment) => (
+              <AssignmentCard key={assignment.id} item={assignment} />
+            ))}
           </div>
         )}
       </div>

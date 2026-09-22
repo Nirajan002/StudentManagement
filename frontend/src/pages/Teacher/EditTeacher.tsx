@@ -1,33 +1,17 @@
-import React from "react";
-import { Controller, FormProvider, useForm } from "react-hook-form";
+import { useEffect, useState } from "react";
+import { useForm, FormProvider } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
+import { User, Mail, Phone, MapPin, ShieldCheck, Loader2, CheckCircle2 } from "lucide-react";
 
-import InputField from "@/components/form/InputField";
-import FileField from "@/components/form/FileField";
-import {
-  useGetTeacherQuery,
-  useUpdateTeacherMutation,
-} from "../../api/TeacherApi";
+import { useGetTeacherQuery, useUpdateTeacherMutation } from "../../api/TeacherApi";
 
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-
+import InputField from "@/components/form/InputField";
+import SelectField from "@/components/form/SelectField";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
+import { ProfilePhotoUploadCard, ProfileEditTopBar } from "@/components/profile";
 import { getUploadUrl } from "@/lib/config";
 
 interface EditTeacherForm {
@@ -37,7 +21,6 @@ interface EditTeacherForm {
   number: string;
   address: string;
   role: string;
-  profile: FileList;
 }
 
 export default function EditTeacher() {
@@ -48,44 +31,63 @@ export default function EditTeacher() {
     data: teacher,
     isLoading: isLoadingTeacher,
     isError,
-  } = useGetTeacherQuery(id!, {
-    skip: !id,
-  });
+  } = useGetTeacherQuery(id!, { skip: !id });
 
-  const [updateTeacher, { isLoading: isUpdating }] =
-    useUpdateTeacherMutation();
+  const [updateTeacher, { isLoading: isUpdating }] = useUpdateTeacherMutation();
+
+  const [profileFile, setProfileFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const methods = useForm<EditTeacherForm>({
-    defaultValues: {
-      fullName: "",
-      email: "",
-      gender: "",
-      number: "",
-      address: "",
-      role: "",
-    },
+    defaultValues: { fullName: "", email: "", gender: "", number: "", address: "", role: "" },
   });
+  const { handleSubmit, reset, formState: { isDirty } } = methods;
 
-  const { handleSubmit, reset } = methods;
-
-  React.useEffect(() => {
-    if (teacher) {
-      reset({
-        fullName: teacher.fullName || "",
-        email: teacher.email || "",
-        gender: teacher.gender || "",
-        number: teacher.number || "",
-        address: teacher.address || "",
-        role: teacher.role || "",
-      });
-    }
+  useEffect(() => {
+    if (!teacher) return;
+    reset({
+      fullName: teacher.fullName || "",
+      email: teacher.email || "",
+      gender: teacher.gender || "",
+      number: teacher.number || "",
+      address: teacher.address || "",
+      role: teacher.role || "",
+    });
   }, [teacher, reset]);
+
+  const handleDiscard = () => {
+    reset();
+    setProfileFile(null);
+    setPreviewUrl(null);
+  };
+
+  const onSubmit = async (data: EditTeacherForm) => {
+    if (!id) return toast.error("Teacher ID is missing.");
+
+    try {
+      const formData = new FormData();
+      formData.append("FullName", data.fullName);
+      formData.append("Email", data.email);
+      formData.append("Gender", data.gender);
+      formData.append("Number", data.number);
+      formData.append("Address", data.address);
+      formData.append("Role", data.role);
+      if (profileFile) formData.append("Profile", profileFile);
+
+      await updateTeacher({ id, data: formData }).unwrap();
+      toast.success("Teacher updated successfully!");
+      navigate("/Teachers");
+    } catch (error) {
+      console.error("Failed to update teacher:", error);
+      toast.error("Failed to update teacher.");
+    }
+  };
 
   if (isLoadingTeacher) {
     return (
       <DashboardLayout>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <p className="text-lg">Loading teacher...</p>
+        <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
         </div>
       </DashboardLayout>
     );
@@ -94,201 +96,140 @@ export default function EditTeacher() {
   if (isError || !teacher) {
     return (
       <DashboardLayout>
-        <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-          <p className="text-lg text-red-500">
-            Failed to load teacher.
-          </p>
-
-          <Button onClick={() => navigate("/Teachers")}>
-            Back to Teachers
-          </Button>
+        <div className="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center gap-4">
+          <p className="text-lg text-destructive">Failed to load teacher.</p>
+          <Button onClick={() => navigate("/Teachers")}>Back to Teachers</Button>
         </div>
       </DashboardLayout>
     );
   }
 
-  const onSubmit = async (data: EditTeacherForm) => {
-    if (!id) {
-      toast.error("Teacher ID is missing.");
-      return;
-    }
-
-    try {
-      const formData = new FormData();
-
-      formData.append("FullName", data.fullName);
-      formData.append("Email", data.email);
-      formData.append("Gender", data.gender);
-      formData.append("Number", data.number);
-      formData.append("Address", data.address);
-      formData.append("Role", data.role);
-
-      if (data.profile && data.profile.length > 0) {
-        formData.append("Profile", data.profile[0]);
-      }
-
-      await updateTeacher({
-        id,
-        data: formData,
-      }).unwrap();
-
-      toast.success("Teacher updated successfully!");
-
-      navigate("/Teachers");
-    } catch (error) {
-      console.error("Failed to update teacher:", error);
-      toast.error("Failed to update teacher.");
-    }
-  };
+  const dirty = isDirty || !!profileFile;
 
   return (
     <DashboardLayout>
-      <div className="p-6">
-        <Card className="max-w-3xl mx-auto">
-          <CardHeader>
-            <CardTitle className="text-2xl">
-              Edit Teacher
-            </CardTitle>
-          </CardHeader>
+      <div className="min-h-[calc(100vh-4rem)] bg-muted/20 pb-12">
+        <ProfileEditTopBar
+          onBack={() => navigate("/Teachers")}
+          onDiscard={handleDiscard}
+          onSave={handleSubmit(onSubmit)}
+          isSaving={isUpdating}
+          canDiscard={dirty}
+          backLabel="Back to Teachers"
+          saveLabel="Update Teacher"
+        />
 
-          <CardContent>
-            <FormProvider {...methods}>
-              <form
-                onSubmit={handleSubmit(onSubmit)}
-                className="space-y-6"
-              >
-                {/* Profile Image */}
-                <FileField
-                  name="profile"
-                  label="Profile Image"
-                  accept="image/*"
-                  defaultPreview={
-                    getUploadUrl(teacher.profile) ?? "/default-profile.jpg"
-                  }
-                />
+        <div className="mx-auto max-w-5xl px-4 pt-6 sm:px-8">
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold tracking-tight">Edit Teacher</h1>
+            <p className="text-sm text-muted-foreground">
+              Update this teacher's photo, contact information, and role.
+            </p>
+          </div>
 
-                {/* Full Name */}
-                <InputField
-                  name="fullName"
-                  label="Full Name"
-                  rules={{
-                    required: "Full name is required",
-                  }}
-                />
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <div className="lg:col-span-1">
+              <ProfilePhotoUploadCard
+                photoUrl={previewUrl || getUploadUrl(teacher.profile) || "/default-profile.jpg"}
+                fullName={teacher.fullName}
+                roleLabel={teacher.role || "Teacher"}
+                roleIcon={ShieldCheck}
+                roleBadgeClassName="bg-emerald-50 text-emerald-700 border-emerald-200"
+                hasPendingChange={!!profileFile}
+                onFileChange={(file) => {
+                  setProfileFile(file);
+                  setPreviewUrl(URL.createObjectURL(file));
+                }}
+                onReset={() => {
+                  setProfileFile(null);
+                  setPreviewUrl(null);
+                }}
+              />
+            </div>
 
-                {/* Email */}
-                <InputField
-                  name="email"
-                  label="Email"
-                  type="email"
-                  rules={{
-                    required: "Email is required",
-                  }}
-                />
+            <div className="lg:col-span-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Teacher Information</CardTitle>
+                  <CardDescription>These details are visible across the platform.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <FormProvider {...methods}>
+                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+                      <InputField
+                        name="fullName"
+                        label="Full Name"
+                        icon={User}
+                        rules={{ required: "Full name is required" }}
+                      />
 
-                {/* Gender */}
-                <Controller
-                  name="gender"
-                  control={methods.control}
-                  render={({ field }) => (
-                    <div className="space-y-2">
-                      <Label htmlFor="gender">
-                        Gender
-                      </Label>
+                      <InputField
+                        name="email"
+                        label="Email"
+                        type="email"
+                        icon={Mail}
+                        rules={{ required: "Email is required" }}
+                      />
 
-                      <Select
-                        value={field.value || ""}
-                        onValueChange={field.onChange}
-                      >
-                        <SelectTrigger id="gender">
-                          <SelectValue placeholder="Select gender" />
-                        </SelectTrigger>
+                      <SelectField
+                        name="gender"
+                        label="Gender"
+                        placeholder="Select gender"
+                        options={[
+                          { value: "Male", label: "Male" },
+                          { value: "Female", label: "Female" },
+                          { value: "Other", label: "Other" },
+                        ]}
+                      />
 
-                        <SelectContent>
-                          <SelectItem value="Male">
-                            Male
-                          </SelectItem>
+                      <InputField name="number" label="Phone Number" icon={Phone} />
 
-                          <SelectItem value="Female">
-                            Female
-                          </SelectItem>
+                      <InputField name="address" label="Address" icon={MapPin} />
 
-                          <SelectItem value="Other">
-                            Other
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
-                />
+                      <SelectField
+                        name="role"
+                        label="Role"
+                        placeholder="Select role"
+                        options={[
+                          { value: "Teacher", label: "Teacher" },
+                          { value: "Admin", label: "Admin" },
+                        ]}
+                      />
 
-                {/* Phone Number */}
-                <InputField
-                  name="number"
-                  label="Phone Number"
-                />
-
-                {/* Address */}
-                <InputField
-                  name="address"
-                  label="Address"
-                />
-
-                {/* Role */}
-                <Controller
-                  name="role"
-                  control={methods.control}
-                  render={({ field }) => (
-                    <div className="space-y-2">
-                      <Label htmlFor="role">
-                        Role
-                      </Label>
-
-                      <Select
-                        value={field.value || ""}
-                        onValueChange={field.onChange}
-                      >
-                        <SelectTrigger id="role">
-                          <SelectValue placeholder="Select role" />
-                        </SelectTrigger>
-
-                        <SelectContent>
-                          <SelectItem value="Teacher">
-                            Teacher
-                          </SelectItem>
-
-                          <SelectItem value="Admin">
-                            Admin
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
-                />
-
-                {/* Buttons */}
-                <div className="flex justify-between pt-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => navigate("/Teachers")}
-                  >
-                    Cancel
-                  </Button>
-
-                  <Button
-                    type="submit"
-                    disabled={isUpdating}
-                  >
-                    {isUpdating
-                      ? "Updating..."
-                      : "Update Teacher"}
-                  </Button>
-                </div>
-              </form>
-            </FormProvider>
-          </CardContent>
-        </Card>
+                      <div className="flex items-center justify-between border-t pt-5">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => navigate("/Teachers")}
+                          disabled={isUpdating}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          type="submit"
+                          disabled={isUpdating}
+                          className="gap-2 bg-emerald-600 text-white hover:bg-emerald-700"
+                        >
+                          {isUpdating ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                              Updating...
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle2 className="h-4 w-4" />
+                              Update Teacher
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </form>
+                  </FormProvider>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
       </div>
     </DashboardLayout>
   );
