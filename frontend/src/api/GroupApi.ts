@@ -44,14 +44,31 @@ export const GroupApi = createApi({
       providesTags: (_result, _error, id) => [{ type: "Group", id }],
     }),
 
-    // Create a group (optionally with initial members)
     createGroup: builder.mutation({
-      query: (data) => ({
+      query: (formData: FormData) => ({
         url: "/",
         method: "POST",
-        body: data,
+        body: formData,
       }),
       invalidatesTags: [{ type: "Group", id: "LIST" }],
+    }),
+
+    updateGroup: builder.mutation({
+      query: ({
+        groupId,
+        formData,
+      }: {
+        groupId: number;
+        formData: FormData;
+      }) => ({
+        url: `/${groupId}`,
+        method: "PUT",
+        body: formData,
+      }),
+      invalidatesTags: (_result, _error, { groupId }) => [
+        { type: "Group", id: groupId },
+        { type: "Group", id: "LIST" },
+      ],
     }),
 
     // Add students to a group
@@ -224,11 +241,14 @@ export const GroupApi = createApi({
       ],
     }),
 
-    getOnlineSubmissions: builder.query({
-      query: ({ groupId, postId }: { groupId: string; postId: string }) =>
-        `/${groupId}/posts/${postId}/online-submissions`,
-      providesTags: (_r, _e, { postId }) => [
-        { type: "OnlineSubmission", id: postId },
+    setSubmissionFeedback: builder.mutation({
+      query: ({ groupId, postId, studentId, feedback }) => ({
+        url: `/${groupId}/posts/${postId}/submissions/${studentId}/feedback`,
+        method: "PUT",
+        body: { feedback },
+      }),
+      invalidatesTags: (_r, _e, { postId }) => [
+        { type: "Submission", id: postId },
       ],
     }),
 
@@ -251,6 +271,7 @@ export const {
   useGetGroupsQuery,
   useGetGroupByIdQuery,
   useCreateGroupMutation,
+  useUpdateGroupMutation,
   useAddGroupMembersMutation,
   useRemoveGroupMemberMutation,
   useDeleteGroupMutation,
@@ -268,6 +289,6 @@ export const {
   useSetSubmissionStatusMutation,
   useGetMySubmissionQuery,
   useGetMyAssignmentsQuery,
-  useSubmitOnlineWorkMutation, 
-  useGetOnlineSubmissionsQuery,
+  useSubmitOnlineWorkMutation,
+  useSetSubmissionFeedbackMutation,
 } = GroupApi;

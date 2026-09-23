@@ -43,6 +43,7 @@ import RoleRoute from "./components/Routes/RoleRoute";
 import GroupsList from "./pages/Group/GroupList";
 import CreateGroup from "./pages/Group/CreateGroups";
 import GroupDetail from "./pages/Group/GroupDetail";
+import EditGroup from "./pages/Group/EditGroup";
 
 import MyAssignments from "./pages/Assignment/MyAssignments";
 
@@ -182,6 +183,15 @@ function App() {
         element={
           <RoleRoute allowedRoles={["Admin", "Teacher"]}>
             <CreateGroup />
+          </RoleRoute>
+        }
+      />
+
+      <Route
+        path="/EditGroup/:id"
+        element={
+          <RoleRoute allowedRoles={["Admin", "Teacher"]}>
+            <EditGroup />
           </RoleRoute>
         }
       />

@@ -9,11 +9,13 @@ import { API_URL } from "@/lib/config";
 interface OnlineSubmissionUploadProps {
   groupId: string;
   postId: number;
+  disabled?: boolean;
 }
 
 export default function OnlineSubmissionUpload({
   groupId,
   postId,
+  disabled = false,
 }: OnlineSubmissionUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
@@ -52,7 +54,6 @@ export default function OnlineSubmissionUpload({
             <CheckCircle2 className="h-3.5 w-3.5" />
             Submitted: {data.originalFileName}
           </p>
-
           
           <a  href={`${API_URL}/Groups/${groupId}/posts/${postId}/submissions/online/download`}
             target="_blank"
@@ -63,16 +64,22 @@ export default function OnlineSubmissionUpload({
           </a>
         </div>
       ) : (
-        <p className="mb-1 text-xs text-muted-foreground">No online submission yet.</p>
+        <p className="mb-1 text-xs text-muted-foreground">
+          {disabled
+            ? "Submission window closed — the due date has passed."
+            : "No online submission yet."}
+        </p>
       )}
 
-      <input
-        ref={fileInputRef}
-        type="file"
-        onChange={handleFileChange}
-        disabled={isUploading}
-        className="mt-1 block w-full text-xs text-muted-foreground file:mr-2 file:rounded-md file:border file:border-input file:bg-background file:px-2 file:py-1 file:text-xs file:font-medium hover:file:bg-muted"
-      />
+      {!disabled && (
+        <input
+          ref={fileInputRef}
+          type="file"
+          onChange={handleFileChange}
+          disabled={isUploading}
+          className="mt-1 block w-full text-xs text-muted-foreground file:mr-2 file:rounded-md file:border file:border-input file:bg-background file:px-2 file:py-1 file:text-xs file:font-medium hover:file:bg-muted"
+        />
+      )}
 
       {isUploading && (
         <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
@@ -83,7 +90,7 @@ export default function OnlineSubmissionUpload({
 
       {error && <p className="mt-1 text-xs text-destructive">{error}</p>}
 
-      {hasSubmitted && (
+      {hasSubmitted && !disabled && (
         <p className="mt-1 text-[11px] text-muted-foreground">
           Uploading again will replace your current submission.
         </p>

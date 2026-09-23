@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Dialog,
   DialogContent,
@@ -10,7 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Loader2, UserMinus, UserPlus, Users2 } from "lucide-react";
+import { Loader2, UserMinus, UserPlus, Users2, ExternalLink } from "lucide-react";
 
 import { TeacherPicker, type PickedTeacher } from "./TeacherPicker";
 import { initials } from "../utils/initials";
@@ -25,7 +27,7 @@ interface GroupManager {
 
 interface Group {
   name: string;
-  createdById: string;
+  createdById: string | number;
   managers?: GroupManager[];
 }
 
@@ -65,12 +67,15 @@ export default function CoTeachersSection({
   };
 
   return (
-    <div className="mb-6 rounded-lg border p-4">
+    <div className="rounded-xl border border-border/80 bg-card p-4 shadow-xs">
       <div className="mb-3 flex items-center justify-between">
-        <p className="flex items-center gap-1.5 text-sm font-medium">
-          <Users2 className="h-4 w-4" />
-          Co-teachers ({group.managers?.length ?? 0})
-        </p>
+        <div className="flex items-center gap-2">
+          <Users2 className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+          <h3 className="text-sm font-semibold text-foreground">Co-teachers</h3>
+          <Badge variant="secondary" className="h-5 px-1.5 text-xs font-medium">
+            {group.managers?.length ?? 0}
+          </Badge>
+        </div>
 
         {canManageCoTeachers && (
           <Dialog
@@ -85,27 +90,30 @@ export default function CoTeachersSection({
           >
             <DialogTrigger
               type="button"
-              className="inline-flex h-8 items-center justify-center gap-1.5 rounded-md border border-input bg-background px-3 text-xs font-medium shadow-xs transition-colors hover:bg-muted"
+              className="inline-flex h-7 items-center justify-center gap-1.5 rounded-md border border-input bg-background px-2.5 text-xs font-medium shadow-xs transition-colors hover:bg-muted"
             >
-              <UserPlus className="h-3.5 w-3.5" />
-              Add co-teacher
+              <UserPlus className="h-3 w-3" />
+              Add
             </DialogTrigger>
 
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
-                <DialogTitle>Add co-teachers to {group.name}</DialogTitle>
+                <DialogTitle className="flex items-center gap-2 text-base font-semibold">
+                  <UserPlus className="h-4 w-4 text-primary" />
+                  Add co-teachers to {group.name}
+                </DialogTitle>
               </DialogHeader>
 
               <TeacherPicker
                 selected={teachersToAdd}
                 onChange={setTeachersToAdd}
                 excludeIds={[
-                  group.createdById,
+                  String(group.createdById),
                   ...(group.managers ?? []).map((m) => m.teacherId),
                 ]}
               />
 
-              <DialogFooter>
+              <DialogFooter className="gap-2 sm:gap-0">
                 <Button
                   variant="outline"
                   type="button"
@@ -122,7 +130,7 @@ export default function CoTeachersSection({
                   {isAddingManager && (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}
-                  Add {teachersToAdd.length > 0 ? teachersToAdd.length : ""}
+                  Add {teachersToAdd.length > 0 ? `${teachersToAdd.length} Teacher${teachersToAdd.length > 1 ? "s" : ""}` : ""}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -132,61 +140,69 @@ export default function CoTeachersSection({
 
       {group.managers && group.managers.length > 0 ? (
         <div className="space-y-2">
-          {group.managers.map((manager) => (
-            <div
-              key={manager.teacherId}
-              className="flex items-center justify-between rounded-md bg-muted/40 px-3 py-2"
-            >
+          {group.managers.map((manager) => {
+            const profileUrl = getUploadUrl(manager.profile);
+
+            return (
               <div
-                className="flex flex-1 cursor-pointer items-center gap-2"
-                onClick={() => navigate(`/Teacher/${manager.teacherId}`)}
+                key={manager.teacherId}
+                className="group flex items-center justify-between rounded-lg border border-border/60 bg-muted/20 p-2.5 transition-all hover:border-border hover:bg-muted/40"
               >
-                {getUploadUrl(manager.profile) ? (
-                  <img
-                    src={getUploadUrl(manager.profile)!}
-                    alt={manager.fullName}
-                    className="h-7 w-7 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted text-xs font-medium">
-                    {initials(manager.fullName)}
-                  </div>
-                )}
-
-                <div>
-                  <p className="text-sm font-medium leading-none">
-                    {manager.fullName}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {manager.email}
-                  </p>
-                </div>
-              </div>
-
-              {canManageCoTeachers && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onRemoveManager(manager.teacherId);
-                  }}
-                  disabled={removingManagerId === manager.teacherId}
-                  aria-label={`Remove ${manager.fullName}`}
+                <div
+                  className="flex flex-1 cursor-pointer items-center gap-3 min-w-0"
+                  onClick={() => navigate(`/Teacher/${manager.teacherId}`)}
                 >
-                  {removingManagerId === manager.teacherId ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  ) : (
-                    <UserMinus className="h-3.5 w-3.5 text-muted-foreground" />
-                  )}
-                </Button>
-              )}
-            </div>
-          ))}
+                  <Avatar className="h-8 w-8 shrink-0 border border-border/70">
+                    {profileUrl && (
+                      <AvatarImage src={profileUrl} alt={manager.fullName} />
+                    )}
+                    <AvatarFallback className="bg-blue-600/10 text-xs font-semibold text-blue-600 dark:text-blue-400">
+                      {initials(manager.fullName)}
+                    </AvatarFallback>
+                  </Avatar>
+
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <p className="truncate text-sm font-medium leading-tight text-foreground group-hover:text-primary">
+                        {manager.fullName}
+                      </p>
+                      <ExternalLink className="h-3 w-3 shrink-0 opacity-0 transition-opacity group-hover:opacity-60" />
+                    </div>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {manager.email}
+                    </p>
+                  </div>
+                </div>
+
+                {canManageCoTeachers && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 text-muted-foreground opacity-60 hover:text-destructive hover:opacity-100"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRemoveManager(manager.teacherId);
+                    }}
+                    disabled={removingManagerId === manager.teacherId}
+                    aria-label={`Remove ${manager.fullName}`}
+                  >
+                    {removingManagerId === manager.teacherId ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin text-destructive" />
+                    ) : (
+                      <UserMinus className="h-3.5 w-3.5" />
+                    )}
+                  </Button>
+                )}
+              </div>
+            );
+          })}
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground">No co-teachers yet.</p>
+        <div className="py-6 text-center">
+          <Users2 className="mx-auto mb-1.5 h-6 w-6 text-muted-foreground/40" />
+          <p className="text-xs text-muted-foreground">No co-teachers assigned yet.</p>
+        </div>
       )}
     </div>
   );

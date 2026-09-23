@@ -71,6 +71,28 @@ function ModeBadge({ mode }: { mode: SubmissionModeOption }) {
   );
 }
 
+function SubmissionFeedback({
+  groupId,
+  postId,
+}: {
+  groupId: string;
+  postId: number;
+}) {
+  const { data } = useGetMySubmissionQuery({ groupId, postId: String(postId) });
+  if (!data?.feedback) return null;
+
+  return (
+    <div className="mt-2 rounded-md border border-blue-200 bg-blue-50 p-2 dark:border-blue-900 dark:bg-blue-950/30">
+      <p className="text-xs font-medium text-blue-700 dark:text-blue-300">
+        Teacher feedback
+      </p>
+      <p className="mt-0.5 whitespace-pre-wrap text-xs text-blue-900 dark:text-blue-200">
+        {data.feedback}
+      </p>
+    </div>
+  );
+}
+
 interface PostItemProps {
   post: GroupPost;
   groupId: string;
@@ -133,14 +155,20 @@ export default function PostItem({
               </p>
             )}
 
-            {/* Student — physical status, hidden for Online-only assignments */}
             {post.type === "Assignment" && isStudent && mode !== "Online" && (
               <MySubmissionStatus groupId={groupId} postId={post.id} />
             )}
 
-            {/* Student — online upload, shown for Online or Both */}
             {post.type === "Assignment" && isStudent && mode !== "Physical" && (
-              <OnlineSubmissionUpload groupId={groupId} postId={post.id} />
+              <OnlineSubmissionUpload
+                groupId={groupId}
+                postId={post.id}
+                disabled={!!isOverdue}
+              />
+            )}
+
+            {post.type === "Assignment" && isStudent && (
+              <SubmissionFeedback groupId={groupId} postId={post.id} />
             )}
 
             {post.fileName && (

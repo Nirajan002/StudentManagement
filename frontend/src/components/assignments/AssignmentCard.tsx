@@ -11,8 +11,7 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 
-import SubmissionTracker from "@/components/group/SubmissionTracker";
-import OnlineSubmissionsViewer from "@/components/group/OnlineSubmissionsViewer";
+import AssignmentSubmissionsDialog from "@/components/group/AssignmentSubmissionsDialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
@@ -23,7 +22,10 @@ function DeadlineBadge({ item }: { item: MyAssignment }) {
 
   if (item.isPast) {
     return (
-      <Badge variant="outline" className="border-destructive/30 bg-destructive/10 text-destructive text-xs gap-1">
+      <Badge
+        variant="outline"
+        className="border-destructive/30 bg-destructive/10 text-destructive text-xs gap-1"
+      >
         <AlertTriangle className="h-3 w-3" />
         Closed / Past Due
       </Badge>
@@ -31,12 +33,16 @@ function DeadlineBadge({ item }: { item: MyAssignment }) {
   }
 
   const diffDays = Math.ceil(
-    (new Date(item.dueDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+    (new Date(item.dueDate).getTime() - new Date().getTime()) /
+      (1000 * 60 * 60 * 24),
   );
 
   if (diffDays <= 1) {
     return (
-      <Badge variant="outline" className="border-amber-400 bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 text-xs gap-1">
+      <Badge
+        variant="outline"
+        className="border-amber-400 bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 text-xs gap-1"
+      >
         <Clock className="h-3 w-3" />
         Due Today / Tomorrow
       </Badge>
@@ -44,9 +50,16 @@ function DeadlineBadge({ item }: { item: MyAssignment }) {
   }
 
   return (
-    <Badge variant="outline" className="border-border text-muted-foreground text-xs gap-1">
+    <Badge
+      variant="outline"
+      className="border-border text-muted-foreground text-xs gap-1"
+    >
       <CalendarClock className="h-3 w-3" />
-      Due {new Date(item.dueDate).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+      Due{" "}
+      {new Date(item.dueDate).toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+      })}
     </Badge>
   );
 }
@@ -59,7 +72,8 @@ export default function AssignmentCard({ item }: { item: MyAssignment }) {
       ? Math.round((item.submittedCount / item.totalStudents) * 100)
       : 0;
 
-  const isCompleted = item.totalStudents > 0 && item.submittedCount >= item.totalStudents;
+  const isCompleted =
+    item.totalStudents > 0 && item.submittedCount >= item.totalStudents;
   const isOnline = item.submissionMode !== "Physical";
 
   return (
@@ -86,7 +100,11 @@ export default function AssignmentCard({ item }: { item: MyAssignment }) {
                   : "border-amber-200 bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 text-[11px] gap-1"
               }
             >
-              {isOnline ? <FileUp className="h-3 w-3" /> : <FileText className="h-3 w-3" />}
+              {isOnline ? (
+                <FileUp className="h-3 w-3" />
+              ) : (
+                <FileText className="h-3 w-3" />
+              )}
               {item.submissionMode || "Online & Physical"}
             </Badge>
 
@@ -115,19 +133,13 @@ export default function AssignmentCard({ item }: { item: MyAssignment }) {
           </div>
 
           <div className="flex flex-wrap items-center gap-2 shrink-0">
-            <SubmissionTracker
-              groupId={String(item.groupId)}
-              postId={item.id}
-              postTitle={item.title}
-            />
-
-            {isOnline && (
-              <OnlineSubmissionsViewer
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+              <AssignmentSubmissionsDialog
                 groupId={String(item.groupId)}
                 postId={item.id}
                 postTitle={item.title}
               />
-            )}
+            </div>
           </div>
         </div>
 
@@ -148,7 +160,9 @@ export default function AssignmentCard({ item }: { item: MyAssignment }) {
                 </span>
               )}
             </div>
-            <span className={`font-semibold ${isCompleted ? "text-emerald-600" : "text-foreground"}`}>
+            <span
+              className={`font-semibold ${isCompleted ? "text-emerald-600" : "text-foreground"}`}
+            >
               {percent}%
             </span>
           </div>

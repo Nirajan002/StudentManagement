@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, Megaphone } from "lucide-react";
+import { Bell, Megaphone, ClipboardList } from "lucide-react";
 
 import {
   Popover,
@@ -98,15 +98,24 @@ export default function NotificationBell() {
                 <div
                   key={`group-${notice.id}`}
                   onClick={() => handleGroupNoticeClick(notice.groupId)}
-                  className="cursor-pointer border-b px-3 py-2 last:border-0 hover:bg-muted"
+                  className="flex cursor-pointer items-start gap-2 border-b px-3 py-2 last:border-0 hover:bg-muted"
                 >
-                  <p className="text-sm font-medium leading-tight">
-                    {notice.title}
-                  </p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">
-                    {notice.groupName} ·{" "}
-                    {new Date(notice.postedAt).toLocaleString()}
-                  </p>
+                  {notice.type === "Assignment" ? (
+                    <ClipboardList className="mt-0.5 h-3.5 w-3.5 shrink-0 text-blue-500" />
+                  ) : (
+                    <Bell className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                  )}
+
+                  <div>
+                    <p className="text-sm font-medium leading-tight">
+                      {notice.title}
+                    </p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      {notice.groupName} ·{" "}
+                      {notice.type === "Assignment" ? "Assignment" : "Notice"} ·{" "}
+                      {new Date(notice.postedAt).toLocaleString()}
+                    </p>
+                  </div>
                 </div>
               ))}
             </>

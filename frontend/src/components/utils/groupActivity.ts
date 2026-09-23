@@ -2,6 +2,7 @@ export interface RecentNotice {
   id: number;
   groupId: number;
   groupName: string;
+  type: string;
   title: string;
   postedAt: string;
   postedByName: string;
