@@ -5,6 +5,7 @@
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string? Description { get; set; }
+        public string? BackgroundImage { get; set; } 
 
         // Groups are created by a Teacher (Admins are Teachers with Role = "Admin")
         public Guid CreatedById { get; set; }

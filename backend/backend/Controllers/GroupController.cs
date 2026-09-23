@@ -32,7 +32,7 @@ namespace backend.Controllers
 
         [Authorize(Roles = "Admin,Teacher")]
         [HttpPost]
-        public async Task<IActionResult> CreateGroup(CreateGroupRequest request)
+        public async Task<IActionResult> CreateGroup([FromForm] CreateGroupRequest request)
         {
             try
             {
@@ -43,6 +43,19 @@ namespace backend.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
+        [Authorize(Roles = "Admin,Teacher")]
+[HttpPut("{id}")]
+public async Task<IActionResult> UpdateGroup(int id, [FromForm] UpdateGroupRequest request)
+{
+    try
+    {
+        return Ok(await groupService.UpdateGroupAsync(id, CurrentUserId, IsAdmin, request));
+    }
+    catch (ForbiddenException) { return Forbid(); }
+    catch (NotFoundException) { return NotFound(); }
+    catch (ValidationException ex) { return BadRequest(new { message = ex.Message }); }
+}
 
         [Authorize]
         [HttpGet]
@@ -268,10 +281,10 @@ namespace backend.Controllers
         }
 
         [Authorize(Roles = "Admin,Teacher")]
-        [HttpGet("{id}/posts/{postId}/online-submissions")]
-        public async Task<IActionResult> GetOnlineSubmissions(int id, int postId)
+        [HttpPut("{id}/posts/{postId}/submissions/{studentId}/feedback")]
+        public async Task<IActionResult> SetSubmissionFeedback(int id, int postId, Guid studentId, SetSubmissionFeedbackRequest request)
         {
-            try { return Ok(await submissionService.GetOnlineSubmissionsAsync(postId, CurrentUserId)); }
+            try { return Ok(await submissionService.SetSubmissionFeedbackAsync(postId, studentId, CurrentUserId, IsAdmin, request.Feedback)); }
             catch (ForbiddenException) { return Forbid(); }
             catch (NotFoundException ex) { return NotFound(new { message = ex.Message }); }
             catch (ValidationException ex) { return BadRequest(new { message = ex.Message }); }
@@ -283,7 +296,7 @@ namespace backend.Controllers
         {
             try
             {
-                var result = await submissionService.DownloadOnlineSubmissionAsync(postId, studentId, CurrentUserId);
+                var result = await submissionService.DownloadOnlineSubmissionAsync(postId, studentId, CurrentUserId, IsAdmin);
                 return File(result.Bytes, "application/octet-stream", result.FileName);
             }
             catch (ForbiddenException) { return Forbid(); }

@@ -10,10 +10,12 @@
     public class GroupService : IGroupService
     {
         private readonly StudentManagement dbContext;
+        private readonly IFileStorageService fileStorage; // NEW
 
-        public GroupService(StudentManagement dbContext)
+        public GroupService(StudentManagement dbContext, IFileStorageService fileStorage) // NEW param
         {
             this.dbContext = dbContext;
+            this.fileStorage = fileStorage;
         }
 
         public async Task<object> CreateGroupAsync(Guid creatorId, CreateGroupRequest request)
@@ -21,10 +23,17 @@
             if (string.IsNullOrWhiteSpace(request.Name))
                 throw new ValidationException("Group name is required.");
 
+            string? backgroundImage = null;
+            if (request.BackgroundImage is { Length: > 0 })
+            {
+                backgroundImage = await fileStorage.SaveAsync(request.BackgroundImage, FileCategory.Image);
+            }
+
             var group = new Group
             {
                 Name = request.Name,
                 Description = request.Description,
+                BackgroundImage = backgroundImage,
                 CreatedById = creatorId,
                 CreatedAt = DateTime.UtcNow,
                 IsActive = true
@@ -54,25 +63,47 @@
                 await dbContext.SaveChangesAsync();
             }
 
-            return new { group.Id, group.Name, group.Description, group.CreatedById, group.CreatedAt };
+            return new { group.Id, group.Name, group.Description, group.BackgroundImage, group.CreatedById, group.CreatedAt };
+        }
+
+        public async Task<object> UpdateGroupAsync(int groupId, Guid actingUserId, bool isAdmin, UpdateGroupRequest request)
+        {
+            var group = await dbContext.Groups.FindAsync(groupId) ?? throw new NotFoundException();
+
+            if (!isAdmin && group.CreatedById != actingUserId)
+                throw new ForbiddenException();
+
+            if (string.IsNullOrWhiteSpace(request.Name))
+                throw new ValidationException("Group name is required.");
+
+            group.Name = request.Name;
+            group.Description = request.Description;
+
+            if (request.RemoveBackgroundImage)
+            {
+                fileStorage.Delete(group.BackgroundImage);
+                group.BackgroundImage = null;
+            }
+            else if (request.BackgroundImage is { Length: > 0 })
+            {
+                fileStorage.Delete(group.BackgroundImage);
+                group.BackgroundImage = await fileStorage.SaveAsync(request.BackgroundImage, FileCategory.Image);
+            }
+
+            await dbContext.SaveChangesAsync();
+
+            return new { group.Id, group.Name, group.Description, group.BackgroundImage };
         }
 
         public async Task<IEnumerable<object>> GetGroupsAsync(Guid userId, bool isAdmin, bool isStudent)
         {
             var query = dbContext.Groups.Where(g => g.IsActive);
 
-            if (isAdmin)
-            {
-                // no extra filter
-            }
+            if (isAdmin) { }
             else if (isStudent)
-            {
                 query = query.Where(g => g.Members.Any(m => m.StudentId == userId && m.RemovedAt == null));
-            }
             else
-            {
                 query = query.Where(g => g.CreatedById == userId || g.Managers.Any(m => m.UserId == userId));
-            }
 
             var groups = await query
                 .Select(g => new
@@ -80,6 +111,7 @@
                     g.Id,
                     g.Name,
                     g.Description,
+                    g.BackgroundImage, // NEW
                     g.CreatedById,
                     CreatedByName = g.CreatedBy.FullName,
                     g.CreatedAt,
@@ -97,6 +129,7 @@
                 g.Id,
                 g.Name,
                 g.Description,
+                g.BackgroundImage,
                 g.CreatedById,
                 g.CreatedByName,
                 CreatedAt = DateTime.SpecifyKind(g.CreatedAt, DateTimeKind.Utc),
@@ -119,6 +152,7 @@
                     g.Id,
                     g.Name,
                     g.Description,
+                    g.BackgroundImage, // NEW
                     g.CreatedById,
                     CreatedByName = g.CreatedBy.FullName,
                     CreatedByRole = g.CreatedBy.Role,
@@ -152,10 +186,8 @@
             if (isAdmin) return true;
 
             if (isStudent)
-            {
                 return await dbContext.GroupMembers.AnyAsync(m =>
                     m.GroupId == groupId && m.StudentId == userId && m.RemovedAt == null);
-            }
 
             return await dbContext.Groups.AnyAsync(g =>
                 g.Id == groupId && (g.CreatedById == userId || g.Managers.Any(m => m.UserId == userId)));

@@ -161,7 +161,7 @@
                     !dbContext.AssignmentSubmissions.Any(s =>
                         s.GroupPostId == p.Id &&
                         s.StudentId == studentId &&
-                        (s.Status == SubmissionStatus.Submitted || s.FileName != null)));
+                        (s.Status == SubmissionStatus.Submitted)));
 
             var totalNotices = await dbContext.GroupPosts
                 .CountAsync(p => p.Type == "Notice" && p.Group.IsActive &&
@@ -175,7 +175,7 @@
                          !dbContext.AssignmentSubmissions.Any(s =>
                              s.GroupPostId == p.Id &&
                              s.StudentId == studentId &&
-                             (s.Status == SubmissionStatus.Submitted || s.FileName != null)))))
+                             (s.Status == SubmissionStatus.Submitted)))))
                 .OrderByDescending(p => p.PostedAt)
                 .Take(8)
                 .Select(p => new { p.Id, p.GroupId, GroupName = p.Group.Name, p.Type, p.Title, PostedByName = p.PostedBy.FullName, p.PostedAt })
@@ -188,7 +188,7 @@
                     !dbContext.AssignmentSubmissions.Any(s =>
                         s.GroupPostId == p.Id &&
                         s.StudentId == studentId &&
-                        (s.Status == SubmissionStatus.Submitted || s.FileName != null)))
+                        (s.Status == SubmissionStatus.Submitted)))
                 .OrderBy(p => p.DueDate)
                 .Take(5)
                 .Select(p => new { p.Id, p.GroupId, GroupName = p.Group.Name, p.Title, p.DueDate })

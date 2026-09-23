@@ -106,31 +106,17 @@
             };
         }
 
-        public async Task<IEnumerable<object>> GetPostsAsync(
-            int groupId,
-            Guid userId,
-            bool isAdmin,
-            bool isStudent)
+        public async Task<IEnumerable<object>> GetPostsAsync(int groupId, Guid userId, bool isAdmin, bool isStudent)
         {
             if (!await groupService.CanViewGroupAsync(groupId, userId, isAdmin, isStudent))
                 throw new ForbiddenException();
 
             await RemoveExpiredAsync(groupId);
 
-            var now = DateTime.UtcNow;
-
-            var query = dbContext.GroupPosts
-                .Where(p => p.GroupId == groupId);
-
-            // Students only see assignments that are still open. Notices are always
-            // visible, and assignments with no due date never expire from their view.
-            if (isStudent)
-            {
-                query = query.Where(p =>
-                    p.Type != "Assignment" ||
-                    p.DueDate == null ||
-                    p.DueDate >= now);
-            }
+            // Students now see all assignments, including past-due ones — they just
+            // can't submit once the due date passes (enforced server-side in
+            // AssignmentSubmissionService.SubmitOnlineWorkAsync).
+            var query = dbContext.GroupPosts.Where(p => p.GroupId == groupId);
 
             return await query
                 .OrderByDescending(p => p.PostedAt)
@@ -145,18 +131,14 @@
                     p.OriginalFileName,
                     p.DueDate,
                     p.AutoDeleteAt,
+                    SubmissionMode = p.SubmissionMode == null ? null : p.SubmissionMode.ToString(),
 
-                    SubmissionMode = p.SubmissionMode == null
-                        ? null
-                        : p.SubmissionMode.ToString(),
-
-                    // Whether the *requesting* user has submitted this assignment —
-                    // physically (teacher ticked it) or online (file uploaded).
-                    // Always false for teachers/admins and for notices.
+                    // Loophole fix: this is true only once the teacher has ticked it,
+                    // not just because a file exists.
                     HasSubmitted = p.Type == "Assignment" && dbContext.AssignmentSubmissions.Any(s =>
                         s.GroupPostId == p.Id &&
                         s.StudentId == userId &&
-                        (s.Status == SubmissionStatus.Submitted || s.FileName != null)),
+                        s.Status == SubmissionStatus.Submitted),
 
                     p.PostedById,
                     PostedByName = p.PostedBy.FullName,
@@ -217,13 +199,12 @@
         }
 
         public async Task<IEnumerable<object>> GetRecentNoticesAsync(
-            Guid userId,
-            bool isAdmin)
+    Guid userId,
+    bool isAdmin)
         {
             await RemoveExpiredAsync(null);
 
             var query = dbContext.GroupPosts
-                .Where(p => p.Type == "Notice")
                 .Where(p => p.Group.IsActive);
 
             if (!isAdmin)
@@ -244,6 +225,7 @@
                     p.Id,
                     p.GroupId,
                     GroupName = p.Group.Name,
+                    p.Type,
                     p.Title,
                     p.PostedAt,
                     PostedByName = p.PostedBy.FullName

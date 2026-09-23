@@ -9,4 +9,9 @@
     {
         public IFormFile File { get; set; } = null!;
     }
+
+    public class SetSubmissionFeedbackRequest
+    {
+        public string? Feedback { get; set; }
+    }
 }

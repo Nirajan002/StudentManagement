@@ -25,6 +25,7 @@
         public string? FileName { get; set; }
         public string? OriginalFileName { get; set; }
         public DateTime? OnlineSubmittedAt { get; set; }
+        public string? Feedback { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }

@@ -37,10 +37,6 @@
         private static bool AllowsOnline(GroupPost post) =>
             post.SubmissionMode is AssignmentSubmissionMode.Online or AssignmentSubmissionMode.Both;
 
-        // =========================
-        // PHYSICAL TRACKING (unchanged authorization — creator, co-teachers, or Admin)
-        // =========================
-
         public async Task<object> GetSubmissionsAsync(int postId, Guid userId, bool isAdmin)
         {
             var post = await GetAssignmentAsync(postId);
@@ -70,7 +66,11 @@
                         m.Email,
                         m.Profile,
                         Status = (submission?.Status ?? SubmissionStatus.NotSubmitted).ToString(),
-                        SubmittedAt = submission?.SubmittedAt
+                        SubmittedAt = submission?.SubmittedAt,
+                        HasOnlineFile = submission != null && !string.IsNullOrEmpty(submission.FileName),
+                        OriginalFileName = submission?.OriginalFileName,
+                        OnlineSubmittedAt = submission?.OnlineSubmittedAt,
+                        submission?.Feedback
                     };
                 })
                 .ToList();
@@ -81,10 +81,38 @@
                 post.Title,
                 post.GroupId,
                 post.DueDate,
+                SubmissionMode = post.SubmissionMode?.ToString() ?? "Physical",
                 TotalStudents = students.Count,
                 SubmittedCount = students.Count(s => s.Status == nameof(SubmissionStatus.Submitted)),
                 Students = students
             };
+        }
+
+        public async Task<object> SetSubmissionFeedbackAsync(int postId, Guid studentId, Guid actingUserId, bool isAdmin, string? feedback)
+        {
+            var post = await GetAssignmentAsync(postId);
+
+            if (!await groupService.CanManageGroupAsync(post.GroupId, actingUserId, isAdmin))
+                throw new ForbiddenException();
+
+            if (!await IsGroupMemberAsync(post.GroupId, studentId))
+                throw new NotFoundException("This student is not a member of the assignment's group.");
+
+            var submission = await dbContext.AssignmentSubmissions
+                .FirstOrDefaultAsync(s => s.GroupPostId == postId && s.StudentId == studentId);
+
+            if (submission == null)
+            {
+                submission = new AssignmentSubmission { GroupPostId = postId, StudentId = studentId };
+                dbContext.AssignmentSubmissions.Add(submission);
+            }
+
+            submission.Feedback = string.IsNullOrWhiteSpace(feedback) ? null : feedback.Trim();
+            submission.UpdatedAt = DateTime.UtcNow;
+
+            await dbContext.SaveChangesAsync();
+
+            return new { submission.StudentId, submission.Feedback };
         }
 
         public async Task<object> SetSubmissionStatusAsync(int postId, Guid studentId, Guid actingUserId, bool isAdmin, bool submitted)
@@ -130,7 +158,8 @@
                 Status = (submission?.Status ?? SubmissionStatus.NotSubmitted).ToString(),
                 SubmittedAt = submission?.SubmittedAt,
                 OriginalFileName = submission?.OriginalFileName,
-                OnlineSubmittedAt = submission?.OnlineSubmittedAt
+                OnlineSubmittedAt = submission?.OnlineSubmittedAt,
+                submission?.Feedback
             };
         }
 
@@ -144,6 +173,9 @@
 
             if (!AllowsOnline(post))
                 throw new ValidationException("This assignment does not accept online submissions.");
+
+            if (post.DueDate.HasValue && post.DueDate.Value < DateTime.UtcNow)
+                throw new ValidationException("The due date for this assignment has passed. You can no longer submit.");
 
             if (!await IsGroupMemberAsync(post.GroupId, studentId))
                 throw new ForbiddenException();
@@ -160,13 +192,15 @@
                 dbContext.AssignmentSubmissions.Add(submission);
             }
 
-            // Re-submitting replaces the previous file rather than keeping both.
             fileStorage.Delete(submission.FileName);
 
             submission.FileName = await fileStorage.SaveAsync(file, FileCategory.Document);
             submission.OriginalFileName = file.FileName;
             submission.OnlineSubmittedAt = DateTime.UtcNow;
             submission.UpdatedAt = DateTime.UtcNow;
+            // NOTE: Status is intentionally left untouched here. Uploading a file
+            // is not the same as being marked Submitted — only the teacher ticking
+            // it (SetSubmissionStatusAsync) sets Status = Submitted.
 
             await dbContext.SaveChangesAsync();
 
@@ -191,61 +225,11 @@
             return new FileDownloadResult(bytes, submission.OriginalFileName ?? submission.FileName);
         }
 
-        public async Task<object> GetOnlineSubmissionsAsync(int postId, Guid actingUserId)
+        public async Task<FileDownloadResult> DownloadOnlineSubmissionAsync(int postId, Guid studentId, Guid actingUserId, bool isAdmin)
         {
             var post = await GetAssignmentAsync(postId);
 
-            // Deliberately stricter than the physical tracker: only the exact
-            // teacher who posted this assignment can see who submitted online
-            // — not co-teachers, not Admin.
-            if (post.PostedById != actingUserId)
-                throw new ForbiddenException();
-
-            var members = await dbContext.GroupMembers
-                .Where(m => m.GroupId == post.GroupId && m.RemovedAt == null)
-                .Select(m => new { m.StudentId, m.Student.FullName, m.Student.Email, m.Student.Profile })
-                .ToListAsync();
-
-            var submissionsByStudent = await dbContext.AssignmentSubmissions
-                .Where(s => s.GroupPostId == postId)
-                .ToDictionaryAsync(s => s.StudentId);
-
-            var students = members
-                .OrderBy(m => m.FullName)
-                .Select(m =>
-                {
-                    submissionsByStudent.TryGetValue(m.StudentId, out var submission);
-                    var hasSubmitted = submission != null && !string.IsNullOrEmpty(submission.FileName);
-
-                    return new
-                    {
-                        m.StudentId,
-                        m.FullName,
-                        m.Email,
-                        m.Profile,
-                        HasSubmitted = hasSubmitted,
-                        OriginalFileName = submission?.OriginalFileName,
-                        OnlineSubmittedAt = submission?.OnlineSubmittedAt
-                    };
-                })
-                .ToList();
-
-            return new
-            {
-                AssignmentId = post.Id,
-                post.Title,
-                post.GroupId,
-                TotalStudents = students.Count,
-                SubmittedCount = students.Count(s => s.HasSubmitted),
-                Students = students
-            };
-        }
-
-        public async Task<FileDownloadResult> DownloadOnlineSubmissionAsync(int postId, Guid studentId, Guid actingUserId)
-        {
-            var post = await GetAssignmentAsync(postId);
-
-            if (post.PostedById != actingUserId)
+            if (!await groupService.CanManageGroupAsync(post.GroupId, actingUserId, isAdmin))
                 throw new ForbiddenException();
 
             var submission = await dbContext.AssignmentSubmissions

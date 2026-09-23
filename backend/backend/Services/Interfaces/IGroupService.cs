@@ -15,5 +15,6 @@
         Task<IEnumerable<object>> GetGroupsForStudentAsync(Guid studentId);
         Task<(int Added, int Skipped)> AddManagersAsync(int groupId, Guid actingUserId, bool isAdmin, AddGroupManagersRequest request);
         Task RemoveManagerAsync(int groupId, Guid teacherId, Guid actingUserId, bool isAdmin);
+        Task<object> UpdateGroupAsync(int groupId, Guid actingUserId, bool isAdmin, UpdateGroupRequest request);
     }
 }
