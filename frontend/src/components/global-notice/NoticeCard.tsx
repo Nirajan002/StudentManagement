@@ -1,5 +1,14 @@
 import { useState } from "react";
-import { Megaphone, Clock, Calendar, Download, Copy, Check, Loader2, Trash2 } from "lucide-react";
+import {
+  Megaphone,
+  Clock,
+  Calendar,
+  Download,
+  Copy,
+  Check,
+  Loader2,
+  Trash2,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -34,9 +43,13 @@ export default function NoticeCard({
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
-    const text = `${notice.title}\n\n${notice.content || ""}\n\nPosted by: ${notice.postedByName}`;
+    const text = `${notice.title}\n\n${
+      notice.content || ""
+    }\n\nPosted by: ${notice.postedByName}`;
+
     navigator.clipboard.writeText(text);
     setCopied(true);
+
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -54,10 +67,15 @@ export default function NoticeCard({
             </h2>
 
             <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-              <span className="font-medium text-foreground">{notice.postedByName}</span>
+              <span className="font-medium text-foreground">
+                {notice.postedByName}
+              </span>
+
               <span>•</span>
+
               <span className="flex items-center gap-1">
                 <Clock className="h-3 w-3" />
+
                 {new Date(notice.postedAt).toLocaleDateString(undefined, {
                   month: "short",
                   day: "numeric",
@@ -70,9 +88,12 @@ export default function NoticeCard({
               {notice.autoDeleteAt && (
                 <>
                   <span>•</span>
+
                   <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400">
                     <Calendar className="h-3 w-3" />
-                    Expires {new Date(notice.autoDeleteAt).toLocaleDateString()}
+
+                    Expires{" "}
+                    {new Date(notice.autoDeleteAt).toLocaleDateString()}
                   </span>
                 </>
               )}
@@ -86,16 +107,18 @@ export default function NoticeCard({
 
             {notice.fileName && (
               <div className="mt-4 inline-block">
-                
-                <a  href={`${API_URL}/GlobalNotices/${notice.id}/download`}
+                <a
+                  href={`${API_URL}/GlobalNotices/${notice.id}/download`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2.5 rounded-lg border bg-muted/40 px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-muted"
                 >
                   {getFileIcon(notice.originalFileName)}
+
                   <span className="max-w-xs truncate">
                     {notice.originalFileName || "Download attachment"}
                   </span>
+
                   <Download className="ml-1 h-3.5 w-3.5 text-muted-foreground" />
                 </a>
               </div>
@@ -104,6 +127,7 @@ export default function NoticeCard({
         </div>
 
         <div className="flex shrink-0 items-center gap-1">
+          {/* Copy notice button */}
           <Button
             type="button"
             variant="ghost"
@@ -117,36 +141,50 @@ export default function NoticeCard({
             ) : (
               <Copy className="h-3.5 w-3.5" />
             )}
+
+            <span className="sr-only">Copy Notice Text</span>
           </Button>
 
+          {/* Delete notice button */}
           {isAdmin && (
             <AlertDialog>
-              <AlertDialogTrigger>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  disabled={isDeleting}
-                  className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
-                  title="Delete Announcement"
-                >
-                  {isDeleting ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  ) : (
-                    <Trash2 className="h-3.5 w-3.5" />
-                  )}
-                </Button>
+              <AlertDialogTrigger
+                render={
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    disabled={isDeleting}
+                    className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                    title="Delete Announcement"
+                  />
+                }
+              >
+                {isDeleting ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Trash2 className="h-3.5 w-3.5" />
+                )}
+
+                <span className="sr-only">Delete Announcement</span>
               </AlertDialogTrigger>
+
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Delete this announcement?</AlertDialogTitle>
+                  <AlertDialogTitle>
+                    Delete this announcement?
+                  </AlertDialogTitle>
+
                   <AlertDialogDescription>
-                    Are you sure you want to delete &ldquo;{notice.title}&rdquo;? This will
-                    permanently remove it for all teachers and students.
+                    Are you sure you want to delete &ldquo;{notice.title}
+                    &rdquo;? This will permanently remove it for all teachers
+                    and students.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
+
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
+
                   <AlertDialogAction
                     onClick={() => onDelete(notice.id)}
                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"

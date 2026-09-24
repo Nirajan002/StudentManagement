@@ -11,12 +11,14 @@
         private readonly StudentManagement dbContext;
         private readonly IGroupService groupService;
         private readonly IFileStorageService fileStorage;
+        private readonly IRealtimeNotifier realtimeNotifier;
 
-        public AssignmentSubmissionService(StudentManagement dbContext, IGroupService groupService, IFileStorageService fileStorage)
+        public AssignmentSubmissionService(StudentManagement dbContext, IGroupService groupService, IFileStorageService fileStorage, IRealtimeNotifier realtimeNotifier)
         {
             this.dbContext = dbContext;
             this.groupService = groupService;
             this.fileStorage = fileStorage;
+            this.realtimeNotifier = realtimeNotifier;
         }
 
         private async Task<GroupPost> GetAssignmentAsync(int postId)
@@ -112,6 +114,17 @@
 
             await dbContext.SaveChangesAsync();
 
+            if (!string.IsNullOrWhiteSpace(submission.Feedback))
+            {
+                await realtimeNotifier.NotifyAssignmentFeedbackAsync(studentId, new
+                {
+                    postId = post.Id,
+                    groupId = post.GroupId,
+                    title = post.Title,
+                    feedback = submission.Feedback
+                });
+            }
+
             return new { submission.StudentId, submission.Feedback };
         }
 
@@ -203,6 +216,26 @@
             // it (SetSubmissionStatusAsync) sets Status = Submitted.
 
             await dbContext.SaveChangesAsync();
+
+            var group = await dbContext.Groups.FindAsync(post.GroupId);
+            var managerIds = await dbContext.GroupManagers
+                .Where(m => m.GroupId == post.GroupId)
+                .Select(m => m.UserId)
+                .ToListAsync();
+
+            var teacherIds = managerIds
+                .Append(group!.CreatedById)
+                .Distinct();
+
+            var student = await dbContext.Students.FindAsync(studentId);
+
+            await realtimeNotifier.NotifyAssignmentSubmissionAsync(teacherIds, new
+            {
+                postId = post.Id,
+                groupId = post.GroupId,
+                title = post.Title,
+                studentName = student?.FullName ?? "A student"
+            });
 
             return new { submission.OriginalFileName, submission.OnlineSubmittedAt };
         }

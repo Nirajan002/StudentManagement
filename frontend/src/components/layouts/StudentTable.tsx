@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
@@ -10,6 +11,7 @@ import {
 } from "lucide-react";
 
 import { useDeleteStudentMutation } from "../../api/StudentApi";
+
 import {
   Table,
   TableBody,
@@ -18,6 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,6 +28,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -35,6 +39,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
@@ -64,15 +69,19 @@ export default function StudentTable({
 }: StudentTableProps) {
   const navigate = useNavigate();
   const { isAdmin } = useCurrentUser();
-  const [deleteStudent, { isLoading: isDeleting }] = useDeleteStudentMutation();
+
+  const [deleteStudent, { isLoading: isDeleting }] =
+    useDeleteStudentMutation();
 
   // Selected student for delete confirmation
-  const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
+  const [studentToDelete, setStudentToDelete] =
+    useState<Student | null>(null);
 
   const handleDelete = async (id: string) => {
     try {
       await deleteStudent(id).unwrap();
       await refetch();
+
       toast.success("Student deleted successfully!");
     } catch (error) {
       console.error("Delete student error:", error);
@@ -84,20 +93,29 @@ export default function StudentTable({
 
   const getGenderBadge = (gender: string) => {
     const g = gender?.toLowerCase() || "";
+
     if (g === "male") {
       return (
-        <Badge variant="outline" className="border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-blue-400">
+        <Badge
+          variant="outline"
+          className="border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-blue-400"
+        >
           Male
         </Badge>
       );
     }
+
     if (g === "female") {
       return (
-        <Badge variant="outline" className="border-rose-500/30 bg-rose-500/10 text-rose-600 dark:text-rose-400">
+        <Badge
+          variant="outline"
+          className="border-rose-500/30 bg-rose-500/10 text-rose-600 dark:text-rose-400"
+        >
           Female
         </Badge>
       );
     }
+
     return (
       <Badge variant="outline" className="text-muted-foreground">
         {gender || "N/A"}
@@ -109,7 +127,8 @@ export default function StudentTable({
     <>
       {/* =========================
           MOBILE VIEW (Cards)
-      ========================== */}
+          ========================= */}
+
       <div className="space-y-3 md:hidden">
         {students?.length > 0 ? (
           students.map((student) => (
@@ -135,11 +154,14 @@ export default function StudentTable({
                     <p className="truncate font-semibold text-foreground">
                       {student.fullName}
                     </p>
+
                     <p className="truncate text-xs text-muted-foreground">
                       {student.email}
                     </p>
+
                     <div className="mt-1.5 flex items-center gap-2">
                       {getGenderBadge(student.gender)}
+
                       {student.education && (
                         <span className="text-xs text-muted-foreground">
                           {student.education}
@@ -149,16 +171,19 @@ export default function StudentTable({
                   </div>
                 </div>
 
-                {/* Dropdown Menu for Mobile */}
+                {/* Mobile Dropdown */}
                 <DropdownMenu>
-                  <DropdownMenuTrigger>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 shrink-0 text-muted-foreground"
-                    >
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
+                  <DropdownMenuTrigger
+                    render={
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 shrink-0"
+                      />
+                    }
+                  >
+                    <MoreHorizontal className="h-4 w-4" />
+                    <span className="sr-only">Open menu</span>
                   </DropdownMenuTrigger>
 
                   <DropdownMenuContent align="end">
@@ -174,7 +199,9 @@ export default function StudentTable({
                     {isAdmin && (
                       <>
                         <DropdownMenuItem
-                          onClick={() => navigate(`/EditStudent/${student.id}`)}
+                          onClick={() =>
+                            navigate(`/EditStudent/${student.id}`)
+                          }
                         >
                           <Edit2 className="mr-2 h-4 w-4" />
                           Edit Student
@@ -199,9 +226,11 @@ export default function StudentTable({
         ) : (
           <div className="flex flex-col items-center justify-center rounded-xl border border-dashed p-10 text-center">
             <GraduationCap className="h-10 w-10 text-muted-foreground/60" />
+
             <h3 className="mt-3 text-sm font-semibold text-foreground">
               No students found
             </h3>
+
             <p className="mt-1 text-xs text-muted-foreground">
               No student records match your criteria.
             </p>
@@ -211,15 +240,18 @@ export default function StudentTable({
 
       {/* =========================
           DESKTOP TABLE VIEW
-      ========================== */}
-      <div className="hidden rounded-xl border border-border/80 bg-card shadow-xs md:block overflow-hidden">
+          ========================= */}
+
+      <div className="hidden overflow-hidden rounded-xl border border-border/80 bg-card shadow-xs md:block">
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/30 hover:bg-muted/30">
               <TableHead className="w-[320px]">Student</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Gender</TableHead>
-              <TableHead className="w-[80px] text-right">Actions</TableHead>
+              <TableHead className="w-[80px] text-right">
+                Actions
+              </TableHead>
             </TableRow>
           </TableHeader>
 
@@ -248,12 +280,15 @@ export default function StudentTable({
                       <div className="min-w-0">
                         <span
                           onClick={() =>
-                            navigate(`/Student/${student.id}?page=${page}`)
+                            navigate(
+                              `/Student/${student.id}?page=${page}`
+                            )
                           }
                           className="cursor-pointer font-medium text-foreground hover:underline"
                         >
                           {student.fullName}
                         </span>
+
                         {student.number && (
                           <p className="text-xs text-muted-foreground">
                             {student.number}
@@ -269,26 +304,32 @@ export default function StudentTable({
                   </TableCell>
 
                   {/* Gender */}
-                  <TableCell>{getGenderBadge(student.gender)}</TableCell>
+                  <TableCell>
+                    {getGenderBadge(student.gender)}
+                  </TableCell>
 
                   {/* Actions Dropdown */}
                   <TableCell className="text-right">
                     <DropdownMenu>
-                      <DropdownMenuTrigger>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                        >
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Open menu</span>
-                        </Button>
+                      <DropdownMenuTrigger
+                        render={
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                          />
+                        }
+                      >
+                        <MoreHorizontal className="h-4 w-4" />
+                        <span className="sr-only">Open menu</span>
                       </DropdownMenuTrigger>
 
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem
                           onClick={() =>
-                            navigate(`/Student/${student.id}?page=${page}`)
+                            navigate(
+                              `/Student/${student.id}?page=${page}`
+                            )
                           }
                         >
                           <Eye className="mr-2 h-4 w-4" />
@@ -310,7 +351,9 @@ export default function StudentTable({
 
                             <DropdownMenuItem
                               className="text-destructive focus:bg-destructive/10 focus:text-destructive"
-                              onClick={() => setStudentToDelete(student)}
+                              onClick={() =>
+                                setStudentToDelete(student)
+                              }
                             >
                               <Trash2 className="mr-2 h-4 w-4" />
                               Delete
@@ -324,12 +367,14 @@ export default function StudentTable({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={5} className="h-40 text-center">
+                <TableCell colSpan={4} className="h-40 text-center">
                   <div className="flex flex-col items-center justify-center text-center">
                     <GraduationCap className="h-10 w-10 text-muted-foreground/60" />
+
                     <h3 className="mt-2 text-sm font-semibold text-foreground">
                       No students found
                     </h3>
+
                     <p className="text-xs text-muted-foreground">
                       There are no student records to display.
                     </p>
@@ -343,29 +388,44 @@ export default function StudentTable({
 
       {/* =========================
           CONFIRM DELETE DIALOG
-      ========================== */}
+          ========================= */}
+
       <AlertDialog
         open={!!studentToDelete}
-        onOpenChange={(open) => !open && setStudentToDelete(null)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setStudentToDelete(null);
+          }
+        }}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Student?</AlertDialogTitle>
+            <AlertDialogTitle>
+              Delete Student?
+            </AlertDialogTitle>
+
             <AlertDialogDescription>
               Are you sure you want to delete{" "}
               <strong className="text-foreground">
                 {studentToDelete?.fullName}
               </strong>
-              ? This action cannot be undone and will permanently remove their
-              records.
+              ? This action cannot be undone and will permanently
+              remove their records.
             </AlertDialogDescription>
           </AlertDialogHeader>
 
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>
+              Cancel
+            </AlertDialogCancel>
+
             <AlertDialogAction
               disabled={isDeleting}
-              onClick={() => studentToDelete && handleDelete(studentToDelete.id)}
+              onClick={() => {
+                if (studentToDelete) {
+                  handleDelete(studentToDelete.id);
+                }
+              }}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {isDeleting ? "Deleting..." : "Delete"}

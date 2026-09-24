@@ -1,10 +1,12 @@
+
 import { useState } from "react";
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2, Sparkles, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+
 import {
   Dialog,
   DialogContent,
@@ -13,6 +15,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+
 import {
   Select,
   SelectContent,
@@ -20,7 +23,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus } from "lucide-react";
 
 import {
   AUTO_DELETE_OPTIONS,
@@ -41,8 +43,10 @@ export default function CreateNoticeDialog({
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [file, setFile] = useState<File | null>(null);
+
   const [autoDeleteOption, setAutoDeleteOption] =
     useState<AutoDeleteOption>("never");
+
   const [autoDeleteCustom, setAutoDeleteCustom] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -67,18 +71,32 @@ export default function CreateNoticeDialog({
     }
 
     if (autoDeleteOption === "custom" && !autoDeleteCustom) {
-      setFormError("Pick an auto-delete date, or choose a different option.");
+      setFormError(
+        "Pick an auto-delete date, or choose a different option."
+      );
       return;
     }
 
     const formData = new FormData();
+
     formData.append("Title", title.trim());
 
-    if (content.trim()) formData.append("Content", content.trim());
-    if (file) formData.append("File", file);
+    if (content.trim()) {
+      formData.append("Content", content.trim());
+    }
 
-    const autoDeleteAt = computeAutoDeleteAt(autoDeleteOption, autoDeleteCustom);
-    if (autoDeleteAt) formData.append("AutoDeleteAt", autoDeleteAt);
+    if (file) {
+      formData.append("File", file);
+    }
+
+    const autoDeleteAt = computeAutoDeleteAt(
+      autoDeleteOption,
+      autoDeleteCustom
+    );
+
+    if (autoDeleteAt) {
+      formData.append("AutoDeleteAt", autoDeleteAt);
+    }
 
     setFormError(null);
 
@@ -88,7 +106,9 @@ export default function CreateNoticeDialog({
       setOpen(false);
       resetForm();
     } else {
-      setFormError("Couldn't post announcement. Please try again.");
+      setFormError(
+        "Couldn't post announcement. Please try again."
+      );
     }
   };
 
@@ -97,14 +117,20 @@ export default function CreateNoticeDialog({
       open={open}
       onOpenChange={(next) => {
         setOpen(next);
-        if (!next) resetForm();
+
+        if (!next) {
+          resetForm();
+        }
       }}
     >
-      <DialogTrigger>
-        <Button className="gap-2 bg-emerald-600 text-white shadow-sm hover:bg-emerald-700">
-          <Plus className="h-4 w-4" />
-          Post Announcement
-        </Button>
+      {/* Corrected DialogTrigger */}
+      <DialogTrigger
+        render={
+          <Button className="gap-2 bg-emerald-600 text-white shadow-sm hover:bg-emerald-700" />
+        }
+      >
+        <Plus className="h-4 w-4" />
+        Post Announcement
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-lg">
@@ -117,7 +143,10 @@ export default function CreateNoticeDialog({
 
         <div className="space-y-4 pt-2">
           <div className="space-y-1.5">
-            <Label htmlFor="notice-title">Notice Title *</Label>
+            <Label htmlFor="notice-title">
+              Notice Title *
+            </Label>
+
             <Input
               id="notice-title"
               value={title}
@@ -127,7 +156,10 @@ export default function CreateNoticeDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="notice-content">Announcement Body</Label>
+            <Label htmlFor="notice-content">
+              Announcement Body
+            </Label>
+
             <Textarea
               id="notice-content"
               rows={5}
@@ -142,26 +174,38 @@ export default function CreateNoticeDialog({
             <Label htmlFor="notice-file">
               Attachment (PDF, Document, or Image)
             </Label>
+
             <Input
               id="notice-file"
               type="file"
-              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+              onChange={(e) =>
+                setFile(e.target.files?.[0] ?? null)
+              }
               className="cursor-pointer file:cursor-pointer"
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="notice-auto-delete">Auto-Expire Notice</Label>
+            <Label htmlFor="notice-auto-delete">
+              Auto-Expire Notice
+            </Label>
+
             <Select
               value={autoDeleteOption}
-              onValueChange={(v) => setAutoDeleteOption(v as AutoDeleteOption)}
+              onValueChange={(v) =>
+                setAutoDeleteOption(v as AutoDeleteOption)
+              }
             >
               <SelectTrigger id="notice-auto-delete">
                 <SelectValue />
               </SelectTrigger>
+
               <SelectContent>
                 {AUTO_DELETE_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
+                  <SelectItem
+                    key={option.value}
+                    value={option.value}
+                  >
                     {option.label}
                   </SelectItem>
                 ))}
@@ -172,7 +216,9 @@ export default function CreateNoticeDialog({
               <Input
                 type="datetime-local"
                 value={autoDeleteCustom}
-                onChange={(e) => setAutoDeleteCustom(e.target.value)}
+                onChange={(e) =>
+                  setAutoDeleteCustom(e.target.value)
+                }
                 className="mt-2"
               />
             )}
@@ -186,16 +232,24 @@ export default function CreateNoticeDialog({
         </div>
 
         <DialogFooter className="gap-2 pt-3 sm:gap-0">
-          <Button variant="outline" type="button" onClick={() => setOpen(false)}>
+          <Button
+            variant="outline"
+            type="button"
+            onClick={() => setOpen(false)}
+          >
             Cancel
           </Button>
+
           <Button
             type="button"
             onClick={handleCreate}
             disabled={isPosting}
             className="bg-emerald-600 text-white hover:bg-emerald-700"
           >
-            {isPosting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isPosting && (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            )}
+
             Broadcast Notice
           </Button>
         </DialogFooter>

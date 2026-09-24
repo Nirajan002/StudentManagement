@@ -12,11 +12,13 @@
     {
         private readonly StudentManagement dbContext;
         private readonly IFileStorageService fileStorage;
+        private readonly IRealtimeNotifier realtimeNotifier;
 
-        public GlobalNoticeService(StudentManagement dbContext, IFileStorageService fileStorage)
+        public GlobalNoticeService(StudentManagement dbContext, IFileStorageService fileStorage, IRealtimeNotifier realtimeNotifier)
         {
             this.dbContext = dbContext;
             this.fileStorage = fileStorage;
+            this.realtimeNotifier = realtimeNotifier;
         }
 
         public async Task<IEnumerable<object>> GetNoticesAsync()
@@ -76,7 +78,7 @@
 
             var postedBy = await dbContext.Teachers.FindAsync(postedById);
 
-            return new
+            var result = new
             {
                 notice.Id,
                 notice.Title,
@@ -88,6 +90,10 @@
                 PostedByName = postedBy?.FullName,
                 notice.PostedAt
             };
+
+            await realtimeNotifier.NotifyGlobalNoticeAsync(result);
+
+            return result;
         }
 
         public async Task DeleteNoticeAsync(int id)

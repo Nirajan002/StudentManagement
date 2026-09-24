@@ -1,4 +1,5 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
+import Home from "./pages/index";
 
 // Authentication
 import Login from "./pages/Auth/Login";
@@ -56,7 +57,7 @@ function App() {
       {/* =========================
           DEFAULT ROUTE
           ========================= */}
-      <Route path="/" element={<Navigate to="/Login" replace />} />
+      <Route path="/" element={<Home />} />
 
       {/* =========================
           AUTHENTICATION

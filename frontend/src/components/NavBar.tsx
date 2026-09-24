@@ -131,7 +131,7 @@ export default function Navbar({
   };
 
   return (
-    <nav className="sticky top-0 z-50 flex h-16 items-center gap-2 border-b bg-background px-3 sm:px-6">
+    <nav className="sticky top-0 z-50 flex h-[70px] items-center gap-2 border-b bg-background px-6 sm:px-12">
       {showMenuButton && (
         <button
           onClick={onMenuButtonClick}
@@ -148,11 +148,21 @@ export default function Navbar({
       <div className="flex flex-1 items-center">
         <div
           onClick={handleHomeClick}
-          className="flex cursor-pointer items-baseline gap-0.5 text-2xl tracking-tight transition-opacity hover:opacity-80"
+          className="flex cursor-pointer items-center gap-3 whitespace-nowrap transition-opacity hover:opacity-80"
         >
-          <span className="font-medium text-foreground">Student</span>
-          <span className="font-extrabold text-green-500">Grid</span>
-          <span className="ml-1 h-1.5 w-1.5 rounded-full bg-green-500" />
+          {/* LOGO ICON */}
+          <span className="grid h-10 w-10 grid-cols-2 gap-[4px] rounded-[10px] bg-[#1E3A8A] p-[7px]">
+            <span className="rounded-[2px] bg-white" />
+            <span className="rounded-[2px] bg-white/60" />
+            <span className="rounded-[2px] bg-white/60" />
+            <span className="rounded-[2px] bg-[#FBBF24]" />
+          </span>
+
+          {/* LOGO TEXT */}
+          <span className="text-2xl tracking-tight text-[#0F1B3D]">
+            <span className="font-medium">Student</span>
+            <span className="font-extrabold text-[#16A34A]">Grid</span>
+          </span>
         </div>
       </div>
 

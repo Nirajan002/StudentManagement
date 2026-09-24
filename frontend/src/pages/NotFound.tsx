@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import ThemeToggle from "@/components/ThemeToggle";
 import { useGetCurrentUserQuery } from "../api/AuthApi";
+import PageTransition from "@/components/transitions/PageTransition";
 
 export default function NotFound() {
   const navigate = useNavigate();
@@ -73,11 +74,12 @@ export default function NotFound() {
 
       {/* Main 404 Hero Section */}
       <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col items-center justify-center px-6 py-12 text-center">
-        {/* Status Pill Badge */}
-        <Badge
-          variant="outline"
-          className="mb-6 gap-1.5 border-emerald-500/30 bg-emerald-500/10 px-3.5 py-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400 backdrop-blur-md"
-        >
+        <PageTransition variant="fade-up" className="flex flex-col items-center justify-center">
+          {/* Status Pill Badge */}
+          <Badge
+            variant="outline"
+            className="mb-6 gap-1.5 border-emerald-500/30 bg-emerald-500/10 px-3.5 py-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400 backdrop-blur-md"
+          >
           <Compass className="h-3.5 w-3.5" />
           Error 404 • Destination Not Found
         </Badge>
@@ -181,7 +183,8 @@ export default function NotFound() {
             </Link>
           </div>
         </div>
-      </main>
+      </PageTransition>
+    </main>
 
       {/* Footer */}
       <footer className="py-6 text-center text-xs text-muted-foreground">

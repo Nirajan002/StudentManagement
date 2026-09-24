@@ -5,7 +5,8 @@ import {
   GraduationCap,
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import PageTransition from "@/components/transitions/PageTransition";
 
 const DEFAULT_FEATURES = [
   "Role-tailored dashboards for Admin, Teachers, and Students",
@@ -38,6 +39,7 @@ export default function AuthLayout({
   footerText = "Protected by StudentGrid security policy • Session encrypted",
 }: AuthLayoutProps) {
   const navigate = useNavigate();
+  const location = useLocation();
 
   return (
     <div className="flex min-h-screen w-full bg-background text-foreground">
@@ -124,7 +126,13 @@ export default function AuthLayout({
           </div>
         </div>
 
-        <div className="mx-auto my-auto w-full max-w-md py-8">{children}</div>
+        <PageTransition
+          key={location.pathname}
+          variant="fade-up"
+          className="mx-auto my-auto w-full max-w-md py-8"
+        >
+          {children}
+        </PageTransition>
 
         <div className="text-center text-xs text-muted-foreground">
           {footerText}

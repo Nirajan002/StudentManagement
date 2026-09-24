@@ -6,6 +6,7 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 import Navbar from "@/components/NavBar";
 import InputField from "@/components/form/InputField";
+import PageTransition from "@/components/transitions/PageTransition";
 
 import { Button } from "@/components/ui/button";
 import { useRegisterTeacherMutation } from "../../api/AuthApi";
@@ -74,7 +75,8 @@ export default function RegisterTeacher() {
       <Navbar />
 
       <div className="flex min-h-screen items-center justify-center bg-muted/40 px-4 py-8">
-        <div className="w-full max-w-md rounded-xl border bg-background p-6 shadow-sm">
+        <PageTransition variant="fade-up" className="flex justify-center">
+          <div className="w-full max-w-md rounded-xl border bg-background p-6 shadow-sm">
           {/* Header */}
           <div className="mb-6 text-center">
             <h1 className="text-2xl font-bold">Register a Teacher</h1>
@@ -169,7 +171,8 @@ export default function RegisterTeacher() {
             </form>
           </FormProvider>
         </div>
-      </div>
+      </PageTransition>
+    </div>
     </div>
   );
 }

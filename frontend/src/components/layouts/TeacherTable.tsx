@@ -1,13 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
-import {
-  MoreHorizontal,
-  Eye,
-  Edit2,
-  Trash2,
-  Users,
-} from "lucide-react";
+import { MoreHorizontal, Eye, Edit2, Trash2, Users } from "lucide-react";
 
 import { useDeleteTeacherMutation } from "../../api/TeacherApi";
 import {
@@ -78,13 +72,19 @@ export default function TeacherTable({ users, refetch }: UserTableProps) {
     const r = role?.toLowerCase() || "";
     if (r === "admin") {
       return (
-        <Badge variant="outline" className="border-purple-500/30 bg-purple-500/10 text-purple-600 dark:text-purple-400">
+        <Badge
+          variant="outline"
+          className="border-purple-500/30 bg-purple-500/10 text-purple-600 dark:text-purple-400"
+        >
           Admin
         </Badge>
       );
     }
     return (
-      <Badge variant="outline" className="border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-blue-400">
+      <Badge
+        variant="outline"
+        className="border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-blue-400"
+      >
         Teacher
       </Badge>
     );
@@ -131,14 +131,16 @@ export default function TeacherTable({ users, refetch }: UserTableProps) {
 
                 {/* Dropdown Menu for Mobile */}
                 <DropdownMenu>
-                  <DropdownMenuTrigger>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 shrink-0 text-muted-foreground"
-                    >
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
+                  <DropdownMenuTrigger
+                    render={
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 shrink-0 text-muted-foreground"
+                      />
+                    }
+                  >
+                    <MoreHorizontal className="h-4 w-4" />
                   </DropdownMenuTrigger>
 
                   <DropdownMenuContent align="end">
@@ -243,15 +245,16 @@ export default function TeacherTable({ users, refetch }: UserTableProps) {
                   {/* Actions Dropdown */}
                   <TableCell className="text-right">
                     <DropdownMenu>
-                      <DropdownMenuTrigger>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                        >
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Open menu</span>
-                        </Button>
+                      <DropdownMenuTrigger
+                        render={
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground"
+                          />
+                        }
+                      >
+                        <MoreHorizontal className="h-4 w-4" />
                       </DropdownMenuTrigger>
 
                       <DropdownMenuContent align="end">
@@ -265,7 +268,9 @@ export default function TeacherTable({ users, refetch }: UserTableProps) {
                         {isAdmin && (
                           <>
                             <DropdownMenuItem
-                              onClick={() => navigate(`/EditTeacher/${user.id}`)}
+                              onClick={() =>
+                                navigate(`/EditTeacher/${user.id}`)
+                              }
                             >
                               <Edit2 className="mr-2 h-4 w-4" />
                               Edit Teacher
@@ -318,8 +323,11 @@ export default function TeacherTable({ users, refetch }: UserTableProps) {
             <AlertDialogTitle>Delete User?</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to delete{" "}
-              <strong className="text-foreground">{userToDelete?.fullName}</strong>?
-              This action cannot be undone and will permanently remove their records.
+              <strong className="text-foreground">
+                {userToDelete?.fullName}
+              </strong>
+              ? This action cannot be undone and will permanently remove their
+              records.
             </AlertDialogDescription>
           </AlertDialogHeader>
 

@@ -1,19 +1,25 @@
 import { useState } from "react";
 import React from "react";
+import { useLocation } from "react-router-dom";
+import { motion, AnimatePresence } from "motion/react";
 import Navbar from "../NavBar";
 import SideMenu from "../SlideMenu";
 import { useGetCurrentUserQuery } from "../../api/AuthApi";
 import { X } from "lucide-react";
+import PageTransition, { type PageTransitionVariant } from "../transitions/PageTransition";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
   activeMenu?: string;
+  transitionVariant?: PageTransitionVariant;
 }
 
 export default function DashboardLayout({
   children,
   activeMenu,
+  transitionVariant = "fade-up",
 }: DashboardLayoutProps) {
+  const location = useLocation();
   const { data: user, isLoading } = useGetCurrentUserQuery();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -74,36 +80,50 @@ export default function DashboardLayout({
           </aside>
 
           {/* Mobile sidebar — slide-in drawer + backdrop */}
-          {mobileMenuOpen && (
-            <div className="fixed inset-0 z-50 md:hidden">
-              <div
-                className="absolute inset-0 bg-black/40"
-                onClick={() => setMobileMenuOpen(false)}
-              />
-
-              <aside className="absolute left-0 top-0 h-full w-64 bg-card shadow-xl">
-                <div className="flex justify-end p-2">
-                  <button
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="rounded-md p-2 hover:bg-muted"
-                    aria-label="Close menu"
-                  >
-                    <X className="h-5 w-5" />
-                  </button>
-                </div>
-
-                <SideMenu
-                  activeMenu={activeMenu}
-                  user={user as { profile?: string; fullName?: string; role?: string }}
-                  onNavigate={() => setMobileMenuOpen(false)}
+          <AnimatePresence>
+            {mobileMenuOpen && (
+              <div className="fixed inset-0 z-50 md:hidden">
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute inset-0 bg-black/40 backdrop-blur-xs"
+                  onClick={() => setMobileMenuOpen(false)}
                 />
-              </aside>
-            </div>
-          )}
 
-          {/* Main content */}
+                <motion.aside
+                  initial={{ x: -280 }}
+                  animate={{ x: 0 }}
+                  exit={{ x: -280 }}
+                  transition={{ type: "spring", damping: 28, stiffness: 300 }}
+                  className="absolute left-0 top-0 h-full w-64 bg-card shadow-xl"
+                >
+                  <div className="flex justify-end p-2">
+                    <button
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="rounded-md p-2 hover:bg-muted"
+                      aria-label="Close menu"
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
+                  </div>
+
+                  <SideMenu
+                    activeMenu={activeMenu}
+                    user={user as { profile?: string; fullName?: string; role?: string }}
+                    onNavigate={() => setMobileMenuOpen(false)}
+                  />
+                </motion.aside>
+              </div>
+            )}
+          </AnimatePresence>
+
+          {/* Main content with page transition */}
           <main className="min-h-[calc(100vh-4rem)] p-4 md:ml-64 md:p-6">
-            {children}
+            <PageTransition key={location.pathname} variant={transitionVariant}>
+              {children}
+            </PageTransition>
           </main>
         </>
       )}

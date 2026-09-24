@@ -12,12 +12,14 @@
         private readonly StudentManagement dbContext;
         private readonly IFileStorageService fileStorage;
         private readonly IGroupService groupService;
+        private readonly IRealtimeNotifier realtimeNotifier;
 
-        public GroupPostService(StudentManagement dbContext, IFileStorageService fileStorage, IGroupService groupService)
+        public GroupPostService(StudentManagement dbContext, IFileStorageService fileStorage, IGroupService groupService, IRealtimeNotifier realtimeNotifier)
         {
             this.dbContext = dbContext;
             this.fileStorage = fileStorage;
             this.groupService = groupService;
+            this.realtimeNotifier = realtimeNotifier;
         }
 
         public async Task<object> CreatePostAsync(int groupId, Guid postedById, bool isAdmin, CreateGroupPostRequest request)
@@ -85,7 +87,7 @@
 
             var postedBy = await dbContext.Teachers.FindAsync(postedById);
 
-            return new
+            var result = new
             {
                 post.Id,
                 post.GroupId,
@@ -104,6 +106,26 @@
                 PostedByName = postedBy?.FullName,
                 post.PostedAt
             };
+
+            var memberIds = await dbContext.GroupMembers
+                .Where(m => m.GroupId == groupId && m.RemovedAt == null)
+                .Select(m => m.StudentId)
+                .ToListAsync();
+
+            var managerIds = await dbContext.GroupManagers
+                .Where(m => m.GroupId == groupId)
+                .Select(m => m.UserId)
+                .ToListAsync();
+
+            var recipientIds = memberIds
+                .Concat(managerIds)
+                .Append(group.CreatedById)
+                .Where(uid => uid != postedById)
+                .Distinct();
+
+            await realtimeNotifier.NotifyGroupPostAsync(groupId, recipientIds, result);
+
+            return result;
         }
 
         public async Task<IEnumerable<object>> GetPostsAsync(int groupId, Guid userId, bool isAdmin, bool isStudent)
