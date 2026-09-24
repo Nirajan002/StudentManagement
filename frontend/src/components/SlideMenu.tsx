@@ -49,7 +49,7 @@ export default function SideMenu({ activeMenu, user, onNavigate }: SideMenuProps
       dispatch(DashboardApi.util.resetApiState());
       dispatch(GlobalNoticeApi.util.resetApiState());
 
-      navigate("/Login", { replace: true });
+      navigate("/", { replace: true });
     }
   };
 
