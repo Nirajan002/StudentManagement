@@ -50,6 +50,12 @@ import MyAssignments from "./pages/Assignment/MyAssignments";
 
 import VerifyEmail from "./pages/Auth/VerifyEmail";
 import ForgotPassword from "./pages/Auth/ForgotPassword";
+import ClassSections from "./pages/ClassSections";
+
+import TakeAttendance from "./pages/Attendance/TakeAttendance";
+import AttendanceSheet from "./pages/Attendance/AttendanceSheet";
+import MyAttendance from "./pages/Attendance/MyAttendance";
+import StudentAttendanceView from "./pages/Attendance/StudentAttendanceView";
 
 function App() {
   return (
@@ -155,6 +161,15 @@ function App() {
         }
       />
 
+      <Route
+        path="/ClassSections"
+        element={
+          <AdminRoute>
+            <ClassSections />
+          </AdminRoute>
+        }
+      />
+
       {/* =========================
           PROFILE
           ========================= */}
@@ -211,6 +226,40 @@ function App() {
         element={
           <StudentRoute>
             <StudentIndex />
+          </StudentRoute>
+        }
+      />
+
+      <Route
+        path="/TakeAttendance"
+        element={
+          <RoleRoute allowedRoles={["Admin", "Teacher"]}>
+            <TakeAttendance />
+          </RoleRoute>
+        }
+      />
+      <Route
+        path="/AttendanceSheet"
+        element={
+          <RoleRoute allowedRoles={["Admin", "Teacher"]}>
+            <AttendanceSheet />
+          </RoleRoute>
+        }
+      />
+
+      <Route
+        path="/StudentAttendance/:id"
+        element={
+          <RoleRoute allowedRoles={["Admin", "Teacher"]}>
+            <StudentAttendanceView />
+          </RoleRoute>
+        }
+      />
+      <Route
+        path="/MyAttendance"
+        element={
+          <StudentRoute>
+            <MyAttendance />
           </StudentRoute>
         }
       />

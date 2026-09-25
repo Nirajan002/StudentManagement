@@ -1,8 +1,21 @@
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "react-hot-toast";
-import { ArrowLeft, AlertCircle, RefreshCw, Edit3, Trash2, GraduationCap, BookOpen } from "lucide-react";
+import {
+  ArrowLeft,
+  AlertCircle,
+  RefreshCw,
+  Edit3,
+  Trash2,
+  GraduationCap,
+  BookOpen,
+  Hash,
+  ClipboardCheck,
+} from "lucide-react";
 
-import { useGetStudentQuery, useDeleteStudentMutation } from "../../api/StudentApi";
+import {
+  useGetStudentQuery,
+  useDeleteStudentMutation,
+} from "../../api/StudentApi";
 import { useGetCurrentTeacherQuery } from "../../api/TeacherApi";
 
 import { Button } from "@/components/ui/button";
@@ -37,7 +50,8 @@ export default function StudentDetail() {
 
   const handleDelete = async () => {
     if (!id) return toast.error("Student ID is missing");
-    if (!isAdmin) return toast.error("Only administrators can delete students.");
+    if (!isAdmin)
+      return toast.error("Only administrators can delete students.");
 
     try {
       await deleteStudent(id).unwrap();
@@ -89,10 +103,14 @@ export default function StudentDetail() {
               Student Record Not Found
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              The student you are looking for may have been removed or cannot be loaded.
+              The student you are looking for may have been removed or cannot be
+              loaded.
             </p>
             <div className="mt-5 flex justify-center gap-2">
-              <Button variant="outline" onClick={() => navigate(`/StudentView?page=${page}`)}>
+              <Button
+                variant="outline"
+                onClick={() => navigate(`/StudentView?page=${page}`)}
+              >
                 Return to List
               </Button>
               <Button onClick={() => refetch()}>
@@ -121,29 +139,41 @@ export default function StudentDetail() {
               Back to Students
             </Button>
 
-            {isAdmin && (
-              <div className="flex items-center gap-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => navigate(`/EditStudent/${student.id}`)}
-                  className="gap-2"
-                >
-                  <Edit3 className="h-4 w-4" />
-                  Edit
-                </Button>
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  disabled={isDeleting}
-                  onClick={handleDelete}
-                  className="gap-2"
-                >
-                  <Trash2 className="h-4 w-4" />
-                  {isDeleting ? "Deleting..." : "Delete"}
-                </Button>
-              </div>
-            )}
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => navigate(`/StudentAttendance/${student.id}`)}
+                className="gap-2"
+              >
+                <ClipboardCheck className="h-4 w-4" />
+                Attendance
+              </Button>
+
+              {isAdmin && (
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => navigate(`/EditStudent/${student.id}`)}
+                    className="gap-2"
+                  >
+                    <Edit3 className="h-4 w-4" />
+                    Edit
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    disabled={isDeleting}
+                    onClick={handleDelete}
+                    className="gap-2"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    {isDeleting ? "Deleting..." : "Delete"}
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -187,6 +217,17 @@ export default function StudentDetail() {
                     icon: BookOpen,
                     iconClassName:
                       "bg-violet-50 text-violet-600 dark:bg-violet-950/50 dark:text-violet-400",
+                  },
+                  {
+                    label: "Roll number",
+                    value:
+                      student.rollNumber !== null &&
+                      student.rollNumber !== undefined
+                        ? student.rollNumber
+                        : "Not assigned",
+                    icon: Hash,
+                    iconClassName:
+                      "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400",
                   },
                 ]}
               />

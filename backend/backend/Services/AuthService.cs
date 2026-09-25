@@ -3,6 +3,7 @@
     using backend.Data;
     using backend.DTOs;
     using backend.Modules;
+    using backend.Services.Exceptions;
     using backend.Services.Interfaces;
     using Microsoft.AspNetCore.Identity;
     using Microsoft.EntityFrameworkCore;
@@ -63,18 +64,43 @@
 
             if (existing != null) return (true, null);
 
+            var placement = StudentPlacement.Normalize(
+                request.Class, request.Section, request.RollNumber, required: true);
+
+            await StudentPlacement.EnsureRollNumberFreeAsync(dbContext, placement, excludeStudentId: null);
+            await StudentPlacement.EnsureClassSectionExistsAsync(dbContext, placement); // NEW
+
             var student = new Student
             {
                 Id = Guid.NewGuid(),
                 FullName = request.FullName,
                 Email = request.Email,
                 Password = studentPasswordHasher.HashPassword(null!, request.Password),
+                Class = placement.Class,
+                Section = placement.Section,
+                RollNumber = placement.RollNumber,
             };
 
             dbContext.Students.Add(student);
-            await dbContext.SaveChangesAsync();
 
-            return (false, new { student.Id, student.FullName, student.Email });
+            try
+            {
+                await dbContext.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                throw new ConflictException("That roll number was just taken. Please choose another.");
+            }
+
+            return (false, new
+            {
+                student.Id,
+                student.FullName,
+                student.Email,
+                student.Class,
+                student.Section,
+                student.RollNumber
+            });
         }
 
         public async Task<LoginResult> LoginAsync(TeacherLogin request)

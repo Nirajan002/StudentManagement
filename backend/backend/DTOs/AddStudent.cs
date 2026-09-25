@@ -8,5 +8,10 @@
 
         public string Password { get; set; }
 
+        public string? Class { get; set; }
+
+        public string? Section { get; set; }
+
+        public int? RollNumber { get; set; }
     }
 }

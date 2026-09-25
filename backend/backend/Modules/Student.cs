@@ -22,6 +22,9 @@
 
         public string? Section { get; set; }
 
+        // Unique within the same Class + Section (filtered unique index in the DbContext).
+        public int? RollNumber { get; set; }
+
         public string Role { get; set; } = "Student";
 
         public bool EmailVerified { get; set; } = false;

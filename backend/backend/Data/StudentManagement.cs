@@ -21,6 +21,8 @@ namespace backend.Data
         public DbSet<ReadState> ReadStates { get; set; }
         public DbSet<OtpCode> OtpCodes { get; set; }
         public DbSet<AssignmentSubmission> AssignmentSubmissions { get; set; }
+        public DbSet<ClassSection> ClassSections { get; set; }
+        public DbSet<AttendanceRecord> AttendanceRecords { get; set; }
 
         public DbSet<RefreshToken> RefreshTokens { get; set; }
 
@@ -95,6 +97,20 @@ namespace backend.Data
                 .Property(s => s.CreatedAt)
                 .HasDefaultValueSql("GETUTCDATE()");
 
+            // Class + Section + Roll Number: no two students may share the same roll
+            // number inside the same class and section. Students that have not been
+            // placed yet (any of the three is NULL) are ignored by the filter.
+            // Class and Section need a max length so SQL Server can index them.
+            modelBuilder.Entity<Student>(e =>
+            {
+                e.Property(s => s.Class).HasMaxLength(20);
+                e.Property(s => s.Section).HasMaxLength(10);
+
+                e.HasIndex(s => new { s.Class, s.Section, s.RollNumber })
+                    .IsUnique()
+                    .HasFilter("[Class] IS NOT NULL AND [Section] IS NOT NULL AND [RollNumber] IS NOT NULL");
+            });
+
             modelBuilder.Entity<GlobalNotice>()
                 .HasOne(n => n.PostedBy)
                 .WithMany()
@@ -123,6 +139,39 @@ namespace backend.Data
                 .WithMany()
                 .HasForeignKey(s => s.StudentId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ClassSection>(e =>
+            {
+                e.Property(cs => cs.ClassName).HasMaxLength(20);
+                e.Property(cs => cs.Section).HasMaxLength(10);
+
+                e.HasIndex(cs => new { cs.ClassName, cs.Section }).IsUnique();
+
+                e.HasOne(cs => cs.Instructor)
+                    .WithMany()
+                    .HasForeignKey(cs => cs.InstructorId)
+                    .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            modelBuilder.Entity<AttendanceRecord>(e =>
+            {
+                e.HasIndex(a => new { a.ClassSectionId, a.StudentId, a.Date }).IsUnique();
+
+                e.HasOne(a => a.ClassSection)
+                    .WithMany()
+                    .HasForeignKey(a => a.ClassSectionId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                e.HasOne(a => a.Student)
+                    .WithMany()
+                    .HasForeignKey(a => a.StudentId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                e.HasOne(a => a.MarkedBy)
+                    .WithMany()
+                    .HasForeignKey(a => a.MarkedById)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
 
             // as local time, throwing off any client-side date comparisons.
             var utcConverter = new ValueConverter<DateTime, DateTime>(

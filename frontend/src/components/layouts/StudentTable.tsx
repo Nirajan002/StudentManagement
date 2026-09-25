@@ -53,7 +53,9 @@ interface Student {
   number: string;
   addresh: string;
   profile?: string | null;
-  education: string;
+  class?: string | null;
+  section?: string | null;
+  rollNumber?: number | null;
 }
 
 interface StudentTableProps {
@@ -123,6 +125,33 @@ export default function StudentTable({
     );
   };
 
+  const getClassBadge = (student: Student) => {
+    if (!student.class || !student.section) {
+      return (
+        <span className="text-xs italic text-muted-foreground">
+          Not assigned
+        </span>
+      );
+    }
+
+    return (
+      <div className="flex items-center gap-2">
+        <Badge
+          variant="outline"
+          className="border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+        >
+          {student.class} {student.section}
+        </Badge>
+
+        {student.rollNumber !== null && student.rollNumber !== undefined && (
+          <span className="text-xs text-muted-foreground">
+            Roll {student.rollNumber}
+          </span>
+        )}
+      </div>
+    );
+  };
+
   return (
     <>
       {/* =========================
@@ -159,14 +188,9 @@ export default function StudentTable({
                       {student.email}
                     </p>
 
-                    <div className="mt-1.5 flex items-center gap-2">
+                    <div className="mt-1.5 flex flex-wrap items-center gap-2">
                       {getGenderBadge(student.gender)}
-
-                      {student.education && (
-                        <span className="text-xs text-muted-foreground">
-                          {student.education}
-                        </span>
-                      )}
+                      {getClassBadge(student)}
                     </div>
                   </div>
                 </div>
@@ -247,6 +271,7 @@ export default function StudentTable({
           <TableHeader>
             <TableRow className="bg-muted/30 hover:bg-muted/30">
               <TableHead className="w-[320px]">Student</TableHead>
+              <TableHead>Class</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Gender</TableHead>
               <TableHead className="w-[80px] text-right">
@@ -297,6 +322,9 @@ export default function StudentTable({
                       </div>
                     </div>
                   </TableCell>
+
+                  {/* Class / Section / Roll */}
+                  <TableCell>{getClassBadge(student)}</TableCell>
 
                   {/* Email */}
                   <TableCell className="text-muted-foreground">
@@ -367,7 +395,7 @@ export default function StudentTable({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={4} className="h-40 text-center">
+                <TableCell colSpan={5} className="h-40 text-center">
                   <div className="flex flex-col items-center justify-center text-center">
                     <GraduationCap className="h-10 w-10 text-muted-foreground/60" />
 

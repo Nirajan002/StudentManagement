@@ -2,6 +2,7 @@
 {
     using backend.Data;
     using backend.DTOs;
+    using backend.Services.Exceptions;
     using backend.Services.Interfaces;
     using Microsoft.EntityFrameworkCore;
 
@@ -19,7 +20,17 @@
         public List<object> GetPaged(int page)
         {
             const int pageSize = 10;
+
+            // Ordered so students appear grouped as: Class → Section → Roll number.
+            // Students without a class go last. Class is ordered by length first so
+            // "2" comes before "10" (a plain text sort would put "10" before "2").
             return dbContext.Students
+                .OrderBy(s => s.Class == null)
+                .ThenBy(s => s.Class!.Length)
+                .ThenBy(s => s.Class)
+                .ThenBy(s => s.Section)
+                .ThenBy(s => s.RollNumber)
+                .ThenBy(s => s.FullName)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .Select(s => new
@@ -32,7 +43,8 @@
                     s.Email,
                     s.Profile,
                     s.Class,
-                    s.Section
+                    s.Section,
+                    s.RollNumber
                 })
                 .ToList<object>();
         }
@@ -41,7 +53,7 @@
         {
             var s = await dbContext.Students.FindAsync(id);
             if (s == null) return null;
-            return new { s.Id, s.FullName, s.Email, s.Profile, s.Class, s.Section, s.Gender, s.Number, s.Addresh, s.EmailVerified };
+            return new { s.Id, s.FullName, s.Email, s.Profile, s.Class, s.Section, s.RollNumber, s.Gender, s.Number, s.Addresh, s.EmailVerified };
         }
 
         public async Task<object?> UpdateAsync(Guid id, UpdateStudent request)
@@ -49,10 +61,17 @@
             var student = await dbContext.Students.FindAsync(id);
             if (student == null) return null;
 
+            var placement = StudentPlacement.Normalize(
+                request.Class, request.Section, request.RollNumber, required: false);
+
+            await StudentPlacement.EnsureRollNumberFreeAsync(dbContext, placement, excludeStudentId: id);
+            await StudentPlacement.EnsureClassSectionExistsAsync(dbContext, placement); // NEW
+
             student.FullName = request.FullName;
             student.Email = request.Email;
-            student.Class = request.Class;
-            student.Section = request.Section;
+            student.Class = placement.Class;
+            student.Section = placement.Section;
+            student.RollNumber = placement.RollNumber;
             student.Gender = request.Gender;
             student.Number = request.Number;
             student.Addresh = request.Addresh;
@@ -63,9 +82,16 @@
                 student.Profile = await fileStorage.SaveAsync(request.Profile, FileCategory.Image);
             }
 
-            await dbContext.SaveChangesAsync();
+            try
+            {
+                await dbContext.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                throw new ConflictException("That roll number was just taken. Please choose another.");
+            }
 
-            return new { student.Id, student.FullName, student.Email, student.Profile, student.Class, student.Section, student.Number, student.Gender, student.Addresh };
+            return new { student.Id, student.FullName, student.Email, student.Profile, student.Class, student.Section, student.RollNumber, student.Number, student.Gender, student.Addresh };
         }
 
         public async Task<bool> DeleteAsync(Guid id)

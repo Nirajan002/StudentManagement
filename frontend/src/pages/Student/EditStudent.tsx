@@ -9,6 +9,7 @@ import {
   MapPin,
   GraduationCap,
   BookOpen,
+  Hash,
   Loader2,
   CheckCircle2,
 } from "lucide-react";
@@ -31,6 +32,7 @@ type EditStudentFormData = {
   addresh: string;
   studentClass: string;
   section: string;
+  rollNumber: string;
 };
 
 export default function EditStudent() {
@@ -57,6 +59,7 @@ export default function EditStudent() {
       addresh: "",
       studentClass: "",
       section: "",
+      rollNumber: "",
     },
   });
   const { handleSubmit, reset, formState: { isDirty } } = methods;
@@ -71,6 +74,10 @@ export default function EditStudent() {
       addresh: student.addresh || "",
       studentClass: student.class || "",
       section: student.section || "",
+      rollNumber:
+        student.rollNumber !== null && student.rollNumber !== undefined
+          ? String(student.rollNumber)
+          : "",
     });
   }, [student, reset]);
 
@@ -90,8 +97,11 @@ export default function EditStudent() {
     formData.append("Gender", data.gender);
     formData.append("Number", data.number);
     formData.append("Addresh", data.addresh);
-    formData.append("Class", data.studentClass || "");
-    formData.append("Section", data.section || "");
+    formData.append("Class", data.studentClass.trim());
+    formData.append("Section", data.section.trim().toUpperCase());
+    if (data.rollNumber.trim()) {
+      formData.append("RollNumber", data.rollNumber.trim());
+    }
 
     try {
       await updateStudent({ id, data: formData }).unwrap();
@@ -213,10 +223,43 @@ export default function EditStudent() {
 
                       <InputField name="addresh" label="Address" icon={MapPin} />
 
-                      <div className="grid grid-cols-2 gap-4">
-                        <InputField name="studentClass" label="Class" icon={GraduationCap} placeholder="e.g. 10" />
-                        <InputField name="section" label="Section" icon={BookOpen} placeholder="e.g. A" />
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                        <InputField
+                          name="studentClass"
+                          label="Class"
+                          icon={GraduationCap}
+                          placeholder="e.g. 10"
+                          rules={{
+                            maxLength: { value: 20, message: "Class is too long" },
+                          }}
+                        />
+                        <InputField
+                          name="section"
+                          label="Section"
+                          icon={BookOpen}
+                          placeholder="e.g. C"
+                          rules={{
+                            maxLength: { value: 10, message: "Section is too long" },
+                          }}
+                        />
+                        <InputField
+                          name="rollNumber"
+                          label="Roll number"
+                          type="number"
+                          icon={Hash}
+                          placeholder="e.g. 23"
+                          rules={{
+                            pattern: { value: /^\d*$/, message: "Use whole numbers only" },
+                            min: { value: 1, message: "Roll number must be at least 1" },
+                            max: { value: 9999, message: "Roll number must be 9999 or less" },
+                          }}
+                        />
                       </div>
+
+                      <p className="text-xs text-muted-foreground">
+                        Class, section and roll number go together: fill in all three or leave all three blank.
+                        A roll number can only be used once within the same class and section.
+                      </p>
 
                       <div className="flex items-center justify-between border-t pt-5">
                         <Button type="button" variant="outline" onClick={() => navigate(-1)} disabled={isUpdating}>

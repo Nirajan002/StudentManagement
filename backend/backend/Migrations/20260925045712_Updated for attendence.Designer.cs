@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using backend.Data;
 
@@ -11,9 +12,11 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(StudentManagement))]
-    partial class StudentManagementModelSnapshot : ModelSnapshot
+    [Migration("20260925045712_Updated for attendence")]
+    partial class Updatedforattendence
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -68,47 +71,6 @@ namespace backend.Migrations
                         .IsUnique();
 
                     b.ToTable("AssignmentSubmissions");
-                });
-
-            modelBuilder.Entity("backend.Modules.AttendanceRecord", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ClassSectionId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("MarkedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("MarkedById")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<Guid>("StudentId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MarkedById");
-
-                    b.HasIndex("StudentId");
-
-                    b.HasIndex("ClassSectionId", "StudentId", "Date")
-                        .IsUnique();
-
-                    b.ToTable("AttendanceRecords");
                 });
 
             modelBuilder.Entity("backend.Modules.ClassSection", b =>
@@ -562,33 +524,6 @@ namespace backend.Migrations
                         .IsRequired();
 
                     b.Navigation("GroupPost");
-
-                    b.Navigation("Student");
-                });
-
-            modelBuilder.Entity("backend.Modules.AttendanceRecord", b =>
-                {
-                    b.HasOne("backend.Modules.ClassSection", "ClassSection")
-                        .WithMany()
-                        .HasForeignKey("ClassSectionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("backend.Modules.Teacher", "MarkedBy")
-                        .WithMany()
-                        .HasForeignKey("MarkedById")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("backend.Modules.Student", "Student")
-                        .WithMany()
-                        .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ClassSection");
-
-                    b.Navigation("MarkedBy");
 
                     b.Navigation("Student");
                 });

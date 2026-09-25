@@ -12,6 +12,7 @@ import { StudentApi } from "../api/StudentApi";
 import { useLogoutMutation, AuthApi } from "../api/AuthApi";
 import { GlobalNoticeApi } from "../api/GlobalNoticeApi";
 import { getUploadUrl } from "@/lib/config";
+import { ClassSectionApi } from "../api/ClassSectionApi"; 
 
 interface SideMenuProps {
   activeMenu?: string;
@@ -48,6 +49,7 @@ export default function SideMenu({ activeMenu, user, onNavigate }: SideMenuProps
       dispatch(StudentApi.util.resetApiState());
       dispatch(DashboardApi.util.resetApiState());
       dispatch(GlobalNoticeApi.util.resetApiState());
+      dispatch(ClassSectionApi.util.resetApiState());
 
       navigate("/", { replace: true });
     }

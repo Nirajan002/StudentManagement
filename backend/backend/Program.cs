@@ -76,6 +76,8 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IAssignmentSubmissionService, AssignmentSubmissionService>();
 builder.Services.AddSignalR();
 builder.Services.AddScoped<IRealtimeNotifier, RealtimeNotifier>();
+builder.Services.AddScoped<IClassSectionService, ClassSectionService>();
+builder.Services.AddScoped<IAttendanceService, AttendanceService>();
 
 var jwtKey = builder.Configuration["Jwt:Key"];
 if (string.IsNullOrWhiteSpace(jwtKey))

@@ -3,6 +3,7 @@ import { FormProvider, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { GraduationCap, BookOpen, Hash } from "lucide-react";
 
 import InputField from "@/components/form/InputField";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,9 @@ interface AddStudentForm {
   fullName: string;
   email: string;
   password: string;
+  studentClass: string;
+  section: string;
+  rollNumber: string;
 }
 
 export default function AddStudents() {
@@ -33,6 +37,9 @@ export default function AddStudents() {
       fullName: "",
       email: "",
       password: "",
+      studentClass: "",
+      section: "",
+      rollNumber: "",
     },
   });
 
@@ -44,6 +51,9 @@ export default function AddStudents() {
         FullName: data.fullName.trim(),
         Email: data.email.trim(),
         Password: data.password,
+        Class: data.studentClass.trim(),
+        Section: data.section.trim().toUpperCase(),
+        RollNumber: Number(data.rollNumber),
       }).unwrap();
 
       toast.success("Student added successfully!");
@@ -59,6 +69,9 @@ export default function AddStudents() {
         data?: { message?: string };
       };
 
+      // 409 covers both "email already exists" and "roll number already taken";
+      // 400 covers missing or invalid class / section / roll number.
+      // The server sends a readable message for each.
       if (apiError.status === 409) {
         toast.error(
           apiError.data?.message ||
@@ -119,6 +132,60 @@ export default function AddStudents() {
                       },
                     }}
                   />
+
+                  {/* Class / Section / Roll number */}
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                    <InputField
+                      name="studentClass"
+                      label="Class"
+                      icon={GraduationCap}
+                      placeholder="e.g. 10"
+                      rules={{
+                        required: "Class is required",
+                        maxLength: {
+                          value: 20,
+                          message: "Class is too long",
+                        },
+                      }}
+                    />
+
+                    <InputField
+                      name="section"
+                      label="Section"
+                      icon={BookOpen}
+                      placeholder="e.g. C"
+                      rules={{
+                        required: "Section is required",
+                        maxLength: {
+                          value: 10,
+                          message: "Section is too long",
+                        },
+                      }}
+                    />
+
+                    <InputField
+                      name="rollNumber"
+                      label="Roll number"
+                      type="number"
+                      icon={Hash}
+                      placeholder="e.g. 23"
+                      rules={{
+                        required: "Roll number is required",
+                        pattern: {
+                          value: /^\d+$/,
+                          message: "Use whole numbers only",
+                        },
+                        min: {
+                          value: 1,
+                          message: "Roll number must be at least 1",
+                        },
+                        max: {
+                          value: 9999,
+                          message: "Roll number must be 9999 or less",
+                        },
+                      }}
+                    />
+                  </div>
 
                   {/* Password */}
                   <div className="relative">

@@ -1,4 +1,5 @@
 ﻿using backend.DTOs;
+using backend.Services.Exceptions;
 using backend.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -66,9 +67,20 @@ namespace backend.Controllers
         [HttpPost("AddStudent")]
         public async Task<IActionResult> AddStudent(AddStudent request)
         {
-            var (conflict, result) = await authService.AddStudentAsync(request);
-            if (conflict) return Conflict(new { message = "A student with this email already exists." });
-            return Ok(result);
+            try
+            {
+                var (conflict, result) = await authService.AddStudentAsync(request);
+                if (conflict) return Conflict(new { message = "A student with this email already exists." });
+                return Ok(result);
+            }
+            catch (ValidationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (ConflictException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
         }
 
         [EnableRateLimiting("auth")]

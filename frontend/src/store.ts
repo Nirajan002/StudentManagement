@@ -6,6 +6,8 @@ import { StudentApi } from "./api/StudentApi";
 import { TeacherApi } from "./api/TeacherApi";
 import { DashboardApi } from "./api/DashboardApi";
 import { GlobalNoticeApi } from "./api/GlobalNoticeApi";
+import { ClassSectionApi } from "./api/ClassSectionApi";
+import { AttendanceApi } from "./api/AttendanceApi";
 
 const appReducer = combineReducers({
   [AuthApi.reducerPath]: AuthApi.reducer,
@@ -14,6 +16,8 @@ const appReducer = combineReducers({
   [TeacherApi.reducerPath]: TeacherApi.reducer,
   [DashboardApi.reducerPath]: DashboardApi.reducer,
   [GlobalNoticeApi.reducerPath]: GlobalNoticeApi.reducer,
+  [ClassSectionApi.reducerPath]: ClassSectionApi.reducer,
+  [AttendanceApi.reducerPath]: AttendanceApi.reducer,
 });
 
 const rootReducer = (
@@ -21,7 +25,7 @@ const rootReducer = (
   action: UnknownAction,
 ) => {
   if (action.type === "auth/resetStore") {
-    state = undefined;  
+    state = undefined;
   }
   return appReducer(state, action);
 };
@@ -35,7 +39,9 @@ export const store = configureStore({
       .concat(StudentApi.middleware)
       .concat(TeacherApi.middleware)
       .concat(DashboardApi.middleware)
-      .concat(GlobalNoticeApi.middleware),
+      .concat(GlobalNoticeApi.middleware)
+      .concat(ClassSectionApi.middleware)
+      .concat(AttendanceApi.middleware),
 });
 
 setupListeners(store.dispatch);

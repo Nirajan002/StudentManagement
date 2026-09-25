@@ -1,4 +1,5 @@
 ﻿using backend.DTOs;
+using backend.Services.Exceptions;
 using backend.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -31,10 +32,21 @@ namespace backend.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpPut("student/{ID:guid}")]
-        public async Task<IActionResult> UpdateStudent([FromRoute] Guid ID, UpdateStudent request)
+        public async Task<IActionResult> UpdateStudent([FromRoute] Guid ID, [FromForm] UpdateStudent request)
         {
-            var result = await studentService.UpdateAsync(ID, request);
-            return result == null ? NotFound() : Ok(result);
+            try
+            {
+                var result = await studentService.UpdateAsync(ID, request);
+                return result == null ? NotFound() : Ok(result);
+            }
+            catch (ValidationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (ConflictException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
         }
 
         [Authorize(Roles = "Admin")]
