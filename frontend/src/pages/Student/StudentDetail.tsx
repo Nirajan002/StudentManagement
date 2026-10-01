@@ -46,6 +46,7 @@ export default function StudentDetail() {
   const [deleteStudent, { isLoading: isDeleting }] = useDeleteStudentMutation();
 
   const isAdmin = currentUser?.role?.toLowerCase() === "admin";
+  const isTeacher = currentUser?.role?.toLowerCase() === "teacher";
   const isVerified = Boolean(student?.emailVerified);
 
   const handleDelete = async () => {
@@ -140,6 +141,7 @@ export default function StudentDetail() {
             </Button>
 
             <div className="flex flex-wrap items-center gap-2">
+              {(isAdmin || isTeacher) && (
               <Button
                 size="sm"
                 variant="outline"
@@ -149,6 +151,7 @@ export default function StudentDetail() {
                 <ClipboardCheck className="h-4 w-4" />
                 Attendance
               </Button>
+              )}
 
               {isAdmin && (
                 <div className="flex items-center gap-2">

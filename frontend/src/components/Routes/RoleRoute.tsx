@@ -13,7 +13,7 @@ export default function RoleRoute({ children, allowedRoles }: RoleRouteProps) {
   if (isLoading) return null; // or a spinner
 
   if (isError || !role || !allowedRoles.some((r) => r.toLowerCase() === role.toLowerCase())) {
-    return <Navigate to="/Login" replace />;
+    return <Navigate to="/NotFound" replace />;
   }
 
   return <>{children}</>;

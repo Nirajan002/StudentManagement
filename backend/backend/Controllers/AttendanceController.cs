@@ -58,6 +58,7 @@ namespace backend.Controllers
             catch (NotFoundException ex) { return NotFound(new { message = ex.Message }); }
         }
 
+        [Authorize(Roles = "Admin,Teacher")]
         [HttpGet("student/{studentId:guid}")]
         public async Task<IActionResult> GetStudentAttendance(Guid studentId, DateTime? from, DateTime? to)
         {

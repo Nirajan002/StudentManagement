@@ -47,7 +47,7 @@ export function createBaseQueryWithReauth(
           result = await rawBaseQuery(args, api, extraOptions);
         } else {
           api.dispatch({ type: "auth/resetStore" });
-          window.location.href = "/Login";
+          window.location.href = "/";
         }
       }
     }

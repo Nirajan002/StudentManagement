@@ -189,6 +189,7 @@ function App() {
           UNKNOWN ROUTE
           ========================= */}
       <Route path="*" element={<NotFound />} />
+      <Route path="/NotFound" element={<NotFound />} />
 
       <Route path="/GroupsList" element={<GroupsList />} />
 

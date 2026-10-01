@@ -12,7 +12,7 @@ export default function TeacherRoute({ children }: TeacherRouteProps) {
   if (isLoading) return null;
 
   if (isError || !isTeacher) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/NotFound" replace />;
   }
 
   return <>{children}</>;

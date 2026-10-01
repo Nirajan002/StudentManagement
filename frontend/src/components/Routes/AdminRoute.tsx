@@ -12,7 +12,7 @@ export default function AdminRoute({ children }: AdminRouteProps) {
   if (isLoading) return null;
 
   if (isError || !isAdmin) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/NotFound" replace />;
   }
 
   return <>{children}</>;

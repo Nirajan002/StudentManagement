@@ -118,6 +118,25 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
+// Apply pending migrations automatically on startup
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<StudentManagement>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    
+    try
+    {
+        logger.LogInformation("Applying database migrations...");
+        dbContext.Database.Migrate();
+        logger.LogInformation("Database migrations applied successfully.");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "An error occurred while applying database migrations.");
+        throw;
+    }
+}
+
 // Seed an admin user if one doesn't exist yet. Credentials come from
 // configuration (user-secrets locally, environment variables in prod) —
 // never hardcoded here.
