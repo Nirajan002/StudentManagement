@@ -40,15 +40,18 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("ReactPolicy", policy =>
     {
-        // Get allowed origins from configuration
-        var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() 
-            ?? new[] { "http://localhost:5173" };
-            
+        // Temporary: Allow all origins for testing
+        // TODO: Remove this and use proper configuration in production
         policy
-            .WithOrigins(allowedOrigins)
+            .AllowAnyOrigin()
             .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials();
+            .AllowAnyMethod();
+            
+        // Get allowed origins from configuration (for future use)
+        var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>();
+        
+        // Log the configuration for debugging
+        Console.WriteLine($"CORS: AllowedOrigins from config: {(allowedOrigins != null ? string.Join(", ", allowedOrigins) : "NULL")}");
     });
 });
 
