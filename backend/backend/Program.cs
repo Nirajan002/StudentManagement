@@ -40,27 +40,13 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("ReactPolicy", policy =>
     {
-        // Get allowed origins from configuration
-        var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>();
-        
-        // If no configuration found, use defaults including your Vercel app
-        if (allowedOrigins == null || allowedOrigins.Length == 0)
-        {
-            allowedOrigins = new[] { 
-                "http://localhost:5173", 
-                "https://localhost:5173",
-                "https://studentgrid.vercel.app"
-            };
-        }
-        
-        // Log the allowed origins for debugging
-        Console.WriteLine($"CORS: Allowed origins: {string.Join(", ", allowedOrigins)}");
-            
         policy
-            .WithOrigins(allowedOrigins)
+            .SetIsOriginAllowed(_ => true) // Temporary: Allow any origin for testing
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
+            
+        Console.WriteLine("CORS: Configured to allow any origin with credentials");
     });
 });
 
@@ -199,9 +185,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
-
+// CORS must be called before UseAuthentication and UseAuthorization
 app.UseCors("ReactPolicy");
+
+app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 
