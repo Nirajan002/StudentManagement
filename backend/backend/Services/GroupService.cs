@@ -10,9 +10,9 @@
     public class GroupService : IGroupService
     {
         private readonly StudentManagement dbContext;
-        private readonly IFileStorageService fileStorage; // NEW
+        private readonly IFileStorageService fileStorage;
 
-        public GroupService(StudentManagement dbContext, IFileStorageService fileStorage) // NEW param
+        public GroupService(StudentManagement dbContext, IFileStorageService fileStorage)
         {
             this.dbContext = dbContext;
             this.fileStorage = fileStorage;
